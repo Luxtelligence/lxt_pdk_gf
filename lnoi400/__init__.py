@@ -19,6 +19,7 @@ PDK = Pdk(
     layers=dict(LAYER),
     layer_stack=LAYER_STACK,
     layer_views=LAYER_VIEWS,
+    bend_points_distance = 0.1,
     # models=_models,
     # routing_strategies=_routing_strategies,
 )

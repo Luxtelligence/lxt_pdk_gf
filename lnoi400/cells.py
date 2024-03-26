@@ -61,7 +61,33 @@ def mmi2x2optimized1550(
         **kwargs,
     )
 
+################
+# Bends
+################
+
+@gf.cell
+def L_turn_bend(
+    radius: float = 80.0,
+    angle: float = 90.0,
+    p: float = 1.0,
+    with_arc_floorplan: bool = True,
+    npoints: int | None = None,
+    direction: str = "ccw",
+    cross_section: CrossSectionSpec = "xs_rwg1000") -> gf.Component:
+    """A 90-degrees bend following an Euler path, with linearly-varying curvature (increasing and decreasing)."""
+
+    return gf.components.bend_euler(
+        radius = radius,
+        angle = angle,
+        p = p,
+        with_arc_floorplan = with_arc_floorplan,
+        npoints = npoints,
+        direction = direction,
+        cross_section = cross_section)
+
+#TODO: bend_points_distance in the PDK definition seems not to work properly
+
 if __name__ == "__main__":
 
-    mmi = mmi2x2optimized1550()
-    mmi.show()
+    bend = L_turn_bend(cross_section = "xs_rwg1000")
+    bend.show()

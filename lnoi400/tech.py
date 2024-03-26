@@ -6,7 +6,6 @@ from gdsfactory.technology import LayerMap, LayerViews
 from gdsfactory.typings import Layer, LayerLevel, LayerStack
 from gdsfactory.cross_section import get_cross_sections
 
-import lnoi400
 from lnoi400.config import PATH
 
 nm = 1e-3
