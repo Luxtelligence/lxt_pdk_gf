@@ -4,7 +4,7 @@ from functools import partial
 import gdsfactory as gf
 from gdsfactory.technology import LayerMap, LayerViews
 from gdsfactory.typings import Layer, LayerLevel, LayerStack
-from gdsfactory.cross_section import get_cross_sections
+from gdsfactory.cross_section import CrossSection, get_cross_sections
 
 from lnoi400.config import PATH
 
@@ -103,6 +103,36 @@ xf_rwg3000 = partial(xf_rwg1000,
 
 xf_swg250 = partial(gf.cross_section.strip, width = 0.25, layer = LAYER.LN_RIB, simplify = 30*nm)
 
+def uni_cpw(
+        central_conductor_width: float = 15.0,
+        ground_planes_width: float = 250.,
+        gap: float = 5.0) -> CrossSection:
+    """Generate cross-section of a uniform coplanar waveguide."""
+
+    offset = 0.5*(central_conductor_width + ground_planes_width) + gap
+
+    g1 = gf.Section(width = ground_planes_width,
+                    offset = -offset,
+                    layer = "TL",
+                    simplify = 50*nm)
+    
+    g2 = gf.Section(width = ground_planes_width,
+                 offset = offset,
+                 layer = "TL",
+                 simplify = 50*nm)
+
+    s = gf.Section(width = central_conductor_width,
+                   offset = 0.,
+                   layer = "TL",
+                   simplify = 50*nm)
+    
+    return partial(gf.cross_section.cross_section, 
+                   width = central_conductor_width,
+                   layer = "TL",
+                   sections = (g1, s, g2),
+                   port_names = gf.cross_section.port_names_electrical,
+                   port_types = gf.cross_section.port_types_electrical,)
+
 ############################
 # Cross-sections
 ############################
@@ -110,6 +140,8 @@ xf_swg250 = partial(gf.cross_section.strip, width = 0.25, layer = LAYER.LN_RIB, 
 xs_rwg1000 = xf_rwg1000()
 xs_rwg3000 = xf_rwg3000()
 xs_swg250 = xf_swg250()
+
+xs_uni_cpw = uni_cpw()
 
 cross_sections = get_cross_sections(sys.modules[__name__])
 

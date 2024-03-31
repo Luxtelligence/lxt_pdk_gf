@@ -192,6 +192,4 @@ def double_linear_inverse_taper(
 
 if __name__ == "__main__":
 
-    taper = double_linear_inverse_taper()
-    taper.show()
-    print(taper.ports)
+    pass
