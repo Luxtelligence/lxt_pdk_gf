@@ -114,24 +114,30 @@ def uni_cpw(
     g1 = gf.Section(width = ground_planes_width,
                     offset = -offset,
                     layer = "TL",
-                    simplify = 50*nm)
+                    simplify = 50*nm,
+                    name = "ground_bottom")
     
     g2 = gf.Section(width = ground_planes_width,
                  offset = offset,
                  layer = "TL",
-                 simplify = 50*nm)
+                 simplify = 50*nm,
+                 name = "ground_top")
 
     s = gf.Section(width = central_conductor_width,
                    offset = 0.,
                    layer = "TL",
-                   simplify = 50*nm)
+                   simplify = 50*nm,
+                   name = "signal")
     
-    return partial(gf.cross_section.cross_section, 
+    xs_cpw = gf.cross_section.cross_section(
                    width = central_conductor_width,
+                   offset = 0.,
                    layer = "TL",
                    sections = (g1, s, g2),
                    port_names = gf.cross_section.port_names_electrical,
-                   port_types = gf.cross_section.port_types_electrical,)
+                   port_types = gf.cross_section.port_types_electrical)
+    
+    return xs_cpw
 
 ############################
 # Cross-sections
@@ -156,3 +162,7 @@ if __name__ == "__main__":
         layer_stack = LAYER_STACK,
     )
     t.write_tech(tech_dir = PATH.tech_dir)
+
+    path = gf.path.straight(length = 1000.)
+    c = path.extrude(xs_uni_cpw)
+    c.show()

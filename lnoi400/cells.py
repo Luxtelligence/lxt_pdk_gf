@@ -2,10 +2,9 @@ from functools import partial
 import numpy as np
 
 import gdsfactory as gf
-from gdsfactory.typings import ComponentSpec, CrossSectionSpec, LayerSpec
+from gdsfactory.typings import CrossSectionSpec
 
-from config import PATH
-from lnoi400.tech import LAYER, xs_rwg1000, xs_rwg3000, xs_swg250
+from lnoi400.tech import LAYER
 
 
 ################
@@ -61,9 +60,9 @@ def mmi2x2optimized1550(
         **kwargs,
     )
 
-################
+##########
 # Bends
-################
+##########
 
 @gf.cell
 def L_turn_bend(
@@ -175,7 +174,7 @@ def double_linear_inverse_taper(
         length = upper_taper_length,
         linear = True)
 
-    # Place the two partial tapers
+    # Place the two tapers on the different layers
     
     double_taper = gf.Component()
     ltref = double_taper << taper_lower
@@ -189,7 +188,80 @@ def double_linear_inverse_taper(
 
     return double_taper
 
+###################
+# GSG bonding pad
+###################
+
+@gf.cell
+def CPW_pad_linear(
+    start_width: float = 80.0,
+    length_straight: float = 30.0,
+    length_tapered: float = 100.0,
+    cross_section: CrossSectionSpec = "xs_uni_cpw"
+    ) -> gf.Component:
+    """RF access line for high-frequency GSG probes. The probe pad maintains a 
+    fixed gap/center conductor ratio across its length, to achieve a good 
+    impedance matching"""
+
+    xs_cpw = gf.get_cross_section(cross_section)
+
+    # Extract the CPW cross sectional parameters
+
+    sections = xs_cpw.sections
+    signal_section = [s for s in sections if s.name == "signal"][0]
+    ground_section = [s for s in sections if s.name == "ground_top"][0]
+    end_width = signal_section.width
+    ground_planes_width = ground_section.width
+    end_gap = ground_section.offset - 0.5*(end_width + ground_planes_width)
+    aspect_ratio = end_width/(end_width + 2*end_gap)
+
+    # Pad elements generation
+    
+    pad = gf.Component()
+
+    start_gap = 0.5*(aspect_ratio**(-1) - 1)*start_width
+
+    central_conductor_shape = [
+        (0.0, start_width/2.),
+        (length_straight, start_width/2.),
+        (length_straight + length_tapered, end_width/2.),
+        (length_straight + length_tapered, -end_width/2.),
+        (length_straight, -start_width/2.),
+        (0.0, -start_width/2.)]
+    
+    ground_plane_shape = [
+        (0.0, start_width/2. + start_gap),
+        (length_straight, start_width/2. + start_gap),
+        (length_straight + length_tapered, end_width/2. + end_gap),
+        (length_straight + length_tapered, end_width/2. + end_gap + ground_planes_width),
+        (0.0, end_width/2. + end_gap + ground_planes_width)]
+
+    pad.add_polygon(central_conductor_shape, layer = "TL")
+    pad.add_polygon(ground_plane_shape, layer = "TL")
+    G_bot = pad.add_polygon(ground_plane_shape, layer = "TL")
+    G_bot.mirror((0, 0), (1, 0))
+
+    pad.add_port(
+        name = "e1",
+        center = (length_straight, 0.),
+        width = start_width,
+        port_type = "electrical",
+        layer = "TL"
+    )
+
+    pad.add_port(
+        name = "e2",
+        center = (length_straight + length_tapered, 0.),
+        width = end_width,
+        orientation = 0.,
+        port_type = "electrical",
+        layer = "TL"
+    )
+
+    return pad
+
 
 if __name__ == "__main__":
 
     pass
+
