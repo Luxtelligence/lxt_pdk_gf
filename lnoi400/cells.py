@@ -241,6 +241,8 @@ def CPW_pad_linear(
     G_bot = pad.add_polygon(ground_plane_shape, layer = "TL")
     G_bot.mirror((0, 0), (1, 0))
 
+    # Ports definition
+
     pad.add_port(
         name = "e1",
         center = (length_straight, 0.),
@@ -260,8 +262,67 @@ def CPW_pad_linear(
 
     return pad
 
+##################
+# Chip floorplan
+##################
+
+@gf.cell
+def chip_frame(
+    size: tuple[float, float] = (10_000, 5000),
+    exclusion_zone_width: float = 50,
+    center: float = None) -> gf.Component:
+    """Provide the chip extent and the exclusion zone around the chip frame. 
+    In the exclusion zone, only the edge couplers routing to the chip facet should be placed.
+    Allowed chip dimensions (in either direction): 5000 um, 10000 um, 20000 um."""
+
+    # Check that the chip dimensions have the admissible values.
+
+    snapped_size = []
+
+    if size[0] <= 5050 and size[1] <= 5050:
+        
+        raise(ValueError(f"The chip frame size {size} is not supported."))
+    
+    else:
+
+        for s in size:                
+            if abs(s - 5000.) <= 50.:
+                snapped_size.append(4950.)
+            elif abs(s - 10000.) <= 100.:
+                snapped_size.append(10000)
+            elif abs(s - 20000.) <= 200:
+                snapped_size.append(20100)
+            else:
+                raise(ValueError(f"The chip frame size {size} is not supported."))
+            
+    if not(center):
+        center = (.5*snapped_size[0] + exclusion_zone_width, .5*snapped_size[1] + exclusion_zone_width)
+
+    # Chip frame elements
+        
+    inner_box = gf.components.rectangle(
+        size = snapped_size,
+        layer = LAYER.CHIP_CONTOUR,
+        centered = True,
+    )
+
+    outer_box = gf.components.rectangle(
+        size = [s + 2*exclusion_zone_width for s in snapped_size],
+        layer = LAYER.CHIP_EXCLUSION_ZONE,
+        centered = True,
+    )
+
+    c = gf.Component()
+    in_box = c << inner_box
+    out_box = c << outer_box
+
+    in_box.move(destination = center)
+    out_box.move(destination = center)
+
+    return c
 
 if __name__ == "__main__":
 
-    pass
+    c = chip_frame()
+    c.show()
 
