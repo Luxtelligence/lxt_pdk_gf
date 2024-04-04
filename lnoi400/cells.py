@@ -2,7 +2,7 @@ from functools import partial
 import numpy as np
 
 import gdsfactory as gf
-from gdsfactory.typings import CrossSectionSpec
+from gdsfactory.typings import CrossSectionSpec, ComponentSpec
 
 from lnoi400.tech import LAYER
 
@@ -186,7 +186,7 @@ def double_linear_inverse_taper(
     double_taper.add_port(port = ltref.ports["o1"])
     double_taper.add_port(port = utref.ports["o2"])
 
-    return double_taper
+    return double_taper.flatten()
 
 ###################
 # GSG bonding pad
@@ -262,6 +262,37 @@ def CPW_pad_linear(
 
     return pad
 
+####################
+# Transmission lines
+####################
+
+@gf.cell()
+def uni_cpw_straight(
+    length: float = 3000.,
+    cross_section: CrossSectionSpec = "xs_uni_cpw",
+    bondpad: ComponentSpec = "CPW_pad_linear",
+    ) -> gf.Component:
+    """A CPW transmission line for microwaves, with a uniform cross section."""
+
+    cpw = gf.Component()
+    bp = gf.get_component(bondpad, cross_section = cross_section)
+
+    tl = cpw << gf.components.straight(length = length, cross_section = cross_section)
+    bp1 = cpw << bp
+    bp2 = cpw << bp
+
+    bp1.connect("e2", tl.ports["e1"])
+    bp2.mirror()
+    bp2.connect("e2", tl.ports["e2"])
+
+    return cpw.flatten()
+
+###############
+# Modulators
+###############
+
+
+
 ##################
 # Chip floorplan
 ##################
@@ -319,10 +350,9 @@ def chip_frame(
     in_box.move(destination = center)
     out_box.move(destination = center)
 
-    return c
+    return c.flatten()
 
 if __name__ == "__main__":
 
-    c = chip_frame()
-    c.show()
+    pass
 
