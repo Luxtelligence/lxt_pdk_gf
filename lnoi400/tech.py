@@ -96,6 +96,11 @@ xf_rwg1000 = partial(
     radius_min = 60.,
 )
 
+xf_rwg2500 = partial(xf_rwg1000,
+                     width = 2.5,
+                     sections = (gf.Section(width = 11.5, layer = "LN_RIB", name = "slab", simplify = 30 * nm),)
+                     )
+
 xf_rwg3000 = partial(xf_rwg1000,
                      width = 3.0,
                      sections = (gf.Section(width = 12., layer = "LN_RIB", name = "slab", simplify = 50 * nm),)
@@ -144,6 +149,7 @@ def uni_cpw(
 ############################
 
 xs_rwg1000 = xf_rwg1000()
+xs_rwg2500 = xf_rwg2500()
 xs_rwg3000 = xf_rwg3000()
 xs_swg250 = xf_swg250()
 

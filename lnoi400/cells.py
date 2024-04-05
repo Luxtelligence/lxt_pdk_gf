@@ -4,7 +4,7 @@ import numpy as np
 import gdsfactory as gf
 from gdsfactory.typings import CrossSectionSpec, ComponentSpec
 
-from lnoi400.tech import LAYER
+from lnoi400.tech import LAYER, uni_cpw
 
 
 ################
@@ -195,8 +195,8 @@ def double_linear_inverse_taper(
 @gf.cell
 def CPW_pad_linear(
     start_width: float = 80.0,
-    length_straight: float = 30.0,
-    length_tapered: float = 100.0,
+    length_straight: float = 10.0,
+    length_tapered: float = 190.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw"
     ) -> gf.Component:
     """RF access line for high-frequency GSG probes. The probe pad maintains a 
@@ -285,13 +285,200 @@ def uni_cpw_straight(
     bp2.mirror()
     bp2.connect("e2", tl.ports["e2"])
 
+    cpw.add_ports(tl.ports)
+    cpw.add_ports({"bp1": bp1.ports["e1"],
+                   "bp2": bp2.ports["e1"]})
+
     return cpw.flatten()
 
 ###############
 # Modulators
 ###############
 
+@gf.cell()
+def _mzm_interferometer(splitter: ComponentSpec = "mmi1x2_optimized1550",
+                        taper_length: float = 100.,
+                        rib_core_width_modulator: float = 2.5,
+                        modulation_length: float = 7500.,
+                        length_imbalance: float = 100.,
+                        bias_tuning_section_length: float = 750.,
+                        sbend_large_size: tuple[float, float] = [200., 50.],
+                        sbend_small_size: tuple[float, float] = [200., -45.],
+                        sbend_small_straight_extend: float = 5.0,
+                        lbend_combiner_reff: float = 80.0
+                        ) -> gf.Component:
+    interferometer = gf.Component()
 
+    sbend_large = gf.components.extend_ports(S_bend_vert(v_offset = sbend_large_size[1],
+                                                         h_extent = sbend_large_size[0]), length = 5.0).flatten()
+    
+    sbend_small = gf.components.extend_ports(S_bend_vert(v_offset = sbend_small_size[1],
+                                                         h_extent = sbend_small_size[0]),
+                                                         length = sbend_small_straight_extend)
+    
+    xs_modulator = gf.get_cross_section("xs_rwg1000", width = rib_core_width_modulator)
+
+    wg_taper = gf.components.taper_cross_section(cross_section1 = "xs_rwg1000",
+                                                 cross_section2 = xs_modulator,
+                                                 length = taper_length)
+    
+    wg_phase_modulation = gf.components.straight(length = modulation_length - 2*taper_length, cross_section = xs_modulator)
+        
+    @gf.cell
+    def branch_top():
+        bt = gf.Component()
+        sbend_1 = bt << sbend_large
+        sbend_2 = bt << sbend_small
+        taper_1 = bt << wg_taper
+        wg_pm = bt << wg_phase_modulation
+        taper_2 = bt << wg_taper
+        sbend_3 = bt << sbend_small
+
+        sbend_2.connect("o1", sbend_1.ports["o2"])
+        taper_1.connect("o1", sbend_2.ports["o2"])
+        wg_pm.connect("o1", taper_1.ports["o2"])
+        taper_2.mirror_x()
+        taper_2.connect("o2", wg_pm.ports["o2"])
+        sbend_3.mirror_x()
+        sbend_3.connect("o2", taper_2.ports["o1"])
+
+        bt.add_ports({"o1": sbend_1.ports["o1"],
+                      "o2": sbend_3.ports["o1"],
+                      "taper_start": taper_1.ports["o1"]})        
+
+        return bt.flatten()
+    
+    @gf.cell
+    def branch_tune_short(
+        straight_unbalance: float = 0.
+    ):
+        arm = gf.Component()
+        lbend = L_turn_bend()
+        straight_y = gf.components.straight(length = 20. + straight_unbalance, cross_section = "xs_rwg1000")
+        straight_x = gf.components.straight(length = bias_tuning_section_length, cross_section = "xs_rwg1000")
+        symbol_to_component = {
+            "b": (lbend, "o1", "o2"),
+            "L": (straight_y, "o1", "o2"),
+            "B": (lbend, "o2", "o1"),
+            "_": (straight_x, "o1", "o2"),
+        }
+        sequence = "bLB_!b!L"
+        arm = gf.components.component_sequence(sequence = sequence, symbol_to_component = symbol_to_component)
+        arm.auto_rename_ports()
+        return arm.flatten()
+    
+    @gf.cell
+    def branch_tune_long(straight_unbalance):
+        return partial(branch_tune_short, straight_unbalance = straight_unbalance)()
+    
+    splt = gf.get_component(splitter)
+
+    @gf.cell
+    def combiner_section():
+        comb_section = gf.Component()
+        lbend_combiner = L_turn_bend(radius = lbend_combiner_reff)        
+        lbend_top = comb_section << lbend_combiner
+        lbend_bottom = comb_section << lbend_combiner
+        lbend_bottom.mirror_y()
+        combiner = comb_section << splt        
+        lbend_top.connect("o1", combiner.ports["o2"])
+        lbend_bottom.connect("o1", combiner.ports["o3"])
+
+        comb_section = comb_section.flatten()
+        
+        comb_section.add_ports({"o2": lbend_top.ports["o2"],
+                                "o1": combiner.ports["o1"],
+                                "o3": lbend_bottom.ports["o2"]})
+
+        return comb_section    
+
+    splt_ref = interferometer << splt
+    bt = interferometer << branch_top()
+    bb = interferometer << branch_top()
+    bs = interferometer << branch_tune_short()
+    bl = interferometer << branch_tune_long(abs(0.5*length_imbalance))
+    cs = interferometer << combiner_section()
+    bb.mirror_y()
+    bt.connect("o1", splt_ref.ports["o2"])
+    bb.connect("o1", splt_ref.ports["o3"])
+    if length_imbalance >= 0:
+        bs.mirror_y()
+        bs.connect("o1", bb.ports["o2"])
+        bl.connect("o1", bt.ports["o2"])
+    else:
+        bs.connect("o1", bt.ports["o2"])
+        bl.mirror_y()
+        bl.connect("o1", bb.ports["o2"])
+    cs.mirror_x()
+    [cs.connect("o2", bl.ports["o2"]) if length_imbalance >= 0 else cs.connect("o2", bs.ports["o2"])]
+
+    interferometer.add_ports({"o1": splt_ref.ports["o1"],
+                              "upper_taper_start": bt.ports["taper_start"],
+                              "o2": cs.ports["o1"]})
+
+    return interferometer    
+
+@gf.cell()
+def mzm_unbalanced(
+    modulation_length: float = 7500.,
+    rf_pad_start_width: float = 80.,
+    rf_central_conductor_width: float = 10.,
+    rf_ground_planes_width: float = 150.,
+    rf_gap: float = 4.0,
+    rf_pad_length_straight: float = 10.,
+    rf_pad_length_tapered: float = 190.,
+    **kwargs) -> gf.Component:
+    """Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
+    The modulator works in a differential push-pull configuration driven by a single GSG line."""
+
+    mzm = gf.Component()
+
+    # Transmission line subcell
+
+    xs_cpw = gf.partial(uni_cpw,
+                        central_conductor_width = rf_central_conductor_width,
+                        ground_planes_width = rf_ground_planes_width,
+                        gap = rf_gap)
+
+    rf_line = mzm << uni_cpw_straight(bondpad = {"component": "CPW_pad_linear",
+                                                 "settings": {"start_width": rf_pad_start_width,
+                                                 "length_straight": rf_pad_length_straight,
+                                                 "length_tapered": rf_pad_length_tapered}}, 
+                                    length = modulation_length, cross_section = xs_cpw())
+    
+    rf_line.move(rf_line.ports["e1"], (0., 0.))
+    
+    # Interferometer subcell
+
+    if "splitter" not in kwargs.keys():
+        splitter = "mmi1x2_optimized1550"
+        kwargs["splitter"] = splitter
+
+    splitter = gf.get_component(splitter)
+    lbend = gf.get_component("L_turn_bend")
+
+    sbend_large_AR = 3.6
+    GS_separation = rf_pad_start_width*rf_gap/rf_central_conductor_width
+
+    sbend_large_v_offset = .5*rf_pad_start_width + .5*GS_separation -.5*splitter.settings['port_ratio']*splitter.settings['width_mmi']    
+    
+    sbend_small_straight_length= rf_pad_length_straight*0.5
+
+    lbend_combiner_reff = (.5*rf_pad_start_width + lbend.settings['radius'] + .5*GS_separation - 
+                           .5*splitter.settings['port_ratio']*splitter.settings['width_mmi'])
+    
+    interferometer = mzm << partial(_mzm_interferometer,
+                                    modulation_length = modulation_length,
+                                    sbend_large_size = (sbend_large_AR*sbend_large_v_offset, sbend_large_v_offset),
+                                    sbend_small_size = (rf_pad_length_straight + rf_pad_length_tapered - 2*sbend_small_straight_length, -0.5*(rf_pad_start_width - rf_central_conductor_width + GS_separation - rf_gap)),
+                                    sbend_small_straight_extend = sbend_small_straight_length,
+                                    lbend_combiner_reff = lbend_combiner_reff,
+                                    **kwargs,)()
+    
+    interferometer.move(interferometer.ports["upper_taper_start"], (0., 0.5*(rf_central_conductor_width + rf_gap)))
+        
+    return mzm
+    
 
 ##################
 # Chip floorplan
@@ -354,5 +541,13 @@ def chip_frame(
 
 if __name__ == "__main__":
 
-    pass
+    mzm = mzm_unbalanced(rf_pad_length_tapered = 300.)
+    mzm.show()
+    print(mzm.references[1].ports)
 
+    for component in mzm.get_dependencies(recursive=True):
+        if not component._locked:
+            print(
+                f"Component {component.name!r} was NOT properly locked. "
+                "You need to write it into a function that has the @cell decorator."
+            )
