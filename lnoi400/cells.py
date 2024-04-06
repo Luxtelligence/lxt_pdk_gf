@@ -5,6 +5,7 @@ import gdsfactory as gf
 from gdsfactory.typings import CrossSectionSpec, ComponentSpec
 
 from lnoi400.tech import LAYER, uni_cpw
+from lnoi400.spline import spline_clamped
 
 
 ################
@@ -118,6 +119,7 @@ def U_bend_racetrack(
 def S_bend_vert(
     v_offset: float = 25.,
     h_extent: float = 100.,
+    dx_straight: float = 5.,
     cross_section: CrossSectionSpec = "xs_rwg1000") -> gf.Component:
     """A spline bend that bridges a vertical displacement."""
 
@@ -127,12 +129,18 @@ def S_bend_vert(
     if np.abs(h_extent/v_offset) < 3.5 or h_extent < 90.0:
         raise ValueError(f"The bend would be too tight. Increase h_extent from its current value of {h_extent}.")
 
-    S_bend = gf.components.bend_s(
-        size = (h_extent, v_offset),
-        npoints = int(np.round(2.5*h_extent)),
-        cross_section = cross_section)
+    S_bend = gf.components.extend_ports(spline_clamped(size = (h_extent, v_offset),
+                                                             cross_section = cross_section,
+                                                             npoints = int(np.round(2.5*h_extent))),
+                                                             length = dx_straight)
+    
+    bend_cell = gf.Component()
+    bend_ref = bend_cell << S_bend
+    bend_ref.move(bend_ref.ports["o1"], (0., 0.))
+    bend_cell.add_ports({"o1": bend_ref.ports["o1"],
+                         "o2": bend_ref.ports["o2"]})
 
-    return S_bend
+    return bend_cell.flatten()
 
 ################
 # Edge couplers
@@ -309,12 +317,9 @@ def _mzm_interferometer(splitter: ComponentSpec = "mmi1x2_optimized1550",
                         ) -> gf.Component:
     interferometer = gf.Component()
 
-    sbend_large = gf.components.extend_ports(S_bend_vert(v_offset = sbend_large_size[1],
-                                                         h_extent = sbend_large_size[0]), length = 5.0).flatten()
+    sbend_large = S_bend_vert(v_offset = sbend_large_size[1],h_extent = sbend_large_size[0], dx_straight = 5.0)
     
-    sbend_small = gf.components.extend_ports(S_bend_vert(v_offset = sbend_small_size[1],
-                                                         h_extent = sbend_small_size[0]),
-                                                         length = sbend_small_straight_extend)
+    sbend_small = S_bend_vert(v_offset = sbend_small_size[1], h_extent = sbend_small_size[0], dx_straight = sbend_small_straight_extend)
     
     xs_modulator = gf.get_cross_section("xs_rwg1000", width = rib_core_width_modulator)
 
@@ -541,7 +546,7 @@ def chip_frame(
 
 if __name__ == "__main__":
 
-    mzm = mzm_unbalanced(rf_pad_length_tapered = 300.)
+    mzm = mzm_unbalanced(length_imbalance = 0.)
     mzm.show()
     print(mzm.references[1].ports)
 

@@ -168,4 +168,9 @@ cython_debug/
 # GDSII layouts
 
 *.gds
+*.oas
 lnoi/**/*.gds
+
+# Test with different PDK distributions
+
+test_pdk_releases.py
