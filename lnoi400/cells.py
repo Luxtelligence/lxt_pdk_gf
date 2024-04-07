@@ -313,6 +313,7 @@ def _mzm_interferometer(splitter: ComponentSpec = "mmi1x2_optimized1550",
                         sbend_large_size: tuple[float, float] = [200., 50.],
                         sbend_small_size: tuple[float, float] = [200., -45.],
                         sbend_small_straight_extend: float = 5.0,
+                        lbend_tune_arm_reff: float = 75.0,
                         lbend_combiner_reff: float = 80.0
                         ) -> gf.Component:
     interferometer = gf.Component()
@@ -358,7 +359,7 @@ def _mzm_interferometer(splitter: ComponentSpec = "mmi1x2_optimized1550",
         straight_unbalance: float = 0.
     ):
         arm = gf.Component()
-        lbend = L_turn_bend()
+        lbend = L_turn_bend(radius = lbend_tune_arm_reff)
         straight_y = gf.components.straight(length = 20. + straight_unbalance, cross_section = "xs_rwg1000")
         straight_x = gf.components.straight(length = bias_tuning_section_length, cross_section = "xs_rwg1000")
         symbol_to_component = {
@@ -369,7 +370,6 @@ def _mzm_interferometer(splitter: ComponentSpec = "mmi1x2_optimized1550",
         }
         sequence = "bLB_!b!L"
         arm = gf.components.component_sequence(sequence = sequence, symbol_to_component = symbol_to_component)
-        arm.auto_rename_ports()
         return arm.flatten()
     
     @gf.cell
@@ -421,11 +421,15 @@ def _mzm_interferometer(splitter: ComponentSpec = "mmi1x2_optimized1550",
                               "upper_taper_start": bt.ports["taper_start"],
                               "o2": cs.ports["o1"]})
 
+    print(bs.ports)
+    print(cs.ports)
+
     return interferometer    
 
 @gf.cell()
 def mzm_unbalanced(
     modulation_length: float = 7500.,
+    lbend_tune_arm_reff: float = 75.0,
     rf_pad_start_width: float = 80.,
     rf_central_conductor_width: float = 10.,
     rf_ground_planes_width: float = 150.,
@@ -460,7 +464,6 @@ def mzm_unbalanced(
         kwargs["splitter"] = splitter
 
     splitter = gf.get_component(splitter)
-    lbend = gf.get_component("L_turn_bend")
 
     sbend_large_AR = 3.6
     GS_separation = rf_pad_start_width*rf_gap/rf_central_conductor_width
@@ -469,7 +472,7 @@ def mzm_unbalanced(
     
     sbend_small_straight_length= rf_pad_length_straight*0.5
 
-    lbend_combiner_reff = (.5*rf_pad_start_width + lbend.settings['radius'] + .5*GS_separation - 
+    lbend_combiner_reff = (.5*rf_pad_start_width + lbend_tune_arm_reff + .5*GS_separation - 
                            .5*splitter.settings['port_ratio']*splitter.settings['width_mmi'])
     
     interferometer = mzm << partial(_mzm_interferometer,
@@ -477,6 +480,7 @@ def mzm_unbalanced(
                                     sbend_large_size = (sbend_large_AR*sbend_large_v_offset, sbend_large_v_offset),
                                     sbend_small_size = (rf_pad_length_straight + rf_pad_length_tapered - 2*sbend_small_straight_length, -0.5*(rf_pad_start_width - rf_central_conductor_width + GS_separation - rf_gap)),
                                     sbend_small_straight_extend = sbend_small_straight_length,
+                                    lbend_tune_arm_reff = lbend_tune_arm_reff,
                                     lbend_combiner_reff = lbend_combiner_reff,
                                     **kwargs,)()
     
@@ -546,9 +550,8 @@ def chip_frame(
 
 if __name__ == "__main__":
 
-    mzm = mzm_unbalanced(length_imbalance = 0.)
+    mzm = mzm_unbalanced()
     mzm.show()
-    print(mzm.references[1].ports)
 
     for component in mzm.get_dependencies(recursive=True):
         if not component._locked:
