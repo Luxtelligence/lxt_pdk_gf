@@ -1,4 +1,5 @@
 import numpy as np
+from scipy.interpolate import make_interp_spline
 import matplotlib.pyplot as plt
 import gdsfactory as gf
 from gdsfactory.typings import CrossSectionSpec, Coordinate
@@ -8,7 +9,7 @@ from gdsfactory.geometry.functions import curvature, path_length, snap_angle
 def spline_clamped_path(t: np.ndarray,
                         start: Coordinate = (0., 0.),
                         end: Coordinate = (120., 25.)):
-    """Return a spline path connecting a start point with an end point."""
+    """Returns a spline path with a null first derivative at the extrema."""
 
     xs = t
     ys = (t**2)*(3-2*t)
@@ -20,16 +21,31 @@ def spline_clamped_path(t: np.ndarray,
 
     return np.column_stack([xs, ys])
 
+def spline_null_curvature(t: np.ndarray,
+                          start: Coordinate = (0., 0.),
+                          end: Coordinate = (120., 25.)):
+    """Returns a spline path with zero first and second derivatives at the extrema."""
+
+    spline = make_interp_spline(x = (start[0], end[0]),
+                                y = (start[1], end[1]),
+                                k = 5,
+                                bc_type = ([(1, 0.), (2, 0.)], [(1, 0.), (2, 0.)]))
+    
+    xs = np.linspace(start[0], end[0], len(t))
+
+    return np.column_stack([xs, spline(xs)])
+
 @gf.cell()
-def spline_clamped(
+def bend_S_spline(
     size: tuple[float, float],
     cross_section: CrossSectionSpec = "xs_sc",
-    npoints: int = 201) ->  gf.Component:
-    """A spline bend clamped at the start and end points."""
+    npoints: int = 201,
+    path_method = spline_clamped_path) ->  gf.Component:
+    """A spline bend merging a vertical offset."""
 
     t = np.linspace(0, 1, npoints)
     xs = gf.get_cross_section(cross_section)
-    path_points = spline_clamped_path(t, start = (0., 0.), end = size)
+    path_points = path_method(t, start = (0., 0.), end = size)
     path = gf.Path(path_points)
 
     path.start_angle = snap_angle(path.start_angle)
@@ -57,20 +73,22 @@ if __name__ == "__main__":
 
     # Visualize differences between spline and bezier path
 
-    from gdsfactory.components.bezier import bezier_curve
-
     t = np.linspace(0, 1, 600)
-    bpath = bezier_curve(t, control_points = ((0., 0.), (25., 0.), (25., 50.), (50., 50.)))
 
-    spath = spline_clamped_path(t, end = (50., 50.))
+    apath = spline_null_curvature(t, end = (50., 50.))
+    bpath = spline_clamped_path(t, end = (50., 50.))
+    ka = curvature(apath, t)
     kb = curvature(bpath, t)
-    ks = curvature(spath, t)
     
     plt.figure()
-    plt.plot(bpath[:, 0], bpath[:, 1])
-    plt.plot(spath[:, 0], spath[:, 1])
+    # plt.plot(apath[:, 0], apath[:, 1])
+    # plt.plot(bpath[:, 0], bpath[:, 1])
     
-    # plt.plot(t[1:-1], kb)
-    # plt.plot(t[1:-1], ks)
+    plt.plot(t[1:-1], ka)
+    plt.plot(t[1:-1], kb)
     plt.show()
-
+    
+    # bend = bend_S_spline(size = (100., 30.),
+    #                      path_method = spline_clamped_path)
+    # bend.show()
+    # print(bend.info)

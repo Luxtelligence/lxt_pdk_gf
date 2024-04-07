@@ -5,7 +5,7 @@ import gdsfactory as gf
 from gdsfactory.typings import CrossSectionSpec, ComponentSpec
 
 from lnoi400.tech import LAYER, uni_cpw
-from lnoi400.spline import spline_clamped
+from lnoi400.spline import bend_S_spline
 
 
 ################
@@ -129,7 +129,7 @@ def S_bend_vert(
     if np.abs(h_extent/v_offset) < 3.5 or h_extent < 90.0:
         raise ValueError(f"The bend would be too tight. Increase h_extent from its current value of {h_extent}.")
 
-    S_bend = gf.components.extend_ports(spline_clamped(size = (h_extent, v_offset),
+    S_bend = gf.components.extend_ports(bend_S_spline(size = (h_extent, v_offset),
                                                              cross_section = cross_section,
                                                              npoints = int(np.round(2.5*h_extent))),
                                                              length = dx_straight)
