@@ -35,7 +35,7 @@ def spline_null_curvature(t: np.ndarray,
 
     return np.column_stack([xs, spline(xs)])
 
-@gf.cell()
+@gf.cell
 def bend_S_spline(
     size: tuple[float, float],
     cross_section: CrossSectionSpec = "xs_sc",

@@ -1,0 +1,10 @@
+function: chip_frame
+info: {}
+module: lnoi400.cells
+name: chip_frame
+settings:
+  center: null
+  exclusion_zone_width: 50
+  size:
+  - 10000
+  - 5000

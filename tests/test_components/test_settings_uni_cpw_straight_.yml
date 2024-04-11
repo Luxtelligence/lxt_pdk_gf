@@ -1,0 +1,8 @@
+function: uni_cpw_straight
+info: {}
+module: lnoi400.cells
+name: uni_cpw_straight
+settings:
+  bondpad: CPW_pad_linear
+  cross_section: xs_uni_cpw
+  length: 3000.0

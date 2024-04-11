@@ -1,0 +1,9 @@
+function: S_bend_vert
+info: {}
+module: lnoi400.cells
+name: S_bend_vert
+settings:
+  cross_section: xs_rwg1000
+  dx_straight: 5.0
+  h_extent: 100.0
+  v_offset: 25.0

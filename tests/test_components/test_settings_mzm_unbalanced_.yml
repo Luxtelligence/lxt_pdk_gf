@@ -1,0 +1,13 @@
+function: mzm_unbalanced
+info: {}
+module: lnoi400.cells
+name: mzm_unbalanced
+settings:
+  lbend_tune_arm_reff: 75.0
+  modulation_length: 7500.0
+  rf_central_conductor_width: 10.0
+  rf_gap: 4.0
+  rf_ground_planes_width: 150.0
+  rf_pad_length_straight: 10.0
+  rf_pad_length_tapered: 190.0
+  rf_pad_start_width: 80.0

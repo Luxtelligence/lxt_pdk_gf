@@ -1,0 +1,74 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+      - id: name-tests-test
+        args: ["--pytest-test-first"]
+      - id: trailing-whitespace
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: "v0.2.2"
+    hooks:
+      - id: ruff
+        args: [ --fix, --exit-non-zero-on-fix ]
+      - id: ruff-format
+
+  - repo: https://github.com/shellcheck-py/shellcheck-py
+    rev: 953faa6870f6663ac0121ab4a800f1ce76bca31f
+    hooks:
+      - id: shellcheck
+        
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: "v1.0.1"
+    hooks:
+      - id: mypy
+        exclude: ^(docs/|example-plugin/|tests/fixtures)
+        additional_dependencies:
+          - "pydantic"
+           
+  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+    rev: v2.12.0
+    hooks:
+      - id: pretty-format-toml
+        args: [--autofix]
+
+
+  - repo: https://github.com/aristanetworks/j2lint.git
+    rev: 742a25ef5da996b9762f167ebae9bc8223e8382e
+    hooks:
+      - id: j2lint
+        types: [file]
+        files: \.(j2|yml|yaml)$
+        args: [--extensions, "j2,yml,yaml", --ignore, jinja-statements-delimiter, jinja-statements-indentation, --]
+        exclude: .github/.*
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.2.6
+    hooks:
+      - id: codespell
+        additional_dependencies:
+          - tomli
+            
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1
+    hooks:
+      - id: nbstripout
+        files: ".ipynb"
+  # - repo: https://github.com/pre-commit/pygrep-hooks
+  #   rev: 7b4409161486c6956bb3206ce96db5d56731b1b9 # Use the ref you want to point at
+  #   hooks:
+  #     - id: python-use-type-annotations
+  # - repo: https://github.com/PyCQA/bandit
+  #   rev: fe1361fdcc274850d4099885a802f2c9f28aca08
+  #   hooks:
+  #     - id: bandit
+  #       args: [--exit-zero]
+  #       # ignore all tests, not just tests data
+  #       exclude: ^tests/
