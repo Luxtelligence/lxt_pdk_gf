@@ -168,7 +168,6 @@ cython_debug/
 
 # GDSII layouts
 
-*.gds
 *.oas
 lnoi/**/*.gds
 
