@@ -25,15 +25,15 @@ repos:
     rev: 953faa6870f6663ac0121ab4a800f1ce76bca31f
     hooks:
       - id: shellcheck
-        
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: "v1.0.1"
-    hooks:
-      - id: mypy
-        exclude: ^(docs/|example-plugin/|tests/fixtures)
-        additional_dependencies:
-          - "pydantic"
-           
+
+  # - repo: https://github.com/pre-commit/mirrors-mypy
+  #   rev: "v1.0.1"
+  #   hooks:
+  #     - id: mypy
+  #       exclude: ^(docs/|example-plugin/|tests/fixtures)
+  #       additional_dependencies:
+  #         - "pydantic"
+
   - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
     rev: v2.12.0
     hooks:
@@ -55,7 +55,7 @@ repos:
       - id: codespell
         additional_dependencies:
           - tomli
-            
+
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:

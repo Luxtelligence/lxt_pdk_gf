@@ -6,7 +6,6 @@ from lnoi400 import cells, config, tech
 from lnoi400.config import PATH
 from lnoi400.tech import LAYER, LAYER_STACK, LAYER_VIEWS
 
-
 # _models = get_models()
 _cells = get_cells(cells)
 _cross_sections = get_cross_sections(tech)
@@ -37,4 +36,5 @@ __version__ = "0.1.0"
 
 if __name__ == "__main__":
     from cells import _mmi1x2 as mmi
+
     print(mmi)

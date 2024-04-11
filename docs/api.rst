@@ -5,4 +5,3 @@ Config
 ---------------------
 
 .. automodule:: lnoi400.config
-
