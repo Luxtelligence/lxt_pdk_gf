@@ -41,8 +41,8 @@ def spline_null_curvature(
 
 @gf.cell
 def bend_S_spline(
-    size: tuple[float, float],
-    cross_section: CrossSectionSpec = "xs_sc",
+    size: tuple[float, float] = (100.0, 30.0),
+    cross_section: CrossSectionSpec = "xs_rwg1000",
     npoints: int = 201,
     path_method=spline_clamped_path,
 ) -> gf.Component:
@@ -95,5 +95,6 @@ if __name__ == "__main__":
 
     # bend = bend_S_spline(size = (100., 30.),
     #                      path_method = spline_clamped_path)
-    # bend.show()
+    c = bend_S_spline()
+    c.show()
     # print(bend.info)

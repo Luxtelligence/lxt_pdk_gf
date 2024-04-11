@@ -1,0 +1,16 @@
+function: bend_S_spline
+info:
+  end_angle: 0
+  length: 105.208
+  min_bend_radius: 56.123
+  start_angle: 0
+module: lnoi400.spline
+name: bend_S_spline
+settings:
+  cross_section: xs_rwg1000
+  npoints: 201
+  path_method:
+    function: spline_clamped_path
+  size:
+  - 100.0
+  - 30.0
