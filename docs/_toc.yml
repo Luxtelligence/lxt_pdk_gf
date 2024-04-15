@@ -11,5 +11,5 @@ parts:
   #         - file: notebooks/demo
   - caption: Reference
     chapters:
-      - file: api
+      - file: cells
       - file: changelog
