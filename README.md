@@ -1,6 +1,8 @@
 # lnoi400 0.0.1
 
-luxtelligence lnoi400 pdk
+![Luxtelligence](LXT_Logo.png)
+
+[Luxtelligence](https://luxtelligence.ai/) lnoi400 Process Design Kit (PDK). The Luxtelligence Process Design Kit (PDK) contains a library of components that facilitate the design of photonic integrated circuits for Luxtelligence's Lithium Niobate on Insulator (LNOI) foundry service. The PDK contains both electrical and optical building blocks, that make use of Lithium Niobate's electro-optic effect and attractive optical properties. PDK building blocks consist both of a geometrical layout, defining the starting point for the microfabrication of the integrated circuit, and a circuit model, that approximates the real frequency-domain behaviour of the optical component.
 
 ## Installation
 
