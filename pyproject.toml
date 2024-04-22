@@ -1,0 +1,113 @@
+# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+
+[build-system]
+build-backend = "flit_core.buildapi"
+requires = ["flit_core >=3.2,<4"]
+
+[project]
+authors = [
+  {name = "Luxtelligence", email = "contact@gdsfactory.com"}
+]
+classifiers = [
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Operating System :: OS Independent"
+]
+dependencies = [
+  "gdsfactory==7.23.0"
+]
+description = "luxtelligence lnoi400 pdk"
+keywords = ["python"]
+license = {file = "LICENSE"}
+name = "lnoi400"
+readme = "README.md"
+requires-python = ">=3.10"
+version = "0.0.1"
+
+[project.optional-dependencies]
+dev = [
+  "pre-commit",
+  "pytest",
+  "pytest-cov",
+  "pytest_regressions"
+]
+docs = [
+  "jupytext",
+  "matplotlib",
+  "jupyter-book==1.0.0"
+]
+
+[tool.codespell]
+ignore-words-list = "te, te/tm, te, ba, fpr, fpr_spacing, ro, nd, donot, schem"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+
+[tool.pylsp-mypy]
+enabled = true
+live_mode = true
+strict = true
+
+[tool.pytest.ini_options]
+# addopts = --tb=no
+addopts = '--tb=short'
+norecursedirs = ["extra/*.py"]
+python_files = ["lnoi400/*.py", "notebooks/*.ipynb", "tests/*.py"]
+testpaths = ["lnoi400/", "tests"]
+
+[tool.ruff]
+fix = true
+ignore = [
+  "E501",  # line too long, handled by black
+  "B008",  # do not perform function calls in argument defaults
+  "C901",  # too complex
+  "B905",  # `zip()` without an explicit `strict=` parameter
+  "C408"  # C408 Unnecessary `dict` call (rewrite as a literal)
+]
+select = [
+  "E",  # pycodestyle errors
+  "W",  # pycodestyle warnings
+  "F",  # pyflakes
+  "I",  # isort
+  "C",  # flake8-comprehensions
+  "B",  # flake8-bugbear
+  "UP"
+]
+
+[tool.ruff.pydocstyle]
+convention = "google"
+
+[tool.setuptools.package-data]
+mypkg = ["*.csv", "*.yaml"]
+
+[tool.setuptools.packages]
+find = {}
+
+[tool.tbump]
+
+[[tool.tbump.file]]
+src = "README.md"
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+
+[[tool.tbump.file]]
+src = "lnoi400/__init__.py"
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "v{new_version}"
+
+[tool.tbump.version]
+current = "0.0.1"
+# Example of a semver regexp.
+# Make sure this matches current_version before
+# using tbump
+regex = '''
+  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  '''

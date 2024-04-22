@@ -1,0 +1,11 @@
+function: mmi1x2_optimized1550
+info: {}
+module: lnoi400.cells
+name: mmi1x2_optimized1550
+settings:
+  cross_section: xs_rwg1000
+  length_mmi: 26.75
+  length_taper: 25.0
+  port_ratio: 0.55
+  width_mmi: 6.0
+  width_taper: 1.5

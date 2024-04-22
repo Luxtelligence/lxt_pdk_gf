@@ -1,51 +1,56 @@
-import numpy as np
-from scipy.interpolate import make_interp_spline
-import matplotlib.pyplot as plt
 import gdsfactory as gf
-from gdsfactory.typings import CrossSectionSpec, Coordinate
+import matplotlib.pyplot as plt
+import numpy as np
 from gdsfactory.geometry.functions import curvature, path_length, snap_angle
+from gdsfactory.typings import Coordinate, CrossSectionSpec
+from scipy.interpolate import make_interp_spline
 
 
-def spline_clamped_path(t: np.ndarray,
-                        start: Coordinate = (0., 0.),
-                        end: Coordinate = (120., 25.)):
+def spline_clamped_path(
+    t: np.ndarray, start: Coordinate = (0.0, 0.0), end: Coordinate = (120.0, 25.0)
+):
     """Returns a spline path with a null first derivative at the extrema."""
 
     xs = t
-    ys = (t**2)*(3-2*t)
+    ys = (t**2) * (3 - 2 * t)
 
     # Rescale to the start and end coordinates
 
-    xs = start[0] + (end[0] - start[0])*xs
-    ys = start[1] + (end[1] - start[1])*ys
+    xs = start[0] + (end[0] - start[0]) * xs
+    ys = start[1] + (end[1] - start[1]) * ys
 
     return np.column_stack([xs, ys])
 
-def spline_null_curvature(t: np.ndarray,
-                          start: Coordinate = (0., 0.),
-                          end: Coordinate = (120., 25.)):
+
+def spline_null_curvature(
+    t: np.ndarray, start: Coordinate = (0.0, 0.0), end: Coordinate = (120.0, 25.0)
+):
     """Returns a spline path with zero first and second derivatives at the extrema."""
 
-    spline = make_interp_spline(x = (start[0], end[0]),
-                                y = (start[1], end[1]),
-                                k = 5,
-                                bc_type = ([(1, 0.), (2, 0.)], [(1, 0.), (2, 0.)]))
-    
+    spline = make_interp_spline(
+        x=(start[0], end[0]),
+        y=(start[1], end[1]),
+        k=5,
+        bc_type=([(1, 0.0), (2, 0.0)], [(1, 0.0), (2, 0.0)]),
+    )
+
     xs = np.linspace(start[0], end[0], len(t))
 
     return np.column_stack([xs, spline(xs)])
 
-@gf.cell()
+
+@gf.cell
 def bend_S_spline(
-    size: tuple[float, float],
-    cross_section: CrossSectionSpec = "xs_sc",
+    size: tuple[float, float] = (100.0, 30.0),
+    cross_section: CrossSectionSpec = "xs_rwg1000",
     npoints: int = 201,
-    path_method = spline_clamped_path) ->  gf.Component:
+    path_method=spline_clamped_path,
+) -> gf.Component:
     """A spline bend merging a vertical offset."""
 
     t = np.linspace(0, 1, npoints)
     xs = gf.get_cross_section(cross_section)
-    path_points = path_method(t, start = (0., 0.), end = size)
+    path_points = path_method(t, start=(0.0, 0.0), end=size)
     path = gf.Path(path_points)
 
     path.start_angle = snap_angle(path.start_angle)
@@ -69,26 +74,27 @@ def bend_S_spline(
     c.info["end_angle"] = path.end_angle
     return c
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     # Visualize differences between spline and bezier path
 
     t = np.linspace(0, 1, 600)
 
-    apath = spline_null_curvature(t, end = (50., 50.))
-    bpath = spline_clamped_path(t, end = (50., 50.))
+    apath = spline_null_curvature(t, end=(50.0, 50.0))
+    bpath = spline_clamped_path(t, end=(50.0, 50.0))
     ka = curvature(apath, t)
     kb = curvature(bpath, t)
-    
+
     plt.figure()
     # plt.plot(apath[:, 0], apath[:, 1])
     # plt.plot(bpath[:, 0], bpath[:, 1])
-    
+
     plt.plot(t[1:-1], ka)
     plt.plot(t[1:-1], kb)
     plt.show()
-    
+
     # bend = bend_S_spline(size = (100., 30.),
     #                      path_method = spline_clamped_path)
-    # bend.show()
+    c = bend_S_spline()
+    c.show()
     # print(bend.info)
