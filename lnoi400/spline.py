@@ -92,9 +92,3 @@ if __name__ == "__main__":
     plt.plot(t[1:-1], ka)
     plt.plot(t[1:-1], kb)
     plt.show()
-
-    # bend = bend_S_spline(size = (100., 30.),
-    #                      path_method = spline_clamped_path)
-    c = bend_S_spline()
-    c.show()
-    # print(bend.info)

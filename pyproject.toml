@@ -6,7 +6,7 @@ requires = ["flit_core >=3.2,<4"]
 
 [project]
 authors = [
-  {name = "Luxtelligence", email = "contact@gdsfactory.com"}
+  {name = "Luxtelligence", email = "foundry@luxtelligence.ai"}
 ]
 classifiers = [
   "Programming Language :: Python :: 3.10",
@@ -16,7 +16,7 @@ classifiers = [
 dependencies = [
   "gdsfactory==7.23.0"
 ]
-description = "luxtelligence lnoi400 pdk"
+description = "Luxtelligence lnoi400 pdk"
 keywords = ["python"]
 license = {file = "LICENSE"}
 name = "lnoi400"

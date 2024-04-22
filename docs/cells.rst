@@ -169,3 +169,4 @@ uni_cpw_straight
 
   c = lnoi400.cells.uni_cpw_straight(length=3000.0, cross_section='xs_uni_cpw', bondpad='CPW_pad_linear')
   c.plot()
+

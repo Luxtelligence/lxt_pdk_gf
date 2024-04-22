@@ -33,8 +33,3 @@ __all__ = [
     "tech",
 ]
 __version__ = "0.1.0"
-
-if __name__ == "__main__":
-    from cells import _mmi1x2 as mmi
-
-    print(mmi)
