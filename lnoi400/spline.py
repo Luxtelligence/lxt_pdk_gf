@@ -2,8 +2,6 @@ import gdsfactory as gf
 import matplotlib.pyplot as plt
 import numpy as np
 from gdsfactory.typings import Coordinate, CrossSectionSpec
-from scipy.interpolate import make_interp_spline
-
 
 def spline_clamped_path(
     t: np.ndarray, start: Coordinate = (0.0, 0.0), end: Coordinate = (120.0, 25.0)
@@ -29,14 +27,11 @@ def spline_null_curvature(
 ):
     """Returns a spline path with zero first and second derivatives at the extrema."""
 
-    spline = make_interp_spline(
-        x=(start[0], end[0]),
-        y=(start[1], end[1]),
-        k=5,
-        bc_type=([(1, 0.0), (2, 0.0)], [(1, 0.0), (2, 0.0)]),
-    )
+    xs = t
+    ys = (t**3) * (6*t**2 - 15.0 * t + 10.0)
 
-    xs = np.linspace(start[0], end[0], len(t))
+    xs = start[0] + (end[0] - start[0]) * xs
+    ys = start[1] + (end[1] - start[1]) * ys
 
     path = gf.Path(np.column_stack([xs, spline(xs)]))
     path.start_angle = path.end_angle = 0.0

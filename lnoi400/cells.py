@@ -546,7 +546,7 @@ def mzm_unbalanced(
     lbend_tune_arm_reff: float = 75.0,
     rf_pad_start_width: float = 80.0,
     rf_central_conductor_width: float = 10.0,
-    rf_ground_planes_width: float = 150.0,
+    rf_ground_planes_width: float = 180.0,
     rf_gap: float = 4.0,
     rf_pad_length_straight: float = 10.0,
     rf_pad_length_tapered: float = 190.0,
