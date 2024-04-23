@@ -66,6 +66,56 @@ straight_swg250 = partial(_straight, cross_section="xs_swg250")
 # Bends
 ################
 
+def _2port_poly_model(
+        *,
+        wl: Float,
+        data_tag: str,
+        trans_abs_key: str = "",
+        trans_phase_key: str = "",
+        refl_abs_key: str = "",
+        refl_phase_key: str = "",
+) -> sax.SDict:
+    
+    s_par = {}
+    for key in ["trans_abs_key", "trans_phase_key", "refl_abs_key", "refl_phase_key"]:
+        locs = locals()
+        if locs[key]:
+            s_par[key] = poly_eval_from_json(wl, data_tag, locs[key])
+        else:
+            s_par[key] = np.zeros_like(wl)
+    
+    trans = s_par["trans_abs_key"]*jnp.exp(1j*s_par["trans_phase_key"])
+    refl = s_par["refl_abs_key"]*jnp.exp(1j*s_par["refl_phase_key"])
+
+    return sax.reciprocal(
+        {
+            ("o2", "o1"): trans,
+            ("o1", "o1"): refl,
+            ("o2", "o2"): refl,
+        }
+    )
+
+U_bend_racetrack = partial(_2port_poly_model, 
+                           data_tag="UBendRacetrack",
+                           trans_abs_key="pol_trans_abs",
+                           trans_phase_key="pol_trans_phase",
+                           )
+
+
+################
+# Edge couplers
+################
+
+
+double_linear_inverse_taper = partial(_2port_poly_model,
+                                      data_tag="edge_coupler_double_linear_taper",
+                                      trans_abs_key="pol_trans_abs",
+                                      trans_phase_key="pol_trans_phase",
+                                      refl_abs_key="pol_refl_abs",
+                                      refl_phase_key="pol_refl_phase"
+                                      )
+
+
 ################
 # MMIs
 ################
@@ -120,21 +170,11 @@ def get_models() -> dict[str, Callable[..., sax.SDict]]:
     return models
 
 if __name__ == "__main__":
-    
-    # import lnoi400.tech
-
-    # wl = jnp.linspace(1.5, 1.6, 1000)
-    # model = straight_swg250
-    # S = model(wl = wl, length = 2e3)
-
-    # plt.figure()
-    # plt.plot(wl, abs(S["o1", "o2"])**2)
-    # plt.show()
 
     wavelengths = np.linspace(1.4, 1.7, 1000)
-    model = poly_eval_from_json(wavelengths, "edge_coupler_double_linear_taper", "pol_trans_abs")
+    model = double_linear_inverse_taper(wl = wavelengths)
 
     plt.figure(tight_layout = True)
-    plt.plot(wavelengths, model)
+    plt.plot(wavelengths, 20*np.log10(np.abs(model["o1", "o2"])))
     plt.show()
 
