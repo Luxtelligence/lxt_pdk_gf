@@ -1,0 +1,32 @@
+{
+	"doc": "FDTD simulation results of double-layer linear-linear edge coupler. Parameters of a polynomial fit around the center wavelength. The transmission and reflection are calculated with respect to the fundamental mode amplitude at the taper start.",
+	"center_wavelength": 1.55,
+	"pol_trans_abs": [
+		-4.942469081113438,
+		-1.1842306217518026,
+		-0.17897835665607192,
+		0.07729299897695552,
+		0.9812198939816317
+	],
+	"pol_trans_phase": [
+		667.647835700407,
+		-1004.3084128839065,
+		1451.7976939382295,
+		113.69375168521131,
+		-16.856582027159668
+	],
+	"pol_refl_abs": [
+		-0.3929244913129529,
+		-0.02954138169696813,
+		-0.0010202460489620237,
+		-0.0007075034975085314,
+		0.009769294212456201
+	],
+	"pol_refl_phase": [
+		-78202.35268415872,
+		-18229.854445217974,
+		219.3439106056484,
+		924.6478980535389,
+		107.9938160561272
+	]
+}

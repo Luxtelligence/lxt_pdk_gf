@@ -1,0 +1,18 @@
+{
+	"doc": "FDTD simulation results of an Euler U-bend with d = 90.0. Parameters of a polynomial fit around the center wavelength.",
+	"center_wavelength": 1.55,
+	"pol_trans_abs": [
+		0.20293380908146152,
+		0.044257488576826404,
+		-0.03142418048071505,
+		-0.008804432384094858,
+		0.9993005019936548
+	],
+	"pol_trans_phase": [
+		410.9488768318485,
+		-560.8693164741372,
+		838.8503144233531,
+		870.0080469460073,
+		110.48703606742491
+	]
+}

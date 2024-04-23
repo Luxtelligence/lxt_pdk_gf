@@ -25,7 +25,7 @@ def _straight(
 def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
     """Straight single-mode waveguide."""
     if "cross_section" not in kwargs:
-        kwargs["cross_section"] = "xs_sc1000"
+        kwargs["cross_section"] = "xs_rwg1000"
     return _straight(
         length=length,
         **kwargs,
