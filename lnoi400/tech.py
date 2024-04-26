@@ -12,8 +12,10 @@ nm = 1e-3
 ridge_thickness = 200 * nm
 slab_thickness = 200 * nm
 box_thickness = 4700 * nm
+thickness_clad = 2000 * nm
 tl_separation = 1000 * nm
 tl_thickness = 900 * nm
+substrate_thickness = 10_000 * nm
 
 
 class LayerMapLNOI400(LayerMap):
@@ -23,6 +25,7 @@ class LayerMapLNOI400(LayerMap):
     LABELS: Layer = (4, 0)
     TL: Layer = (21, 0)
     HT: Layer = (21, 1)
+    WAFER: Layer = (99999, 0)
 
     # AUX
 
@@ -52,6 +55,19 @@ def get_layer_stack() -> LayerStack:
 
     lstack = LayerStack(
         layers=dict(
+            substrate=LayerLevel(
+                layer=LAYER.WAFER,
+                thickness=substrate_thickness,
+                zmin=-substrate_thickness - box_thickness,
+                material="si",
+                orientation="100",
+            ),
+            box=LayerLevel(
+                layer=LAYER.WAFER,
+                thickness=box_thickness,
+                zmin=-box_thickness,
+                material="sio2",
+            ),
             slab=LayerLevel(
                 layer=LAYER.LN_RIB, thickness=slab_thickness, zmin=0.0, material="ln"
             ),
@@ -62,6 +78,12 @@ def get_layer_stack() -> LayerStack:
                 sidewall_angle=15.0,
                 width_to_z=1,
                 material="ln",
+            ),
+            clad=LayerLevel(
+                layer=LAYER.WAFER,
+                zmin=0.0,
+                material="sio2",
+                thickness=thickness_clad,
             ),
             tl=LayerLevel(
                 layer=LAYER.TL,
