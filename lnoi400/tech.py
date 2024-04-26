@@ -61,15 +61,21 @@ def get_layer_stack() -> LayerStack:
                 zmin=-substrate_thickness - box_thickness,
                 material="si",
                 orientation="100",
+                mesh_order=101,
             ),
             box=LayerLevel(
                 layer=LAYER.WAFER,
                 thickness=box_thickness,
                 zmin=-box_thickness,
                 material="sio2",
+                mesh_order=100,
             ),
             slab=LayerLevel(
-                layer=LAYER.LN_RIB, thickness=slab_thickness, zmin=0.0, material="ln"
+                layer=LAYER.LN_RIB, 
+                thickness=slab_thickness, 
+                zmin=0.0, 
+                material="ln",
+                mesh_order=1,
             ),
             ridge=LayerLevel(
                 layer=LAYER.LN_STRIP,
@@ -78,24 +84,28 @@ def get_layer_stack() -> LayerStack:
                 sidewall_angle=15.0,
                 width_to_z=1,
                 material="ln",
+                mesh_order=2,
             ),
             clad=LayerLevel(
                 layer=LAYER.WAFER,
                 zmin=0.0,
                 material="sio2",
                 thickness=thickness_clad,
+                mesh_order=99,
             ),
             tl=LayerLevel(
                 layer=LAYER.TL,
                 thickness=tl_thickness,
                 zmin=zmin_electrodes,
                 material="tl_metal",
+                mesh_order=6,
             ),
             ht=LayerLevel(
                 layer=LAYER.TL,
                 thickness=tl_thickness,
                 zmin=zmin_electrodes,
                 material="tl_metal",
+                mesh_order=7,
             ),
         )
     )
