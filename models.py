@@ -96,7 +96,7 @@ def _2port_poly_model(
     )
 
 U_bend_racetrack = partial(_2port_poly_model, 
-                           data_tag="UBendRacetrack",
+                           data_tag="ubend_racetrack",
                            trans_abs_key="pol_trans_abs",
                            trans_phase_key="pol_trans_phase",
                            )
@@ -128,6 +128,7 @@ def get_json_data(
         data_tag: str,
 ) -> dict:
     """Load data from a json structure."""
+
     path = Path(lnoi400.__file__).parent / "data" / f"{data_tag}.json"
     with open(path, "r") as f:
         data_dict = json.load(f)
@@ -139,6 +140,7 @@ def poly_eval_from_json(
         key: str,
 ) -> np.ndarray:
     """Evaluate a polynomial model for frequency-dependent response stored in json format."""
+    
     cell_data = get_json_data(data_tag)
     if "center_wavelength" in cell_data.keys():
         wl0 = cell_data["center_wavelength"]
@@ -172,7 +174,7 @@ def get_models() -> dict[str, Callable[..., sax.SDict]]:
 if __name__ == "__main__":
 
     wavelengths = np.linspace(1.4, 1.7, 1000)
-    model = double_linear_inverse_taper(wl = wavelengths)
+    model = U_bend_racetrack(wl = wavelengths)
 
     plt.figure(tight_layout = True)
     plt.plot(wavelengths, 20*np.log10(np.abs(model["o1", "o2"])))
