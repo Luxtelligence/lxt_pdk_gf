@@ -71,9 +71,9 @@ def get_layer_stack() -> LayerStack:
                 mesh_order=100,
             ),
             slab=LayerLevel(
-                layer=LAYER.LN_RIB, 
-                thickness=slab_thickness, 
-                zmin=0.0, 
+                layer=LAYER.LN_RIB,
+                thickness=slab_thickness,
+                zmin=0.0,
                 material="ln",
                 mesh_order=1,
             ),
