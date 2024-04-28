@@ -33,8 +33,8 @@ if __name__ == "__main__":
     klayout_folder = "KLayout" if sys.platform == "win32" else ".klayout"
     cwd = pathlib.Path(__file__).resolve().parent
     home = pathlib.Path.home()
-    src = cwd / "lnsoi400" / "klayout"
+    src = cwd / "lnoi400" / "klayout"
     dest_folder = home / klayout_folder / "tech"
     dest_folder.mkdir(exist_ok=True, parents=True)
-    dest = dest_folder / "cspdk"
+    dest = dest_folder / "lnoi400"
     make_link(src=src, dest=dest)
