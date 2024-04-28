@@ -19,13 +19,8 @@ build:
 	pip install build
 	python -m build
 
-jupytext:
-	jupytext docs/**/*.ipynb --to py
-
-notebooks:
-	jupytext docs/**/*.py --to ipynb
-
 docs:
+	python .github/write_cells_docs.py
 	jb build docs
 
 .PHONY: drc doc docs
