@@ -80,15 +80,33 @@ if __name__ == "__main__":
 
     t = np.linspace(0, 1, 600)
 
-    apath = spline_null_curvature(t, end=(50.0, 50.0))
-    bpath = spline_clamped_path(t, end=(50.0, 50.0))
+    apath = spline_null_curvature(t, end=(50.0, 15.0))
+    bpath = spline_clamped_path(t, end=(50.0, 15.0))
     ka = curvature(apath, t)
     kb = curvature(bpath, t)
 
-    plt.figure()
-    # plt.plot(apath[:, 0], apath[:, 1])
-    # plt.plot(bpath[:, 0], bpath[:, 1])
+    plot_args_a = {
+        "linewidth": 2.1,
+        "label": "Zero curvature",
+    }
 
-    plt.plot(t[1:-1], ka)
-    plt.plot(t[1:-1], kb)
+    plot_args_b = {
+        "linewidth": plot_args_a["linewidth"],
+        "label": "Zero derivative",
+    }
+
+    fig, axs = plt.subplots(1, 2, figsize=(9, 3.5), tight_layout=True)
+    axs[0].plot(apath[:, 0], apath[:, 1], **plot_args_a)
+    axs[0].plot(bpath[:, 0], bpath[:, 1], **plot_args_b)
+
+    axs[0].set_xlabel("x (um)")
+    axs[0].set_ylabel("y (um)")
+
+    axs[1].plot(t[1:-1], ka, **plot_args_a)
+    axs[1].plot(t[1:-1], kb, **plot_args_b)
+
+    axs[1].set_xlabel("x (um)")
+    axs[1].set_ylabel("Curvature (arb.)")
+
+    [axs[k].legend(loc="best") for k in range(2)]
     plt.show()
