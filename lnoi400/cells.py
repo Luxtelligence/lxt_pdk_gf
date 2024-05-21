@@ -177,6 +177,7 @@ def double_linear_inverse_taper(
     lower_taper_end_width: float = 2.05,
     upper_taper_start_width: float = 0.25,
     upper_taper_length: float = 240.0,
+    input_ext: float = 0.0,
 ) -> gf.Component:
     """Inverse taper with two layers, starting from a wire waveguide at the facet and transitioning to a rib waveguide. The tapering profile is linear in both layers."""
 
@@ -213,16 +214,27 @@ def double_linear_inverse_taper(
         linear=True,
     )
 
+    if input_ext:
+        straight_ext = gf.components.straight(
+            cross_section=cross_section_start,
+            length=input_ext,
+        )
+
     # Place the two tapers on the different layers
 
     double_taper = gf.Component()
+    if input_ext:
+        sref = double_taper << straight_ext
+        sref.movex(-input_ext)
     ltref = double_taper << taper_lower
     utref = double_taper << taper_upper
     utref.movex(lower_taper_length)
 
     # Define the input and output optical ports
 
-    double_taper.add_port(port=ltref.ports["o1"])
+    double_taper.add_port(
+        port=sref.ports["o1"]
+    ) if input_ext else double_taper.add_port(port=ltref.ports["o1"])
     double_taper.add_port(port=utref.ports["o2"])
 
     return double_taper.flatten()
