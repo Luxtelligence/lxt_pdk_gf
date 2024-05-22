@@ -356,7 +356,7 @@ def uni_cpw_straight(
 ###############
 
 
-@gf.cell()
+@gf.cell
 def _mzm_interferometer(
     splitter: ComponentSpec = "mmi1x2_optimized1550",
     taper_length: float = 100.0,
@@ -392,7 +392,6 @@ def _mzm_interferometer(
         length=modulation_length - 2 * taper_length, cross_section=xs_modulator
     )
 
-    @gf.cell
     def branch_top():
         bt = gf.Component()
         sbend_1 = bt << sbend_large
@@ -420,7 +419,6 @@ def _mzm_interferometer(
 
         return bt.flatten()
 
-    @gf.cell
     def branch_tune_short(straight_unbalance: float = 0.0):
         arm = gf.Component()
         lbend = L_turn_bend(radius=lbend_tune_arm_reff)
@@ -442,13 +440,11 @@ def _mzm_interferometer(
         )
         return arm.flatten()
 
-    @gf.cell
     def branch_tune_long(straight_unbalance):
         return partial(branch_tune_short, straight_unbalance=straight_unbalance)()
 
     splt = gf.get_component(splitter)
 
-    @gf.cell
     def combiner_section():
         comb_section = gf.Component()
         lbend_combiner = L_turn_bend(radius=lbend_combiner_reff)
@@ -503,13 +499,10 @@ def _mzm_interferometer(
         }
     )
 
-    print(bs.ports)
-    print(cs.ports)
-
-    return interferometer
+    return interferometer.flatten()
 
 
-@gf.cell()
+@gf.cell
 def mzm_unbalanced(
     modulation_length: float = 7500.0,
     lbend_tune_arm_reff: float = 75.0,
@@ -609,6 +602,17 @@ def mzm_unbalanced(
         (0.0, 0.5 * (rf_central_conductor_width + rf_gap)),
     )
 
+    # Expose the ports
+
+    mzm.add_ports(
+        {
+            "o1": interferometer.ports["o1"],
+            "o2": interferometer.ports["o2"],
+            "e1": rf_line.ports["e1"],
+            "e2": rf_line.ports["e2"],
+        }
+    )
+
     return mzm
 
 
@@ -678,10 +682,3 @@ def chip_frame(
 if __name__ == "__main__":
     mzm = mzm_unbalanced()
     mzm.show()
-
-    for component in mzm.get_dependencies(recursive=True):
-        if not component._locked:
-            print(
-                f"Component {component.name!r} was NOT properly locked. "
-                "You need to write it into a function that has the @cell decorator."
-            )
