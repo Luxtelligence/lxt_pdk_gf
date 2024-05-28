@@ -4,7 +4,7 @@ import gdsfactory as gf
 import numpy as np
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
-from lnoi400.spline import bend_S_spline
+from lnoi400.spline import bend_S_spline, spline_null_curvature
 from lnoi400.tech import LAYER, uni_cpw
 
 ################
@@ -152,6 +152,7 @@ def S_bend_vert(
             size=(h_extent, v_offset),
             cross_section=cross_section,
             npoints=int(np.round(2.5 * h_extent)),
+            path_method=spline_null_curvature,
         ),
         length=dx_straight,
     )
@@ -177,9 +178,11 @@ def double_linear_inverse_taper(
     lower_taper_end_width: float = 2.05,
     upper_taper_start_width: float = 0.25,
     upper_taper_length: float = 240.0,
+    slab_removal_width: float = 20.0,
     input_ext: float = 0.0,
 ) -> gf.Component:
-    """Inverse taper with two layers, starting from a wire waveguide at the facet and transitioning to a rib waveguide. The tapering profile is linear in both layers."""
+    """Inverse taper with two layers, starting from a wire waveguide at the facet
+    and transitioning to a rib waveguide. The tapering profile is linear in both layers."""
 
     lower_taper_start_width = gf.get_cross_section(cross_section_start).width
     upper_taper_end_width = gf.get_cross_section(cross_section_end).width
@@ -236,6 +239,23 @@ def double_linear_inverse_taper(
         port=sref.ports["o1"]
     ) if input_ext else double_taper.add_port(port=ltref.ports["o1"])
     double_taper.add_port(port=utref.ports["o2"])
+
+    # Place the tone inversion box for the slab etch
+
+    if slab_removal_width:
+        bn = gf.components.rectangle(
+            size=(
+                double_taper.ports["o2"].center[0] - double_taper.ports["o1"].center[0],
+                slab_removal_width,
+            ),
+            centered=True,
+            layer=LAYER.RIB_NEGATIVE,
+        )
+        bnref = double_taper << bn
+        bnref.movex(
+            origin=bnref.xmin,
+            destination=-input_ext,
+        )
 
     return double_taper.flatten()
 
