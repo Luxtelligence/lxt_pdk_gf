@@ -4,7 +4,7 @@ import gdsfactory as gf
 import numpy as np
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
-from lnoi400.spline import bend_S_spline, spline_null_curvature
+from lnoi400.spline import bend_S_spline, spline_clamped_path
 from lnoi400.tech import LAYER, uni_cpw
 
 ################
@@ -152,7 +152,7 @@ def S_bend_vert(
             size=(h_extent, v_offset),
             cross_section=cross_section,
             npoints=int(np.round(2.5 * h_extent)),
-            path_method=spline_null_curvature,
+            path_method=spline_clamped_path,
         ),
         length=dx_straight,
     )

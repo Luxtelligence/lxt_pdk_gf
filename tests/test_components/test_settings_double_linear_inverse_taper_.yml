@@ -9,3 +9,5 @@ settings:
   lower_taper_length: 120.0
   upper_taper_length: 240.0
   upper_taper_start_width: 0.25
+  slab_removal_width: 20.0
+  input_ext: 0.0
