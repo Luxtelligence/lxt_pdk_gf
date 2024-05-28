@@ -38,7 +38,4 @@ def test_assert_ports_on_grid(component_name: str) -> None:
 
 
 if __name__ == "__main__":
-    import gdsfactory as gf
-
-    double_taper = gf.get_component("double_linear_inverse_taper")
-    difftest(double_taper, None)
+    pass
