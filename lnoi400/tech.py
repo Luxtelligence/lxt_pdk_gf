@@ -127,7 +127,6 @@ xf_rwg1000 = partial(
     width=1.0,
     sections=(gf.Section(width=10.0, layer="LN_RIB", name="slab", simplify=30 * nm),),
     radius=75.0,
-    radius_min=60.0,
 )
 
 xf_rwg2500 = partial(

@@ -1,6 +1,6 @@
 name-template: 'v$RESOLVED_VERSION'
 tag-template: 'v$RESOLVED_VERSION'
-change-template: '- $TITLE'
+change-template: '- $TITLE [#$NUMBER](https://github.com/Luxtelligence/lxt_pdk_gf/pull/$NUMBER)'
 template: |
   # What's Changed
 
