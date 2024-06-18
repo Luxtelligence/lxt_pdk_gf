@@ -76,7 +76,6 @@ def L_turn_bend(
     radius: float = 80.0,
     p: float = 1.0,
     with_arc_floorplan: bool = True,
-    direction: str = "ccw",
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
@@ -94,7 +93,6 @@ def L_turn_bend(
         p=p,
         with_arc_floorplan=with_arc_floorplan,
         npoints=npoints,
-        direction=direction,
         cross_section=cross_section,
         **kwargs,
     )
@@ -108,7 +106,6 @@ def U_bend_racetrack(
     v_offset: float = 90.0,
     p: float = 1.0,
     with_arc_floorplan: bool = True,
-    direction: str = "ccw",
     cross_section: CrossSectionSpec = "xs_rwg3000",
     **kwargs,
 ) -> gf.Component:
@@ -125,7 +122,6 @@ def U_bend_racetrack(
         p=p,
         with_arc_floorplan=with_arc_floorplan,
         npoints=npoints,
-        direction=direction,
         cross_section=cross_section,
         **kwargs,
     )
@@ -158,14 +154,16 @@ def S_bend_vert(
             path_method=spline_clamped_path,
         ),
         length=dx_straight,
+        cross_section=cross_section,
     )
 
     bend_cell = gf.Component()
     bend_ref = bend_cell << S_bend
     bend_ref.dmove(bend_ref.ports["o1"], (0.0, 0.0))
     bend_cell.add_ports({"o1": bend_ref.ports["o1"], "o2": bend_ref.ports["o2"]})
+    bend_cell.flatten()
 
-    return bend_cell.flatten()
+    return bend_cell
 
 
 ################
@@ -260,8 +258,9 @@ def double_linear_inverse_taper(
             origin=bnref.dxmin,
             destination=-input_ext,
         )
+    double_taper.flatten()
 
-    return double_taper.flatten()
+    return double_taper
 
 
 ###################
@@ -372,10 +371,17 @@ def uni_cpw_straight(
     bp2.connect("e2", tl.ports["e2"])
 
     cpw.add_ports(tl.ports)
-    # cpw.add_ports({"bp1": bp1.ports["e1"], "bp2": bp2.ports["e1"]})
-    cpw.add_ports([bp1.ports["e1"], bp2.ports["e1"]], prefix="cpw")
+    cpw.add_port(
+        name="bp1",
+        port=bp1.ports["e1"],
+    )
+    cpw.add_port(
+        name="bp2",
+        port=bp2.ports["e1"],
+    )
+    cpw.flatten()
 
-    return cpw.flatten()
+    return cpw
 
 
 ###############
@@ -443,8 +449,9 @@ def _mzm_interferometer(
                 "taper_start": taper_1.ports["o1"],
             }
         )
+        bt.flatten()
 
-        return bt.flatten()
+        return bt
 
     def branch_tune_short(straight_unbalance: float = 0.0):
         arm = gf.Component()
@@ -465,7 +472,8 @@ def _mzm_interferometer(
         arm = gf.components.component_sequence(
             sequence=sequence, symbol_to_component=symbol_to_component
         )
-        return arm.flatten()
+        arm.flatten()
+        return arm
 
     def branch_tune_long(straight_unbalance):
         return partial(branch_tune_short, straight_unbalance=straight_unbalance)()
@@ -482,7 +490,7 @@ def _mzm_interferometer(
         lbend_top.connect("o1", combiner.ports["o2"])
         lbend_bottom.connect("o1", combiner.ports["o3"])
 
-        comb_section = comb_section.flatten()
+        comb_section.flatten()
 
         comb_section.add_ports(
             {
@@ -525,8 +533,9 @@ def _mzm_interferometer(
             "o2": cs.ports["o1"],
         }
     )
+    interferometer.flatten()
 
-    return interferometer.flatten()
+    return interferometer
 
 
 @gf.cell
@@ -685,27 +694,25 @@ def chip_frame(
     # Chip frame elements
 
     inner_box = gf.components.rectangle(
-        size=snapped_size,
+        size=tuple(snapped_size),
         layer=LAYER.CHIP_CONTOUR,
         centered=True,
     )
 
     outer_box = gf.components.rectangle(
-        size=[s + 2 * exclusion_zone_width for s in snapped_size],
+        size=tuple(s + 2 * exclusion_zone_width for s in snapped_size),
         layer=LAYER.CHIP_EXCLUSION_ZONE,
         centered=True,
     )
 
     c = gf.Component()
-    in_box = c << inner_box
-    out_box = c << outer_box
+    c << inner_box
+    c << outer_box
+    c.flatten()
 
-    in_box.dmove(destination=center)
-    out_box.dmove(destination=center)
-
-    return c.flatten()
+    return c
 
 
 if __name__ == "__main__":
-    c = L_turn_bend()
+    c = uni_cpw_straight()
     c.show()

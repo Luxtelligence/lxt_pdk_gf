@@ -103,25 +103,7 @@ def bend_S_spline(
     path_points = path_method(t, start=(0.0, 0.0), end=size)
     path = gf.Path(path_points)
 
-    # path.start_angle = snap_angle(path.start_angle)
-    # path.end_angle = snap_angle(path.end_angle)
-
-    c = gf.Component()
-    bend = path.extrude(xs)
-    bend_ref = c << bend
-    c.add_ports(bend_ref.ports)
-    c.absorb(bend_ref)
-    curv = curvature(path_points, t)
-    length = gf.snap.snap_to_grid(path_length(path_points))
-    if max(np.abs(curv)) == 0:
-        min_bend_radius = np.inf
-    else:
-        min_bend_radius = gf.snap.snap_to_grid(1 / max(np.abs(curv)))
-
-    c.info["length"] = float(length)
-    c.info["min_bend_radius"] = min_bend_radius
-    c.info["start_angle"] = path.start_angle
-    c.info["end_angle"] = path.end_angle
+    c = path.extrude(xs)
     return c
 
 
