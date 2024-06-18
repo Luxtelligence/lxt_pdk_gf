@@ -5,7 +5,7 @@ import numpy as np
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
 from lnoi400.spline import bend_S_spline, spline_clamped_path
-from lnoi400.tech import LAYER, uni_cpw
+from lnoi400.tech import LAYER, xs_uni_cpw
 
 ################
 # MMIs
@@ -549,7 +549,7 @@ def mzm_unbalanced(
     # Transmission line subcell
 
     xs_cpw = gf.partial(
-        uni_cpw,
+        xs_uni_cpw,
         central_conductor_width=rf_central_conductor_width,
         ground_planes_width=rf_ground_planes_width,
         gap=rf_gap,
@@ -707,5 +707,5 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    c = chip_frame()
+    c = L_turn_bend()
     c.show()

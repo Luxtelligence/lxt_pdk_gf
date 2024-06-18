@@ -3,8 +3,7 @@ from functools import partial
 
 import gdsfactory as gf
 from gdsfactory.cross_section import CrossSection, get_cross_sections
-from gdsfactory.technology import LayerMap, LayerViews, LogicalLayer
-from gdsfactory.typings import LayerLevel, LayerStack
+from gdsfactory.technology import LayerLevel, LayerMap, LayerStack, LogicalLayer
 
 from lnoi400.config import PATH
 
@@ -115,13 +114,13 @@ def get_layer_stack() -> LayerStack:
 
 
 LAYER_STACK = get_layer_stack()
-LAYER_VIEWS = LayerViews(filepath=PATH.lyp)
+LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp)
 
 ############################
-# Cross-sections functions
+# Cross-sections
 ############################
 
-xf_rwg1000 = partial(
+xs_rwg1000 = partial(
     gf.cross_section.strip,
     layer=LAYER.LN_STRIP,
     width=1.0,
@@ -131,14 +130,14 @@ xf_rwg1000 = partial(
             layer="LN_RIB",
             name="slab",
             # simplify=30 * nm,
-        )
+        ),
     ),
     radius=75.0,
     radius_min=60.0,
 )
 
-xf_rwg2500 = partial(
-    xf_rwg1000,
+xs_rwg2500 = partial(
+    xs_rwg1000,
     width=2.5,
     sections=(
         gf.Section(
@@ -146,12 +145,12 @@ xf_rwg2500 = partial(
             layer="LN_RIB",
             name="slab",
             # simplify=30 * nm,
-        )
+        ),
     ),
 )
 
-xf_rwg3000 = partial(
-    xf_rwg1000,
+xs_rwg3000 = partial(
+    xs_rwg1000,
     width=3.0,
     sections=(
         gf.Section(
@@ -159,19 +158,19 @@ xf_rwg3000 = partial(
             layer="LN_RIB",
             name="slab",
             simplify=50 * nm,
-        )
+        ),
     ),
 )
 
-xf_swg250 = partial(
+xs_swg250 = partial(
     gf.cross_section.strip,
     width=0.25,
-    layer=LAYER.LN_RIB,
+    layer="LN_RIB",
     # simplify=30 * nm,
 )
 
 
-def uni_cpw(
+def xs_uni_cpw(
     central_conductor_width: float = 15.0,
     ground_planes_width: float = 250.0,
     gap: float = 5.0,
@@ -183,7 +182,7 @@ def uni_cpw(
     g1 = gf.Section(
         width=ground_planes_width,
         offset=-offset,
-        layer="TL",
+        layer=LAYER.TL,
         # simplify=50 * nm,
         name="ground_bottom",
     )
@@ -191,7 +190,7 @@ def uni_cpw(
     g2 = gf.Section(
         width=ground_planes_width,
         offset=offset,
-        layer="TL",
+        layer=LAYER.TL,
         # simplify=50 * nm,
         name="ground_top",
     )
@@ -199,7 +198,7 @@ def uni_cpw(
     s = gf.Section(
         width=central_conductor_width,
         offset=0.0,
-        layer="TL",
+        layer=LAYER.TL,
         # simplify=50 * nm,
         name="signal",
     )
@@ -207,7 +206,7 @@ def uni_cpw(
     xs_cpw = gf.cross_section.cross_section(
         width=central_conductor_width,
         offset=0.0,
-        layer="TL",
+        layer=LAYER.TL,
         sections=(g1, s, g2),
         port_names=gf.cross_section.port_names_electrical,
         port_types=gf.cross_section.port_types_electrical,
@@ -216,31 +215,8 @@ def uni_cpw(
     return xs_cpw
 
 
-############################
-# Cross-sections
-############################
-
-xs_rwg1000 = xf_rwg1000
-xs_rwg2500 = xf_rwg2500
-xs_rwg3000 = xf_rwg3000
-xs_swg250 = xf_swg250
-
-xs_uni_cpw = uni_cpw
-
 cross_sections = get_cross_sections(sys.modules[__name__])
 
 if __name__ == "__main__":
-    from gdsfactory.technology.klayout_tech import KLayoutTechnology
-
-    LAYER_VIEWS.to_yaml(PATH.lyp_yaml)
-    t = KLayoutTechnology(
-        name="LNOI400",
-        layer_map=dict(LAYER),
-        layer_views=LAYER_VIEWS,
-        layer_stack=LAYER_STACK,
-    )
-    t.write_tech(tech_dir=PATH.tech_dir)
-
-    path = gf.path.straight(length=1000.0)
-    c = path.extrude(xs_uni_cpw)
+    c = gf.components.straight(cross_section="xs_rwg1000")
     c.show()
