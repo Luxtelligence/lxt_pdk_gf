@@ -159,8 +159,9 @@ def S_bend_vert(
 
     bend_cell = gf.Component()
     bend_ref = bend_cell << S_bend
-    bend_ref.dmove(bend_ref.ports["o1"], (0.0, 0.0))
-    bend_cell.add_ports({"o1": bend_ref.ports["o1"], "o2": bend_ref.ports["o2"]})
+    bend_ref.dmove(bend_ref.ports["o1"].dcenter, (0.0, 0.0))
+    bend_cell.add_port(name="o1", port=bend_ref.ports["o1"])
+    bend_cell.add_port(name="o2", port=bend_ref.ports["o2"])
     bend_cell.flatten()
 
     return bend_cell
@@ -397,8 +398,8 @@ def _mzm_interferometer(
     modulation_length: float = 7500.0,
     length_imbalance: float = 100.0,
     bias_tuning_section_length: float = 750.0,
-    sbend_large_size: tuple[float, float] = [200.0, 50.0],
-    sbend_small_size: tuple[float, float] = [200.0, -45.0],
+    sbend_large_size: tuple[float, float] = (200.0, 50.0),
+    sbend_small_size: tuple[float, float] = (200.0, -45.0),
     sbend_small_straight_extend: float = 5.0,
     lbend_tune_arm_reff: float = 75.0,
     lbend_combiner_reff: float = 80.0,
@@ -437,18 +438,17 @@ def _mzm_interferometer(
         sbend_2.connect("o1", sbend_1.ports["o2"])
         taper_1.connect("o1", sbend_2.ports["o2"])
         wg_pm.connect("o1", taper_1.ports["o2"])
-        taper_2.mirror_x()
+        taper_2.dmirror_x()
         taper_2.connect("o2", wg_pm.ports["o2"])
-        sbend_3.mirror_x()
-        sbend_3.connect("o2", taper_2.ports["o1"])
+        # sbend_3.dmirror_x()
+        sbend_3.connect("o1", taper_2.ports["o1"])
 
-        bt.add_ports(
-            {
-                "o1": sbend_1.ports["o1"],
-                "o2": sbend_3.ports["o1"],
-                "taper_start": taper_1.ports["o1"],
-            }
-        )
+        for name, port in [
+            ("o1", sbend_1.ports["o1"]),
+            ("o2", sbend_3.ports["o2"]),
+            ("taper_start", taper_1.ports["o1"]),
+        ]:
+            bt.add_port(name=name, port=port)
         bt.flatten()
 
         return bt
@@ -485,20 +485,21 @@ def _mzm_interferometer(
         lbend_combiner = L_turn_bend(radius=lbend_combiner_reff)
         lbend_top = comb_section << lbend_combiner
         lbend_bottom = comb_section << lbend_combiner
-        lbend_bottom.mirror_y()
+        lbend_bottom.dmirror_y()
         combiner = comb_section << splt
         lbend_top.connect("o1", combiner.ports["o2"])
         lbend_bottom.connect("o1", combiner.ports["o3"])
 
-        comb_section.flatten()
+        # comb_section.flatten()
 
-        comb_section.add_ports(
-            {
-                "o2": lbend_top.ports["o2"],
-                "o1": combiner.ports["o1"],
-                "o3": lbend_bottom.ports["o2"],
-            }
-        )
+        exposed_ports = [
+            ("o2", lbend_top.ports["o2"]),
+            ("o1", combiner.ports["o1"]),
+            ("o3", lbend_bottom.ports["o2"]),
+        ]
+
+        for name, port in exposed_ports:
+            comb_section.add_port(name=name, port=port)
 
         return comb_section
 
@@ -508,31 +509,32 @@ def _mzm_interferometer(
     bs = interferometer << branch_tune_short()
     bl = interferometer << branch_tune_long(abs(0.5 * length_imbalance))
     cs = interferometer << combiner_section()
-    bb.mirror_y()
+    bb.dmirror_y()
     bt.connect("o1", splt_ref.ports["o2"])
     bb.connect("o1", splt_ref.ports["o3"])
     if length_imbalance >= 0:
-        bs.mirror_y()
+        # bs.dmirror_y()
         bs.connect("o1", bb.ports["o2"])
         bl.connect("o1", bt.ports["o2"])
     else:
         bs.connect("o1", bt.ports["o2"])
-        bl.mirror_y()
+        # bl.dmirror_y()
         bl.connect("o1", bb.ports["o2"])
-    cs.mirror_x()
+    cs.dmirror_x()
     [
         cs.connect("o2", bl.ports["o2"])
         if length_imbalance >= 0
         else cs.connect("o2", bs.ports["o2"])
     ]
 
-    interferometer.add_ports(
-        {
-            "o1": splt_ref.ports["o1"],
-            "upper_taper_start": bt.ports["taper_start"],
-            "o2": cs.ports["o1"],
-        }
-    )
+    exposed_ports = [
+        ("o1", splt_ref.ports["o1"]),
+        ("upper_taper_start", bt.ports["taper_start"]),
+        ("o2", cs.ports["o1"]),
+    ]
+
+    for name, port in exposed_ports:
+        interferometer.add_port(name=name, port=port)
     interferometer.flatten()
 
     return interferometer
@@ -577,7 +579,7 @@ def mzm_unbalanced(
         cross_section=xs_cpw(),
     )
 
-    rf_line.dmove(rf_line.ports["e1"], (0.0, 0.0))
+    rf_line.dmove(rf_line.ports["e1"].dcenter, (0.0, 0.0))
 
     # Interferometer subcell
 
@@ -634,20 +636,20 @@ def mzm_unbalanced(
     )
 
     interferometer.dmove(
-        interferometer.ports["upper_taper_start"],
+        interferometer.ports["upper_taper_start"].dcenter,
         (0.0, 0.5 * (rf_central_conductor_width + rf_gap)),
     )
 
     # Expose the ports
 
-    mzm.add_ports(
-        {
-            "o1": interferometer.ports["o1"],
-            "o2": interferometer.ports["o2"],
-            "e1": rf_line.ports["e1"],
-            "e2": rf_line.ports["e2"],
-        }
-    )
+    exposed_ports = [
+        ("o1", interferometer.ports["o1"]),
+        ("o2", interferometer.ports["o2"]),
+        ("e1", rf_line.ports["e1"]),
+        ("e2", rf_line.ports["e2"]),
+    ]
+
+    [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
 
     return mzm
 
@@ -714,5 +716,6 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    c = uni_cpw_straight()
+    c = mzm_unbalanced(length_imbalance=-100.0)
+    print(c.ports)
     c.show()
