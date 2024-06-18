@@ -80,7 +80,10 @@ def L_turn_bend(
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
-    """A 90-degrees bend following an Euler path, with linearly-varying curvature (increasing and decreasing)."""
+    """
+    A 90-degrees bend following an Euler path, with linearly-varying curvature
+    (increasing and decreasing).
+    """
 
     npoints = int(np.round(200 * radius / 80.0))
     angle = 90.0
@@ -159,7 +162,7 @@ def S_bend_vert(
 
     bend_cell = gf.Component()
     bend_ref = bend_cell << S_bend
-    bend_ref.move(bend_ref.ports["o1"], (0.0, 0.0))
+    bend_ref.dmove(bend_ref.ports["o1"], (0.0, 0.0))
     bend_cell.add_ports({"o1": bend_ref.ports["o1"], "o2": bend_ref.ports["o2"]})
 
     return bend_cell.flatten()
@@ -228,10 +231,10 @@ def double_linear_inverse_taper(
     double_taper = gf.Component()
     if input_ext:
         sref = double_taper << straight_ext
-        sref.movex(-input_ext)
+        sref.dmovex(-input_ext)
     ltref = double_taper << taper_lower
     utref = double_taper << taper_upper
-    utref.movex(lower_taper_length)
+    utref.dmovex(lower_taper_length)
 
     # Define the input and output optical ports
 
@@ -245,15 +248,16 @@ def double_linear_inverse_taper(
     if slab_removal_width:
         bn = gf.components.rectangle(
             size=(
-                double_taper.ports["o2"].center[0] - double_taper.ports["o1"].center[0],
+                double_taper.ports["o2"].dcenter[0]
+                - double_taper.ports["o1"].dcenter[0],
                 slab_removal_width,
             ),
             centered=True,
             layer=LAYER.RIB_NEGATIVE,
         )
         bnref = double_taper << bn
-        bnref.movex(
-            origin=bnref.xmin,
+        bnref.dmovex(
+            origin=bnref.dxmin,
             destination=-input_ext,
         )
 
@@ -273,7 +277,7 @@ def CPW_pad_linear(
     cross_section: CrossSectionSpec = "xs_uni_cpw",
 ) -> gf.Component:
     """RF access line for high-frequency GSG probes. The probe pad maintains a
-    fixed gap/center conductor ratio across its length, to achieve a good
+    fixed gap/central conductor ratio across its length, to achieve a good
     impedance matching"""
 
     xs_cpw = gf.get_cross_section(cross_section)
@@ -314,10 +318,11 @@ def CPW_pad_linear(
         (0.0, end_width / 2.0 + end_gap + ground_planes_width),
     ]
 
+    bottom_ground_shape = gf.Path(ground_plane_shape).dmirror((0, 0), (1, 0))
+
     pad.add_polygon(central_conductor_shape, layer="TL")
     pad.add_polygon(ground_plane_shape, layer="TL")
-    G_bot = pad.add_polygon(ground_plane_shape, layer="TL")
-    G_bot.mirror((0, 0), (1, 0))
+    pad.add_polygon(bottom_ground_shape.points, layer="TL")
 
     # Ports definition
 
@@ -325,6 +330,7 @@ def CPW_pad_linear(
         name="e1",
         center=(length_straight, 0.0),
         width=start_width,
+        orientation=180.0,
         port_type="electrical",
         layer="TL",
     )
@@ -362,11 +368,12 @@ def uni_cpw_straight(
     bp2 = cpw << bp
 
     bp1.connect("e2", tl.ports["e1"])
-    bp2.mirror()
+    bp2.dmirror()
     bp2.connect("e2", tl.ports["e2"])
 
     cpw.add_ports(tl.ports)
-    cpw.add_ports({"bp1": bp1.ports["e1"], "bp2": bp2.ports["e1"]})
+    # cpw.add_ports({"bp1": bp1.ports["e1"], "bp2": bp2.ports["e1"]})
+    cpw.add_ports([bp1.ports["e1"], bp2.ports["e1"]], prefix="cpw")
 
     return cpw.flatten()
 
@@ -561,7 +568,7 @@ def mzm_unbalanced(
         cross_section=xs_cpw(),
     )
 
-    rf_line.move(rf_line.ports["e1"], (0.0, 0.0))
+    rf_line.dmove(rf_line.ports["e1"], (0.0, 0.0))
 
     # Interferometer subcell
 
@@ -617,7 +624,7 @@ def mzm_unbalanced(
         )()
     )
 
-    interferometer.move(
+    interferometer.dmove(
         interferometer.ports["upper_taper_start"],
         (0.0, 0.5 * (rf_central_conductor_width + rf_gap)),
     )
@@ -693,12 +700,12 @@ def chip_frame(
     in_box = c << inner_box
     out_box = c << outer_box
 
-    in_box.move(destination=center)
-    out_box.move(destination=center)
+    in_box.dmove(destination=center)
+    out_box.dmove(destination=center)
 
     return c.flatten()
 
 
 if __name__ == "__main__":
-    mzm = mzm_unbalanced()
-    mzm.show()
+    c = chip_frame()
+    c.show()
