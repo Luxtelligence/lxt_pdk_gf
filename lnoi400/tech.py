@@ -129,7 +129,7 @@ xs_rwg1000 = partial(
             width=10.0,
             layer="LN_RIB",
             name="slab",
-            # simplify=30 * nm,
+            simplify=30 * nm,
         ),
     ),
     radius=75.0,
@@ -143,7 +143,7 @@ xs_rwg2500 = partial(
             width=11.5,
             layer="LN_RIB",
             name="slab",
-            # simplify=30 * nm,
+            simplify=30 * nm,
         ),
     ),
 )
@@ -165,7 +165,6 @@ xs_swg250 = partial(
     gf.cross_section.strip,
     width=0.25,
     layer="LN_RIB",
-    # simplify=30 * nm,
 )
 
 
@@ -182,7 +181,7 @@ def xs_uni_cpw(
         width=ground_planes_width,
         offset=-offset,
         layer=LAYER.TL,
-        # simplify=50 * nm,
+        simplify=50 * nm,
         name="ground_bottom",
     )
 
@@ -190,7 +189,7 @@ def xs_uni_cpw(
         width=ground_planes_width,
         offset=offset,
         layer=LAYER.TL,
-        # simplify=50 * nm,
+        simplify=50 * nm,
         name="ground_top",
     )
 
@@ -198,7 +197,7 @@ def xs_uni_cpw(
         width=central_conductor_width,
         offset=0.0,
         layer=LAYER.TL,
-        # simplify=50 * nm,
+        simplify=50 * nm,
         name="signal",
     )
 
@@ -215,7 +214,3 @@ def xs_uni_cpw(
 
 
 cross_sections = get_cross_sections(sys.modules[__name__])
-
-if __name__ == "__main__":
-    c = gf.components.straight(cross_section="xs_rwg1000")
-    c.show()

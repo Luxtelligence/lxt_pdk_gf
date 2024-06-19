@@ -44,6 +44,9 @@ def test_alternative_implementation(
     name_mapping: tuple,
 ) -> None:
     """Test against the cells distributed with a different PDK implementation."""
+
+    # TODO: Implement difftest with layers selection.
+
     assert name_mapping[0] == name_mapping[1]
 
 
