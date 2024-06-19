@@ -11,12 +11,21 @@ cells = PDK.cells
 skip_test = {"import_gds"}
 
 component_names = set(cells.keys()) - set(skip_test)
-dirpath = pathlib.Path(__file__).absolute().with_suffix(".gds").parent / "gds_ref"
+dirpath = pathlib.Path(__file__).absolute().parent / "gds_ref"
 dirpath.mkdir(exist_ok=True, parents=True)
+
+pcell_mapping = [
+    ("cell", "cell"),
+]
 
 
 @pytest.fixture(params=component_names, scope="function")
 def component_name(request) -> str:
+    return request.param
+
+
+@pytest.fixture(params=pcell_mapping, scope="function")
+def name_mapping(request) -> str:
     return request.param
 
 
@@ -31,7 +40,17 @@ def test_gds(component_name: str) -> None:
     )
 
 
-def test_settings(component_name: str, data_regression: DataRegressionFixture) -> None:
+def test_alternative_implementation(
+    name_mapping: tuple,
+) -> None:
+    """Test against the cells distributed with a different PDK implementation."""
+    assert name_mapping[0] == name_mapping[1]
+
+
+def test_settings(
+    component_name: str,
+    data_regression: DataRegressionFixture,
+) -> None:
     """Avoid regressions when exporting settings."""
     component = cells[component_name]()
     data_regression.check(component.to_dict())
@@ -43,4 +62,4 @@ def test_settings(component_name: str, data_regression: DataRegressionFixture) -
 
 
 if __name__ == "__main__":
-    pass
+    print(component_names)
