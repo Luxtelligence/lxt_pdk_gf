@@ -716,6 +716,5 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    c = mzm_unbalanced(length_imbalance=-100.0)
-    print(c.ports)
+    c = mmi1x2_optimized1550()
     c.show()

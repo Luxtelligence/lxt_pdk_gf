@@ -133,7 +133,6 @@ xs_rwg1000 = partial(
         ),
     ),
     radius=75.0,
-    radius_min=60.0,
 )
 
 xs_rwg2500 = partial(

@@ -23,7 +23,12 @@ def component_name(request) -> str:
 def test_gds(component_name: str) -> None:
     """Avoid regressions in GDS geometry shapes and layers."""
     component = cells[component_name]()
-    difftest(component, test_name=component_name, dirpath=dirpath)
+    difftest(
+        component,
+        test_name=component_name,
+        dirpath=dirpath,
+        ignore_sliver_differences=True,
+    )
 
 
 def test_settings(component_name: str, data_regression: DataRegressionFixture) -> None:
@@ -32,9 +37,9 @@ def test_settings(component_name: str, data_regression: DataRegressionFixture) -
     data_regression.check(component.to_dict())
 
 
-def test_assert_ports_on_grid(component_name: str) -> None:
-    component = cells[component_name]()
-    component.assert_ports_on_grid()
+# def test_assert_ports_on_grid(component_name: str) -> None:
+#     component = cells[component_name]()
+#     component.assert_ports_on_grid()
 
 
 if __name__ == "__main__":

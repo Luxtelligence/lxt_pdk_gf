@@ -1,9 +1,7 @@
-function: CPW_pad_linear
 info: {}
-module: lnoi400.cells
-name: CPW_pad_linear
+name: CPW_pad_linear_SW80_LS1_712f70df
 settings:
   cross_section: xs_uni_cpw
-  length_straight: 10.0
-  length_tapered: 190.0
-  start_width: 80.0
+  length_straight: 10
+  length_tapered: 190
+  start_width: 80
