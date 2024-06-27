@@ -1,7 +1,6 @@
 import gdsfactory as gf
 import matplotlib.pyplot as plt
 import numpy as np
-from gdsfactory.geometry.functions import curvature, path_length, snap_angle
 from gdsfactory.typings import Coordinate, CrossSectionSpec
 from scipy.interpolate import make_interp_spline
 
@@ -19,7 +18,10 @@ def spline_clamped_path(
     xs = start[0] + (end[0] - start[0]) * xs
     ys = start[1] + (end[1] - start[1]) * ys
 
-    return np.column_stack([xs, ys])
+    path = gf.Path(np.column_stack([xs, ys]))
+    path.start_angle = path.end_angle = 0.0
+
+    return path
 
 
 def spline_null_curvature(
@@ -36,7 +38,10 @@ def spline_null_curvature(
 
     xs = np.linspace(start[0], end[0], len(t))
 
-    return np.column_stack([xs, spline(xs)])
+    path = gf.Path(np.column_stack([xs, spline(xs)]))
+    path.start_angle = path.end_angle = 0.0
+
+    return path
 
 
 @gf.cell
@@ -50,28 +55,10 @@ def bend_S_spline(
 
     t = np.linspace(0, 1, npoints)
     xs = gf.get_cross_section(cross_section)
-    path_points = path_method(t, start=(0.0, 0.0), end=size)
-    path = gf.Path(path_points)
+    path = path_method(t, start=(0.0, 0.0), end=size)
 
-    path.start_angle = snap_angle(path.start_angle)
-    path.end_angle = snap_angle(path.end_angle)
+    c = path.extrude(xs)
 
-    c = gf.Component()
-    bend = path.extrude(xs)
-    bend_ref = c << bend
-    c.add_ports(bend_ref.ports)
-    c.absorb(bend_ref)
-    curv = curvature(path_points, t)
-    length = gf.snap.snap_to_grid(path_length(path_points))
-    if max(np.abs(curv)) == 0:
-        min_bend_radius = np.inf
-    else:
-        min_bend_radius = gf.snap.snap_to_grid(1 / max(np.abs(curv)))
-
-    c.info["length"] = float(length)
-    c.info["min_bend_radius"] = min_bend_radius
-    c.info["start_angle"] = path.start_angle
-    c.info["end_angle"] = path.end_angle
     return c
 
 
@@ -82,8 +69,8 @@ if __name__ == "__main__":
 
     apath = spline_null_curvature(t, end=(50.0, 15.0))
     bpath = spline_clamped_path(t, end=(50.0, 15.0))
-    ka = curvature(apath, t)
-    kb = curvature(bpath, t)
+    _, ka = apath.curvature()
+    _, kb = bpath.curvature()
 
     plot_args_a = {
         "linewidth": 2.1,
@@ -95,15 +82,20 @@ if __name__ == "__main__":
         "label": "Zero derivative",
     }
 
+    ap = apath.points
+    bp = bpath.points
+    # ka = np.column_stack((ap[:-1, 0], curv_apath))
+    # kb = np.column_stack((bp[:-1, 0], curv_bpath))
+
     fig, axs = plt.subplots(1, 2, figsize=(9, 3.5), tight_layout=True)
-    axs[0].plot(apath[:, 0], apath[:, 1], **plot_args_a)
-    axs[0].plot(bpath[:, 0], bpath[:, 1], **plot_args_b)
+    axs[0].plot(ap[:, 0], ap[:, 1], **plot_args_a)
+    axs[0].plot(bp[:, 0], bp[:, 1], **plot_args_b)
 
     axs[0].set_xlabel("x (um)")
     axs[0].set_ylabel("y (um)")
 
-    axs[1].plot(t[1:-1], ka, **plot_args_a)
-    axs[1].plot(t[1:-1], kb, **plot_args_b)
+    axs[1].plot(t[0:-1], ka, **plot_args_a)
+    axs[1].plot(t[0:-1], kb, **plot_args_b)
 
     axs[1].set_xlabel("x (um)")
     axs[1].set_ylabel("Curvature (arb.)")

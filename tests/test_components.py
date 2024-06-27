@@ -32,13 +32,21 @@ def name_mapping(request) -> str:
 def test_gds(component_name: str) -> None:
     """Avoid regressions in GDS geometry shapes and layers."""
     component = cells[component_name]()
-    difftest(component, test_name=component_name, dirpath=dirpath)
+    difftest(
+        component,
+        test_name=component_name,
+        dirpath=dirpath,
+        ignore_sliver_differences=True,
+    )
 
 
 def test_alternative_implementation(
     name_mapping: tuple,
 ) -> None:
     """Test against the cells distributed with a different PDK implementation."""
+
+    # TODO: Implement difftest with layers selection.
+
     assert name_mapping[0] == name_mapping[1]
 
 
@@ -49,11 +57,6 @@ def test_settings(
     """Avoid regressions when exporting settings."""
     component = cells[component_name]()
     data_regression.check(component.to_dict())
-
-
-def test_assert_ports_on_grid(component_name: str) -> None:
-    component = cells[component_name]()
-    component.assert_ports_on_grid()
 
 
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ import numpy as np
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
 from lnoi400.spline import bend_S_spline, spline_clamped_path
-from lnoi400.tech import LAYER, uni_cpw
+from lnoi400.tech import LAYER, xs_uni_cpw
 
 ################
 # MMIs
@@ -76,11 +76,13 @@ def L_turn_bend(
     radius: float = 80.0,
     p: float = 1.0,
     with_arc_floorplan: bool = True,
-    direction: str = "ccw",
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
-    """A 90-degrees bend following an Euler path, with linearly-varying curvature (increasing and decreasing)."""
+    """
+    A 90-degrees bend following an Euler path, with linearly-varying curvature
+    (increasing and decreasing).
+    """
 
     npoints = int(np.round(200 * radius / 80.0))
     angle = 90.0
@@ -91,7 +93,6 @@ def L_turn_bend(
         p=p,
         with_arc_floorplan=with_arc_floorplan,
         npoints=npoints,
-        direction=direction,
         cross_section=cross_section,
         **kwargs,
     )
@@ -105,7 +106,6 @@ def U_bend_racetrack(
     v_offset: float = 90.0,
     p: float = 1.0,
     with_arc_floorplan: bool = True,
-    direction: str = "ccw",
     cross_section: CrossSectionSpec = "xs_rwg3000",
     **kwargs,
 ) -> gf.Component:
@@ -122,7 +122,6 @@ def U_bend_racetrack(
         p=p,
         with_arc_floorplan=with_arc_floorplan,
         npoints=npoints,
-        direction=direction,
         cross_section=cross_section,
         **kwargs,
     )
@@ -155,14 +154,17 @@ def S_bend_vert(
             path_method=spline_clamped_path,
         ),
         length=dx_straight,
+        cross_section=cross_section,
     )
 
     bend_cell = gf.Component()
     bend_ref = bend_cell << S_bend
-    bend_ref.move(bend_ref.ports["o1"], (0.0, 0.0))
-    bend_cell.add_ports({"o1": bend_ref.ports["o1"], "o2": bend_ref.ports["o2"]})
+    bend_ref.dmove(bend_ref.ports["o1"].dcenter, (0.0, 0.0))
+    bend_cell.add_port(name="o1", port=bend_ref.ports["o1"])
+    bend_cell.add_port(name="o2", port=bend_ref.ports["o2"])
+    bend_cell.flatten()
 
-    return bend_cell.flatten()
+    return bend_cell
 
 
 ################
@@ -228,10 +230,10 @@ def double_linear_inverse_taper(
     double_taper = gf.Component()
     if input_ext:
         sref = double_taper << straight_ext
-        sref.movex(-input_ext)
+        sref.dmovex(-input_ext)
     ltref = double_taper << taper_lower
     utref = double_taper << taper_upper
-    utref.movex(lower_taper_length)
+    utref.dmovex(lower_taper_length)
 
     # Define the input and output optical ports
 
@@ -245,19 +247,21 @@ def double_linear_inverse_taper(
     if slab_removal_width:
         bn = gf.components.rectangle(
             size=(
-                double_taper.ports["o2"].center[0] - double_taper.ports["o1"].center[0],
+                double_taper.ports["o2"].dcenter[0]
+                - double_taper.ports["o1"].dcenter[0],
                 slab_removal_width,
             ),
             centered=True,
             layer=LAYER.RIB_NEGATIVE,
         )
         bnref = double_taper << bn
-        bnref.movex(
-            origin=bnref.xmin,
+        bnref.dmovex(
+            origin=bnref.dxmin,
             destination=-input_ext,
         )
+    double_taper.flatten()
 
-    return double_taper.flatten()
+    return double_taper
 
 
 ###################
@@ -273,7 +277,7 @@ def CPW_pad_linear(
     cross_section: CrossSectionSpec = "xs_uni_cpw",
 ) -> gf.Component:
     """RF access line for high-frequency GSG probes. The probe pad maintains a
-    fixed gap/center conductor ratio across its length, to achieve a good
+    fixed gap/central conductor ratio across its length, to achieve a good
     impedance matching"""
 
     xs_cpw = gf.get_cross_section(cross_section)
@@ -314,10 +318,11 @@ def CPW_pad_linear(
         (0.0, end_width / 2.0 + end_gap + ground_planes_width),
     ]
 
+    bottom_ground_shape = gf.Path(ground_plane_shape).dmirror((0, 0), (1, 0))
+
     pad.add_polygon(central_conductor_shape, layer="TL")
     pad.add_polygon(ground_plane_shape, layer="TL")
-    G_bot = pad.add_polygon(ground_plane_shape, layer="TL")
-    G_bot.mirror((0, 0), (1, 0))
+    pad.add_polygon(bottom_ground_shape.points, layer="TL")
 
     # Ports definition
 
@@ -325,6 +330,7 @@ def CPW_pad_linear(
         name="e1",
         center=(length_straight, 0.0),
         width=start_width,
+        orientation=180.0,
         port_type="electrical",
         layer="TL",
     )
@@ -362,13 +368,21 @@ def uni_cpw_straight(
     bp2 = cpw << bp
 
     bp1.connect("e2", tl.ports["e1"])
-    bp2.mirror()
+    bp2.dmirror()
     bp2.connect("e2", tl.ports["e2"])
 
     cpw.add_ports(tl.ports)
-    cpw.add_ports({"bp1": bp1.ports["e1"], "bp2": bp2.ports["e1"]})
+    cpw.add_port(
+        name="bp1",
+        port=bp1.ports["e1"],
+    )
+    cpw.add_port(
+        name="bp2",
+        port=bp2.ports["e1"],
+    )
+    cpw.flatten()
 
-    return cpw.flatten()
+    return cpw
 
 
 ###############
@@ -384,8 +398,8 @@ def _mzm_interferometer(
     modulation_length: float = 7500.0,
     length_imbalance: float = 100.0,
     bias_tuning_section_length: float = 750.0,
-    sbend_large_size: tuple[float, float] = [200.0, 50.0],
-    sbend_small_size: tuple[float, float] = [200.0, -45.0],
+    sbend_large_size: tuple[float, float] = (200.0, 50.0),
+    sbend_small_size: tuple[float, float] = (200.0, -45.0),
     sbend_small_straight_extend: float = 5.0,
     lbend_tune_arm_reff: float = 75.0,
     lbend_combiner_reff: float = 80.0,
@@ -424,20 +438,20 @@ def _mzm_interferometer(
         sbend_2.connect("o1", sbend_1.ports["o2"])
         taper_1.connect("o1", sbend_2.ports["o2"])
         wg_pm.connect("o1", taper_1.ports["o2"])
-        taper_2.mirror_x()
+        taper_2.dmirror_x()
         taper_2.connect("o2", wg_pm.ports["o2"])
-        sbend_3.mirror_x()
-        sbend_3.connect("o2", taper_2.ports["o1"])
+        # sbend_3.dmirror_x()
+        sbend_3.connect("o1", taper_2.ports["o1"])
 
-        bt.add_ports(
-            {
-                "o1": sbend_1.ports["o1"],
-                "o2": sbend_3.ports["o1"],
-                "taper_start": taper_1.ports["o1"],
-            }
-        )
+        for name, port in [
+            ("o1", sbend_1.ports["o1"]),
+            ("o2", sbend_3.ports["o2"]),
+            ("taper_start", taper_1.ports["o1"]),
+        ]:
+            bt.add_port(name=name, port=port)
+        bt.flatten()
 
-        return bt.flatten()
+        return bt
 
     def branch_tune_short(straight_unbalance: float = 0.0):
         arm = gf.Component()
@@ -458,7 +472,8 @@ def _mzm_interferometer(
         arm = gf.components.component_sequence(
             sequence=sequence, symbol_to_component=symbol_to_component
         )
-        return arm.flatten()
+        arm.flatten()
+        return arm
 
     def branch_tune_long(straight_unbalance):
         return partial(branch_tune_short, straight_unbalance=straight_unbalance)()
@@ -470,20 +485,21 @@ def _mzm_interferometer(
         lbend_combiner = L_turn_bend(radius=lbend_combiner_reff)
         lbend_top = comb_section << lbend_combiner
         lbend_bottom = comb_section << lbend_combiner
-        lbend_bottom.mirror_y()
+        lbend_bottom.dmirror_y()
         combiner = comb_section << splt
         lbend_top.connect("o1", combiner.ports["o2"])
         lbend_bottom.connect("o1", combiner.ports["o3"])
 
-        comb_section = comb_section.flatten()
+        # comb_section.flatten()
 
-        comb_section.add_ports(
-            {
-                "o2": lbend_top.ports["o2"],
-                "o1": combiner.ports["o1"],
-                "o3": lbend_bottom.ports["o2"],
-            }
-        )
+        exposed_ports = [
+            ("o2", lbend_top.ports["o2"]),
+            ("o1", combiner.ports["o1"]),
+            ("o3", lbend_bottom.ports["o2"]),
+        ]
+
+        for name, port in exposed_ports:
+            comb_section.add_port(name=name, port=port)
 
         return comb_section
 
@@ -493,33 +509,35 @@ def _mzm_interferometer(
     bs = interferometer << branch_tune_short()
     bl = interferometer << branch_tune_long(abs(0.5 * length_imbalance))
     cs = interferometer << combiner_section()
-    bb.mirror_y()
+    bb.dmirror_y()
     bt.connect("o1", splt_ref.ports["o2"])
     bb.connect("o1", splt_ref.ports["o3"])
     if length_imbalance >= 0:
-        bs.mirror_y()
+        # bs.dmirror_y()
         bs.connect("o1", bb.ports["o2"])
         bl.connect("o1", bt.ports["o2"])
     else:
         bs.connect("o1", bt.ports["o2"])
-        bl.mirror_y()
+        # bl.dmirror_y()
         bl.connect("o1", bb.ports["o2"])
-    cs.mirror_x()
+    cs.dmirror_x()
     [
         cs.connect("o2", bl.ports["o2"])
         if length_imbalance >= 0
         else cs.connect("o2", bs.ports["o2"])
     ]
 
-    interferometer.add_ports(
-        {
-            "o1": splt_ref.ports["o1"],
-            "upper_taper_start": bt.ports["taper_start"],
-            "o2": cs.ports["o1"],
-        }
-    )
+    exposed_ports = [
+        ("o1", splt_ref.ports["o1"]),
+        ("upper_taper_start", bt.ports["taper_start"]),
+        ("o2", cs.ports["o1"]),
+    ]
 
-    return interferometer.flatten()
+    for name, port in exposed_ports:
+        interferometer.add_port(name=name, port=port)
+    interferometer.flatten()
+
+    return interferometer
 
 
 @gf.cell
@@ -542,7 +560,7 @@ def mzm_unbalanced(
     # Transmission line subcell
 
     xs_cpw = gf.partial(
-        uni_cpw,
+        xs_uni_cpw,
         central_conductor_width=rf_central_conductor_width,
         ground_planes_width=rf_ground_planes_width,
         gap=rf_gap,
@@ -561,7 +579,7 @@ def mzm_unbalanced(
         cross_section=xs_cpw(),
     )
 
-    rf_line.move(rf_line.ports["e1"], (0.0, 0.0))
+    rf_line.dmove(rf_line.ports["e1"].dcenter, (0.0, 0.0))
 
     # Interferometer subcell
 
@@ -617,21 +635,21 @@ def mzm_unbalanced(
         )()
     )
 
-    interferometer.move(
-        interferometer.ports["upper_taper_start"],
+    interferometer.dmove(
+        interferometer.ports["upper_taper_start"].dcenter,
         (0.0, 0.5 * (rf_central_conductor_width + rf_gap)),
     )
 
     # Expose the ports
 
-    mzm.add_ports(
-        {
-            "o1": interferometer.ports["o1"],
-            "o2": interferometer.ports["o2"],
-            "e1": rf_line.ports["e1"],
-            "e2": rf_line.ports["e2"],
-        }
-    )
+    exposed_ports = [
+        ("o1", interferometer.ports["o1"]),
+        ("o2", interferometer.ports["o2"]),
+        ("e1", rf_line.ports["e1"]),
+        ("e2", rf_line.ports["e2"]),
+    ]
+
+    [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
 
     return mzm
 
@@ -678,27 +696,25 @@ def chip_frame(
     # Chip frame elements
 
     inner_box = gf.components.rectangle(
-        size=snapped_size,
+        size=tuple(snapped_size),
         layer=LAYER.CHIP_CONTOUR,
         centered=True,
     )
 
     outer_box = gf.components.rectangle(
-        size=[s + 2 * exclusion_zone_width for s in snapped_size],
+        size=tuple(s + 2 * exclusion_zone_width for s in snapped_size),
         layer=LAYER.CHIP_EXCLUSION_ZONE,
         centered=True,
     )
 
     c = gf.Component()
-    in_box = c << inner_box
-    out_box = c << outer_box
+    c << inner_box
+    c << outer_box
+    c.flatten()
 
-    in_box.move(destination=center)
-    out_box.move(destination=center)
-
-    return c.flatten()
+    return c
 
 
 if __name__ == "__main__":
-    mzm = mzm_unbalanced()
-    mzm.show()
+    c = mmi1x2_optimized1550()
+    c.show()

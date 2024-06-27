@@ -1,9 +1,6 @@
-function: chip_frame
 info: {}
-module: lnoi400.cells
-name: chip_frame
+name: chip_frame_S10000_5000__92adce0e
 settings:
-  center: null
   exclusion_zone_width: 50
   size:
   - 10000
