@@ -11,6 +11,7 @@ from lnoi400.tech import LAYER, xs_uni_cpw
 # Straights
 ################
 
+
 @gf.cell
 def _straight(
     length: float = 10.0,
@@ -20,6 +21,7 @@ def _straight(
         length=length,
         cross_section=cross_section,
     )
+
 
 @gf.cell
 def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
@@ -31,6 +33,7 @@ def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
         **kwargs,
     )
 
+
 @gf.cell
 def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
     """Straight multimode waveguide."""
@@ -40,6 +43,7 @@ def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
         length=length,
         **kwargs,
     )
+
 
 ##########
 # Bends
@@ -753,5 +757,6 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    c = mmi1x2_optimized1550()
+    c = mmi2x2optimized1550()
     c.show()
+    print(c.ports["o1"].center)

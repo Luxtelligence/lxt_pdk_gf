@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from gdsfactory.typings import Coordinate, CrossSectionSpec
 
+
 def spline_clamped_path(
     t: np.ndarray, start: Coordinate = (0.0, 0.0), end: Coordinate = (120.0, 25.0)
 ):
@@ -28,12 +29,12 @@ def spline_null_curvature(
     """Returns a spline path with zero first and second derivatives at the extrema."""
 
     xs = t
-    ys = (t**3) * (6*t**2 - 15.0 * t + 10.0)
+    ys = (t**3) * (6 * t**2 - 15.0 * t + 10.0)
 
     xs = start[0] + (end[0] - start[0]) * xs
     ys = start[1] + (end[1] - start[1]) * ys
 
-    path = gf.Path(np.column_stack([xs, spline(xs)]))
+    path = gf.Path(np.column_stack([xs, ys]))
     path.start_angle = path.end_angle = 0.0
 
     return path

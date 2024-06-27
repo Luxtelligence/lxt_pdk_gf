@@ -4,6 +4,9 @@
 build-backend = "flit_core.buildapi"
 requires = ["flit_core >=3.2,<4"]
 
+[lint.pydocstyle]
+convention = "google"
+
 [project]
 authors = [
   {name = "Luxtelligence", email = "foundry@luxtelligence.ai"}
@@ -74,9 +77,6 @@ lint.select = [
   "B",  # flake8-bugbear
   "UP"
 ]
-
-[tool.ruff.pydocstyle]
-convention = "google"
 
 [tool.setuptools.package-data]
 mypkg = ["*.csv", "*.yaml"]
