@@ -1,0 +1,11 @@
+info: {}
+name: mzm_unbalanced_ML7500_L_68469fe1
+settings:
+  lbend_tune_arm_reff: 75
+  modulation_length: 7500
+  rf_central_conductor_width: 10
+  rf_gap: 4
+  rf_ground_planes_width: 150
+  rf_pad_length_straight: 10
+  rf_pad_length_tapered: 190
+  rf_pad_start_width: 80

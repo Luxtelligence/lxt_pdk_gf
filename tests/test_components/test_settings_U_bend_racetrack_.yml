@@ -1,0 +1,17 @@
+info:
+  dy: 0
+  length: 205.358
+  min_bend_radius: 32.684
+  radius: 45
+  route_info_length: 205.358
+  route_info_min_bend_radius: 32.684
+  route_info_n_bend_90: 2
+  route_info_type: xs_72707bf6
+  route_info_weight: 205.358
+  route_info_xs_72707bf6_length: 205.358
+name: U_bend_racetrack_VO90_P_6e64ac0d
+settings:
+  cross_section: xs_rwg3000
+  p: 1
+  v_offset: 90
+  with_arc_floorplan: true
