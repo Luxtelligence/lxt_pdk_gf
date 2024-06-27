@@ -676,6 +676,9 @@ def chip_frame(
     if size[0] <= 5050 and size[1] <= 5050:
         raise (ValueError(f"The chip frame size {size} is not supported."))
 
+    if size[0] > 20200 or size[1] > 20200:
+        raise (ValueError(f"The chip frame size {size} is not supported."))
+
     else:
         for s in size:
             if abs(s - 5000.0) <= 50.0:
