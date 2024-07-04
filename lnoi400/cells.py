@@ -391,6 +391,70 @@ def uni_cpw_straight(
 
 
 @gf.cell
+def eo_phase_shifter(
+    rib_core_width_modulator: float = 2.5,
+    taper_length: float = 100.0,
+    modulation_length: float = 7500.0,
+    rf_central_conductor_width: float = 10.0,
+    rf_ground_planes_width: float = 180.0,
+    rf_gap: float = 4.0,
+    draw_cpw: bool = True,
+) -> gf.Component:
+    ps = gf.Component()
+    xs_modulator = gf.get_cross_section("xs_rwg1000", width=rib_core_width_modulator)
+    wg_taper = gf.components.taper_cross_section(
+        cross_section1="xs_rwg1000", cross_section2=xs_modulator, length=taper_length
+    )
+    wg_phase_modulation = gf.components.straight(
+        length=modulation_length - 2 * taper_length, cross_section=xs_modulator
+    )
+
+    taper_1 = ps << wg_taper
+    wg_pm = ps << wg_phase_modulation
+    taper_2 = ps << wg_taper
+    taper_2.dmirror_x()
+    wg_pm.connect("o1", taper_1.ports["o2"])
+    taper_2.dmirror_x()
+    taper_2.connect("o2", wg_pm.ports["o2"])
+
+    for name, port in [
+        ("o1", taper_1.ports["o1"]),
+        ("o2", taper_2.ports["o2"]),
+    ]:
+        ps.add_port(name=name, port=port)
+
+    # Add the transmission line
+
+    if draw_cpw:
+        xs_cpw = gf.partial(
+            xs_uni_cpw,
+            central_conductor_width=rf_central_conductor_width,
+            ground_planes_width=rf_ground_planes_width,
+            gap=rf_gap,
+        )
+
+        tl = ps << gf.components.straight(
+            length=modulation_length, cross_section=xs_cpw
+        )
+
+        tl.dmove(
+            tl.ports["e1"].dcenter,
+            (0.0, -0.5 * rf_central_conductor_width - 0.5 * rf_gap),
+        )
+
+        for name, port in [
+            ("e1", tl.ports["e1"]),
+            ("e2", tl.ports["e2"]),
+            ("taper_start", tl.ports["e1"]),
+        ]:
+            ps.add_port(name=name, port=port)
+
+    ps.flatten()
+
+    return ps
+
+
+@gf.cell
 def _mzm_interferometer(
     splitter: ComponentSpec = "mmi1x2_optimized1550",
     taper_length: float = 100.0,
@@ -719,5 +783,6 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    c = mmi1x2_optimized1550()
+    c = mzm_unbalanced()
     c.show()
+    print(c.ports)
