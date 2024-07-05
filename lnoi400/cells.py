@@ -419,7 +419,7 @@ def eo_phase_shifter(
 
     for name, port in [
         ("o1", taper_1.ports["o1"]),
-        ("o2", taper_2.ports["o2"]),
+        ("o2", taper_2.ports["o1"]),
     ]:
         ps.add_port(name=name, port=port)
 
@@ -445,7 +445,6 @@ def eo_phase_shifter(
         for name, port in [
             ("e1", tl.ports["e1"]),
             ("e2", tl.ports["e2"]),
-            ("taper_start", tl.ports["e1"]),
         ]:
             ps.add_port(name=name, port=port)
 
@@ -480,37 +479,26 @@ def _mzm_interferometer(
         dx_straight=sbend_small_straight_extend,
     )
 
-    xs_modulator = gf.get_cross_section("xs_rwg1000", width=rib_core_width_modulator)
-
-    wg_taper = gf.components.taper_cross_section(
-        cross_section1="xs_rwg1000", cross_section2=xs_modulator, length=taper_length
-    )
-
-    wg_phase_modulation = gf.components.straight(
-        length=modulation_length - 2 * taper_length, cross_section=xs_modulator
-    )
-
     def branch_top():
         bt = gf.Component()
         sbend_1 = bt << sbend_large
         sbend_2 = bt << sbend_small
-        taper_1 = bt << wg_taper
-        wg_pm = bt << wg_phase_modulation
-        taper_2 = bt << wg_taper
+        pm = bt << eo_phase_shifter(
+            rib_core_width_modulator=rib_core_width_modulator,
+            modulation_length=modulation_length,
+            taper_length=taper_length,
+            draw_cpw=False,
+        )
         sbend_3 = bt << sbend_small
-
         sbend_2.connect("o1", sbend_1.ports["o2"])
-        taper_1.connect("o1", sbend_2.ports["o2"])
-        wg_pm.connect("o1", taper_1.ports["o2"])
-        taper_2.dmirror_x()
-        taper_2.connect("o2", wg_pm.ports["o2"])
-        # sbend_3.dmirror_x()
-        sbend_3.connect("o1", taper_2.ports["o1"])
+        pm.connect("o1", sbend_2.ports["o2"])
+        sbend_3.dmirror_x()
+        sbend_3.connect("o1", pm.ports["o2"])
 
         for name, port in [
             ("o1", sbend_1.ports["o1"]),
             ("o2", sbend_3.ports["o2"]),
-            ("taper_start", taper_1.ports["o1"]),
+            ("taper_start", pm.ports["o1"]),
         ]:
             bt.add_port(name=name, port=port)
         bt.flatten()
