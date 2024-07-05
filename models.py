@@ -6,6 +6,7 @@ import jax.numpy as jnp
 import matplotlib.pyplot as plt
 import numpy as np
 import sax
+from gplugins.sax.models import phase_shifter as _phase_shifter
 from gplugins.sax.models import straight as __straight
 from numpy.polynomial import Polynomial
 from numpy.typing import NDArray
@@ -16,6 +17,41 @@ nm = 1e-3
 
 FloatArray = NDArray[jnp.floating]
 Float = float | FloatArray
+
+####################
+# Utility functions
+####################
+
+
+def get_json_data(
+    data_tag: str,
+) -> dict:
+    """Load data from a json structure."""
+
+    path = Path(lnoi400.__file__).parent / "data" / f"{data_tag}.json"
+    with open(path) as f:
+        data_dict = json.load(f)
+    return data_dict
+
+
+def poly_eval_from_json(
+    wl: np.ndarray,
+    data_tag: str,
+    key: str,
+) -> np.ndarray:
+    """Evaluate a polynomial model for frequency-dependent response
+    stored in json format."""
+
+    cell_data = get_json_data(data_tag)
+    if "center_wavelength" in cell_data.keys():
+        wl0 = cell_data["center_wavelength"]
+    else:
+        wl0 = 0.0
+    poly_coef = cell_data[key]
+    poly_coef.reverse()
+    poly_model = Polynomial(poly_coef)
+    return poly_model(wl - wl0)
+
 
 ################
 # Straights
@@ -252,45 +288,116 @@ mmi2x2_optimized1550 = partial(
     refl_cross_phase_key="pol_refl_cross_phase",
 )
 
-####################
-# Utility functions
-####################
+
+################
+# Modulators
+################
 
 
-def get_json_data(
-    data_tag: str,
-) -> dict:
-    """Load data from a json structure."""
+def eo_phase_shifter(
+    wl: Float = 1.55,
+    wl_0: float = 1.55,
+    length: float = 7500.0,
+    neff_0: float = 1.85,
+    ng_0: float = 2.2,
+    loss: float = 2e-5,
+    V_pi: float = np.nan,
+    V_dc: float = 0.0,
+):
+    # Default V_pi
+    if np.isnan(V_pi):
+        V_pi = 2 * 3.3e4 / length
+    v = V_dc / V_pi
 
-    path = Path(lnoi400.__file__).parent / "data" / f"{data_tag}.json"
-    with open(path) as f:
-        data_dict = json.load(f)
-    return data_dict
+    # Effective index at the operation frequency
+    neff = neff_0 - (ng_0 - neff_0) * (wl - wl_0) / wl_0
+
+    ps = _phase_shifter(
+        wl=wl,
+        neff=neff,
+        voltage=v,
+        length=length,
+        loss=loss,
+    )
+
+    return ps
 
 
-def poly_eval_from_json(
-    wl: np.ndarray,
-    data_tag: str,
-    key: str,
-) -> np.ndarray:
-    """Evaluate a polynomial model for frequency-dependent response
-    stored in json format."""
-
-    cell_data = get_json_data(data_tag)
-    if "center_wavelength" in cell_data.keys():
-        wl0 = cell_data["center_wavelength"]
-    else:
-        wl0 = 0.0
-    poly_coef = cell_data[key]
-    poly_coef.reverse()
-    poly_model = Polynomial(poly_coef)
-    return poly_model(wl - wl0)
+def mzm_unbalanced(
+    wl: Float,
+    length_imbalance: float = 100.0,
+    modulation_length: float = 1000.0,
+    V_pi: float = np.nan,
+    V_dc: float = 0.0,
+):
+    mzm, _ = sax.circuit(
+        netlist={
+            "instances": {
+                "coupler": "mmi",
+                "top": "ps_top",
+                "bot": "ps_bot",
+                "dl": "wg_straight",
+                "splitter": "mmi",
+            },
+            "connections": {
+                "coupler,o2": "top,o1",
+                "coupler,o3": "bot,o1",
+                "bot,o2": "dl,o1",
+                "splitter,o2": "top,o2",
+                "splitter,o3": "dl,o2",
+            },
+            "ports": {
+                "o1": "coupler,o1",
+                "o2": "splitter,o1",
+            },
+        },
+        models={
+            "mmi": partial(
+                mmi1x2_optimized1550,
+                wl=wl,
+            ),
+            "wg_straight": partial(
+                _straight,
+                wl=wl,
+                length=length_imbalance,
+                cross_section="xs_rwg1000",
+            ),
+            "ps_top": partial(
+                eo_phase_shifter,
+                wl=wl,
+                length=modulation_length,
+                V_dc=V_dc,
+                V_pi=V_pi,
+            ),
+            "ps_bot": partial(
+                eo_phase_shifter,
+                wl=wl,
+                length=modulation_length,
+                V_dc=-V_dc,
+                V_pi=V_pi,
+            ),
+        },
+        backend="default",
+    )
+    return mzm()
 
 
 if __name__ == "__main__":
     import gplugins.sax as gs
 
-    gs.plot_model(
-        mmi2x2_optimized1550, wavelength_start=1.4, wavelength_stop=1.7, port1="o4"
-    )
+    for V in [0, 1.0, 2.0, 3.0]:
+        mzm = partial(
+            mzm_unbalanced,
+            V_dc=V,
+            modulation_length=7500.0,
+            length_imbalance=50.0,
+        )
+
+        gs.plot_model(
+            mzm,
+            wavelength_start=1.4,
+            wavelength_stop=1.7,
+            port1="o1",
+            ports2=("o2",),
+        )
     plt.show()
