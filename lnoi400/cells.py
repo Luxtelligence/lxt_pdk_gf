@@ -565,12 +565,12 @@ def _mzm_interferometer(
     bt.connect("o1", splt_ref.ports["o2"])
     bb.connect("o1", splt_ref.ports["o3"])
     if length_imbalance >= 0:
-        # bs.dmirror_y()
+        bs.dmirror_y()
         bs.connect("o1", bb.ports["o2"])
         bl.connect("o1", bt.ports["o2"])
     else:
         bs.connect("o1", bt.ports["o2"])
-        # bl.dmirror_y()
+        bl.dmirror_y()
         bl.connect("o1", bb.ports["o2"])
     cs.dmirror_x()
     [
