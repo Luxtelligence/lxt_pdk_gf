@@ -32,7 +32,7 @@ L_turn_bend
 
   import lnoi400
 
-  c = lnoi400.cells.L_turn_bend(radius=80.0, p=1.0, with_arc_floorplan=True, direction='ccw', cross_section='xs_rwg1000')
+  c = lnoi400.cells.L_turn_bend(radius=80.0, p=1.0, with_arc_floorplan=True, cross_section='xs_rwg1000')
   c.plot()
 
 
@@ -62,7 +62,7 @@ U_bend_racetrack
 
   import lnoi400
 
-  c = lnoi400.cells.U_bend_racetrack(v_offset=90.0, p=1.0, with_arc_floorplan=True, direction='ccw', cross_section='xs_rwg3000')
+  c = lnoi400.cells.U_bend_racetrack(v_offset=90.0, p=1.0, with_arc_floorplan=True, cross_section='xs_rwg3000')
   c.plot()
 
 
@@ -107,7 +107,22 @@ double_linear_inverse_taper
 
   import lnoi400
 
-  c = lnoi400.cells.double_linear_inverse_taper(cross_section_start='xs_swg250', cross_section_end='xs_rwg1000', lower_taper_length=120.0, lower_taper_end_width=2.05, upper_taper_start_width=0.25, upper_taper_length=240.0)
+  c = lnoi400.cells.double_linear_inverse_taper(cross_section_start='xs_swg250', cross_section_end='xs_rwg1000', lower_taper_length=120.0, lower_taper_end_width=2.05, upper_taper_start_width=0.25, upper_taper_length=240.0, slab_removal_width=20.0, input_ext=0.0)
+  c.plot()
+
+
+
+eo_phase_shifter
+----------------------------------------------------
+
+.. autofunction:: lnoi400.cells.eo_phase_shifter
+
+.. plot::
+  :include-source:
+
+  import lnoi400
+
+  c = lnoi400.cells.eo_phase_shifter(rib_core_width_modulator=2.5, taper_length=100.0, modulation_length=7500.0, rf_central_conductor_width=10.0, rf_ground_planes_width=180.0, rf_gap=4.0, draw_cpw=True)
   c.plot()
 
 
