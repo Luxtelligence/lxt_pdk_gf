@@ -1,7 +1,0 @@
-info: {}
-name: S_bend_vert_VO25_HE100__22d908cd
-settings:
-  cross_section: xs_rwg1000
-  dx_straight: 5
-  h_extent: 100
-  v_offset: 25
