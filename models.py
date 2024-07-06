@@ -1,4 +1,6 @@
+import inspect
 import json
+from collections.abc import Callable
 from functools import partial
 from pathlib import Path
 
@@ -107,7 +109,7 @@ straight_swg250 = partial(_straight, cross_section="xs_swg250")
 
 def _2port_poly_model(
     *,
-    wl: Float,
+    wl: Float = 1.55,
     data_tag: str,
     trans_abs_key: str = "",
     trans_phase_key: str = "",
@@ -164,7 +166,7 @@ double_linear_inverse_taper = partial(
 
 def _1in_2out_symmetric_poly_model(
     *,
-    wl: Float,
+    wl: Float = 1.55,
     data_tag: str,
     trans_abs_key: str = "",
     trans_phase_key: str = "",
@@ -211,7 +213,7 @@ def _1in_2out_symmetric_poly_model(
 
 def _2in_2out_symmetric_poly_model(
     *,
-    wl: Float,
+    wl: Float = 1.55,
     data_tag: str,
     trans_bar_abs_key: str = "",
     trans_bar_phase_key: str = "",
@@ -303,7 +305,7 @@ def eo_phase_shifter(
     loss: float = 2e-5,
     V_pi: float = np.nan,
     V_dc: float = 0.0,
-):
+) -> sax.SDict:
     # Default V_pi
     if np.isnan(V_pi):
         V_pi = 2 * 3.3e4 / length
@@ -324,12 +326,12 @@ def eo_phase_shifter(
 
 
 def mzm_unbalanced(
-    wl: Float,
+    wl: Float = 1.55,
     length_imbalance: float = 100.0,
     modulation_length: float = 1000.0,
     V_pi: float = np.nan,
     V_dc: float = 0.0,
-):
+) -> sax.SDict:
     mzm, _ = sax.circuit(
         netlist={
             "instances": {
@@ -382,8 +384,38 @@ def mzm_unbalanced(
     return mzm()
 
 
+################
+# Models Dict
+################
+
+
+def get_models() -> dict[str, Callable[..., sax.SDict]]:
+    models = {}
+    for name, func in list(globals().items()):
+        if name[0] != "_":
+            if not callable(func):
+                continue
+            _func = func
+            while isinstance(_func, partial):
+                _func = _func.func
+            try:
+                sig = inspect.signature(_func)
+            except ValueError:
+                continue
+            if sig.return_annotation == sax.SDict:
+                models[name] = func
+    return models
+
+
 if __name__ == "__main__":
     import gplugins.sax as gs
+
+    # print(list(get_models()))
+    # for name, model in get_models().items():
+    #     try:
+    #         print(name, model())
+    #     except NotImplementedError:
+    #         continue
 
     for V in [0, 1.0, 2.0, 3.0]:
         mzm = partial(
