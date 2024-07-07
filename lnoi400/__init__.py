@@ -4,9 +4,10 @@ from gdsfactory.pdk import Pdk
 
 from lnoi400 import cells, config, tech
 from lnoi400.config import PATH
+from lnoi400.models import get_models
 from lnoi400.tech import LAYER, LAYER_STACK, LAYER_VIEWS
 
-# _models = get_models()
+_models = get_models()
 _cells = get_cells(cells)
 _cross_sections = get_cross_sections(tech)
 # _routing_strategies = get_routing_strategies()
@@ -18,7 +19,7 @@ PDK = Pdk(
     layers=LAYER,
     layer_stack=LAYER_STACK,
     layer_views=LAYER_VIEWS,
-    # models=_models,
+    models=_models,
     # routing_strategies=_routing_strategies,
 )
 PDK.activate()

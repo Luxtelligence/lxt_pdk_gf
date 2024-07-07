@@ -8,60 +8,39 @@ from lnoi400.spline import bend_S_spline, spline_clamped_path
 from lnoi400.tech import LAYER, xs_uni_cpw
 
 ################
-# MMIs
+# Straights
 ################
 
 
 @gf.cell
-def mmi1x2_optimized1550(
-    width_mmi: float = 6.0,
-    length_mmi: float = 26.75,
-    width_taper: float = 1.5,
-    length_taper: float = 25.0,
-    port_ratio: float = 0.55,
+def _straight(
+    length: float = 10.0,
     cross_section: CrossSectionSpec = "xs_rwg1000",
-    **kwargs,
 ) -> gf.Component:
-    """MMI1x2 with layout optimized for maximum transmission at 1550 nm."""
-
-    gap_mmi = (
-        port_ratio * width_mmi - width_taper
-    )  # The port ratio is defined as the ratio between the waveguides separation and the MMI width.
-
-    return gf.components.mmi1x2(
-        width_mmi=width_mmi,
-        length_mmi=length_mmi,
-        gap_mmi=gap_mmi,
-        length_taper=length_taper,
-        width_taper=width_taper,
+    return gf.components.straight(
+        length=length,
         cross_section=cross_section,
+    )
+
+
+@gf.cell
+def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
+    """Straight single-mode waveguide."""
+    if "cross_section" not in kwargs:
+        kwargs["cross_section"] = "xs_rwg1000"
+    return _straight(
+        length=length,
         **kwargs,
     )
 
 
 @gf.cell
-def mmi2x2optimized1550(
-    width_mmi: float = 5.0,
-    length_mmi: float = 76.5,
-    width_taper: float = 1.5,
-    length_taper: float = 25.0,
-    port_ratio: float = 0.7,
-    cross_section: CrossSectionSpec = "xs_rwg1000",
-    **kwargs,
-) -> gf.Component:
-    """MMI2x2 with layout optimized for maximum transmission at 1550 nm."""
-
-    gap_mmi = (
-        port_ratio * width_mmi - width_taper
-    )  # The port ratio is defined as the ratio between the waveguides separation and the MMI width.
-
-    return gf.components.mmi2x2(
-        width_mmi=width_mmi,
-        length_mmi=length_mmi,
-        gap_mmi=gap_mmi,
-        length_taper=length_taper,
-        width_taper=width_taper,
-        cross_section=cross_section,
+def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
+    """Straight multimode waveguide."""
+    if "cross_section" not in kwargs:
+        kwargs["cross_section"] = "xs_rwg3000"
+    return _straight(
+        length=length,
         **kwargs,
     )
 
@@ -165,6 +144,65 @@ def S_bend_vert(
     bend_cell.flatten()
 
     return bend_cell
+
+
+################
+# MMIs
+################
+
+
+@gf.cell
+def mmi1x2_optimized1550(
+    width_mmi: float = 6.0,
+    length_mmi: float = 26.75,
+    width_taper: float = 1.5,
+    length_taper: float = 25.0,
+    port_ratio: float = 0.55,
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    **kwargs,
+) -> gf.Component:
+    """MMI1x2 with layout optimized for maximum transmission at 1550 nm."""
+
+    gap_mmi = (
+        port_ratio * width_mmi - width_taper
+    )  # The port ratio is defined as the ratio between the waveguides separation and the MMI width.
+
+    return gf.components.mmi1x2(
+        width_mmi=width_mmi,
+        length_mmi=length_mmi,
+        gap_mmi=gap_mmi,
+        length_taper=length_taper,
+        width_taper=width_taper,
+        cross_section=cross_section,
+        **kwargs,
+    )
+
+
+@gf.cell
+def mmi2x2optimized1550(
+    width_mmi: float = 5.0,
+    length_mmi: float = 76.5,
+    width_taper: float = 1.5,
+    length_taper: float = 25.0,
+    port_ratio: float = 0.7,
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    **kwargs,
+) -> gf.Component:
+    """MMI2x2 with layout optimized for maximum transmission at 1550 nm."""
+
+    gap_mmi = (
+        port_ratio * width_mmi - width_taper
+    )  # The port ratio is defined as the ratio between the waveguides separation and the MMI width.
+
+    return gf.components.mmi2x2(
+        width_mmi=width_mmi,
+        length_mmi=length_mmi,
+        gap_mmi=gap_mmi,
+        length_taper=length_taper,
+        width_taper=width_taper,
+        cross_section=cross_section,
+        **kwargs,
+    )
 
 
 ################
@@ -598,7 +636,7 @@ def mzm_unbalanced(
     lbend_tune_arm_reff: float = 75.0,
     rf_pad_start_width: float = 80.0,
     rf_central_conductor_width: float = 10.0,
-    rf_ground_planes_width: float = 150.0,
+    rf_ground_planes_width: float = 180.0,
     rf_gap: float = 4.0,
     rf_pad_length_straight: float = 10.0,
     rf_pad_length_tapered: float = 190.0,
@@ -771,6 +809,7 @@ def chip_frame(
 
 
 if __name__ == "__main__":
+
     c = mzm_unbalanced()
     c.show()
     print(c.ports)
