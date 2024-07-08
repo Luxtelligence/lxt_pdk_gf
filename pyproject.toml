@@ -17,7 +17,8 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  "gdsfactory > 8.1.0, < 9.0.0"
+  "gdsfactory > 8.1.0, < 9.0.0",
+  "jax = 0.4.30"
 ]
 description = "Luxtelligence lnoi400 pdk"
 keywords = ["python"]
