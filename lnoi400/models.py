@@ -410,13 +410,6 @@ def get_models() -> dict[str, Callable[..., sax.SDict]]:
 if __name__ == "__main__":
     import gplugins.sax as gs
 
-    # print(list(get_models()))
-    # for name, model in get_models().items():
-    #     try:
-    #         print(name, model())
-    #     except NotImplementedError:
-    #         continue
-
     for V in [0, 1.0, 2.0, 3.0]:
         mzm = partial(
             mzm_unbalanced,

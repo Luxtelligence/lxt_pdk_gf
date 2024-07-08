@@ -1,0 +1,10 @@
+info:
+  length: 10
+  route_info_length: 10
+  route_info_type: xs_e6fb273a
+  route_info_weight: 10
+  route_info_xs_e6fb273a_length: 10
+  width: 1
+name: straight_rwg1000_L10
+settings:
+  length: 10
