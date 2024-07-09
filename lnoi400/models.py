@@ -301,7 +301,7 @@ def eo_phase_shifter(
     wl_0: float = 1.55,
     length: float = 7500.0,
     neff_0: float = 1.85,
-    ng_0: float = 2.2,
+    ng_0: float = 2.21,
     loss: float = 2e-5,
     V_pi: float = np.nan,
     V_dc: float = 0.0,
