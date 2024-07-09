@@ -438,6 +438,8 @@ def eo_phase_shifter(
     rf_gap: float = 4.0,
     draw_cpw: bool = True,
 ) -> gf.Component:
+    """Phase shifter based on the Pockels effect. The waveguide is located
+    within the gap of a CPW transmission line."""
     ps = gf.Component()
     xs_modulator = gf.get_cross_section("xs_rwg1000", width=rib_core_width_modulator)
     wg_taper = gf.components.taper_cross_section(
