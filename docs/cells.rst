@@ -1,4 +1,7 @@
+
+
 Luxtelligence provides a library of components that have been fabricated in the reference material stack, and whose performance has been tested and validated. Here follows a list of the available parametric cells (gdsfactory.Component objects):
+
 
 Cells
 =============================
@@ -164,7 +167,37 @@ mzm_unbalanced
 
   import lnoi400
 
-  c = lnoi400.cells.mzm_unbalanced(modulation_length=7500.0, lbend_tune_arm_reff=75.0, rf_pad_start_width=80.0, rf_central_conductor_width=10.0, rf_ground_planes_width=150.0, rf_gap=4.0, rf_pad_length_straight=10.0, rf_pad_length_tapered=190.0)
+  c = lnoi400.cells.mzm_unbalanced(modulation_length=7500.0, lbend_tune_arm_reff=75.0, rf_pad_start_width=80.0, rf_central_conductor_width=10.0, rf_ground_planes_width=180.0, rf_gap=4.0, rf_pad_length_straight=10.0, rf_pad_length_tapered=190.0)
+  c.plot()
+
+
+
+straight_rwg1000
+----------------------------------------------------
+
+.. autofunction:: lnoi400.cells.straight_rwg1000
+
+.. plot::
+  :include-source:
+
+  import lnoi400
+
+  c = lnoi400.cells.straight_rwg1000(length=10.0)
+  c.plot()
+
+
+
+straight_rwg3000
+----------------------------------------------------
+
+.. autofunction:: lnoi400.cells.straight_rwg3000
+
+.. plot::
+  :include-source:
+
+  import lnoi400
+
+  c = lnoi400.cells.straight_rwg3000(length=10.0)
   c.plot()
 
 

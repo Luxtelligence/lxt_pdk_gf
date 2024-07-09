@@ -15,7 +15,7 @@ with open(filepath, "w+") as f:
     f.write(
         """
 
-Here are the components available in the PDK
+Luxtelligence provides a library of components that have been fabricated in the reference material stack, and whose performance has been tested and validated. Here follows a list of the available parametric cells (gdsfactory.Component objects):
 
 
 Cells
