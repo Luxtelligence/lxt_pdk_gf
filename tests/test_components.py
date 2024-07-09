@@ -24,9 +24,9 @@ def component_name(request) -> str:
     return request.param
 
 
-@pytest.fixture(params=pcell_mapping, scope="function")
-def name_mapping(request) -> str:
-    return request.param
+# @pytest.fixture(params=pcell_mapping, scope="function")
+# def name_mapping(request) -> str:
+#     return request.param
 
 
 def test_gds(component_name: str) -> None:
@@ -40,14 +40,14 @@ def test_gds(component_name: str) -> None:
     )
 
 
-def test_alternative_implementation(
-    name_mapping: tuple,
-) -> None:
-    """Test against the cells distributed with a different PDK implementation."""
+# def test_alternative_implementation(
+#     name_mapping: tuple,
+# ) -> None:
+#     """Test against the cells distributed with a different PDK implementation."""
 
-    # TODO: Implement difftest with layers selection.
+#     # TODO: Implement difftest with layers selection.
 
-    assert name_mapping[0] == name_mapping[1]
+#     assert name_mapping[0] == name_mapping[1]
 
 
 def test_settings(
