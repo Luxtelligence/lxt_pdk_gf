@@ -1,4 +1,4 @@
-# lnoi400 0.0.1
+# lnoi400
 
 ![Luxtelligence](LXT_Logo.png)
 
