@@ -12,8 +12,8 @@ authors = [
   {name = "Luxtelligence", email = "foundry@luxtelligence.ai"}
 ]
 classifiers = [
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Operating System :: OS Independent"
 ]
 dependencies = [
@@ -25,7 +25,7 @@ keywords = ["python"]
 license = {file = "LICENSE"}
 name = "lnoi400"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 version = "0.0.1"
 
 [project.optional-dependencies]
