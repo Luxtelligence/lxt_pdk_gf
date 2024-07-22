@@ -755,7 +755,7 @@ def mzm_unbalanced(
 def chip_frame(
     size: tuple[float, float] = (10_000, 5000),
     exclusion_zone_width: float = 50,
-    center: float = None,
+    center: tuple[float, float] = None,
 ) -> gf.Component:
     """Provide the chip extent and the exclusion zone around the chip frame.
     In the exclusion zone, only the edge couplers routing to the chip facet should be placed.
@@ -782,12 +782,6 @@ def chip_frame(
             else:
                 raise (ValueError(f"The chip frame size {size} is not supported."))
 
-    if not (center):
-        center = (
-            0.5 * snapped_size[0] + exclusion_zone_width,
-            0.5 * snapped_size[1] + exclusion_zone_width,
-        )
-
     # Chip frame elements
 
     inner_box = gf.components.rectangle(
@@ -803,14 +797,17 @@ def chip_frame(
     )
 
     c = gf.Component()
-    c << inner_box
-    c << outer_box
+    ib = c << inner_box
+    ob = c << outer_box
+
+    if center:
+        ib.dmove(origin=(0.0, 0.0), destination=center)
+        ob.dmove(origin=(0.0, 0.0), destination=center)
+
     c.flatten()
 
     return c
 
 
 if __name__ == "__main__":
-    c = mzm_unbalanced()
-    c.show()
-    print(c.ports)
+    pass
