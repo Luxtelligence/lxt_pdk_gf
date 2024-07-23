@@ -168,6 +168,21 @@ xs_swg250 = partial(
 )
 
 
+def xs_ht_wire(
+    width: float = 0.9,
+    offset: float = 0.0,
+) -> CrossSection:
+    """Generate cross-section of a heater wire."""
+
+    return gf.cross_section.cross_section(
+        width=width,
+        offset=offset,
+        layer=LAYER.HT,
+        port_names=gf.cross_section.port_names_electrical,
+        port_types=gf.cross_section.port_types_electrical,
+    )
+
+
 def xs_uni_cpw(
     central_conductor_width: float = 15.0,
     ground_planes_width: float = 250.0,

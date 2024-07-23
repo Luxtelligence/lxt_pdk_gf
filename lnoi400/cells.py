@@ -2,6 +2,7 @@ from functools import partial
 
 import gdsfactory as gf
 import numpy as np
+from gdsfactory.routing import route_quad
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
 from lnoi400.spline import bend_S_spline, spline_clamped_path
@@ -423,6 +424,126 @@ def uni_cpw_straight(
     return cpw
 
 
+###################
+# Thermal shifters
+###################
+
+
+@gf.cell
+def heater_resistor(
+    path: gf.path.Path | None = None,
+    width: float = 0.9,
+    offset: float = 0.0,
+) -> gf.Component:
+    """A resistive wire used as a low-frequency phase shifter, exploiting
+    the thermo-optical effect."""
+
+    if not path:
+        path = gf.path.straight(length=150.0)
+
+    xs = gf.get_cross_section("xs_ht_wire", width=width, offset=offset)
+    c = path.extrude(xs)
+
+    return c
+
+
+@gf.cell
+def heater_straight_single(
+    length: float = 150.0,
+    width: float = 0.9,
+    offset: float = 0.0,
+    port_contact_width_ratio: float = 3.0,
+    pad_size: tuple[float, float] = (100.0, 100.0),
+    pad_pitch: float | None = None,
+    pad_vert_offset: float = 10.0,
+) -> gf.Component:
+    """A straight resistive wire used as a low-frequency phase shifter,
+    exploiting the thermo-optical effect. The heater is terminated by wide pads
+    for probing or bonding."""
+
+    if pad_vert_offset <= 0:
+        raise ValueError(
+            "pad_vert_offset must be a positive number,"
+            + f"received {pad_vert_offset}."
+        )
+
+    if port_contact_width_ratio <= 0:
+        raise ValueError(
+            "port_contact_width_ratio must be a positive number,"
+            + f"received {port_contact_width_ratio}."
+        )
+
+    if not pad_pitch:
+        pad_pitch = length
+
+    c = gf.Component()
+    bondpads = gf.components.pad_array(
+        pad=gf.components.pad,
+        size=pad_size,
+        spacing=(pad_pitch, pad_pitch),
+        columns=2,
+        port_orientation=-90.0,
+        layer=LAYER.HT,
+    )
+    bps = c << bondpads
+
+    ht = heater_resistor(
+        path=gf.path.straight(length),
+        width=width,
+        offset=offset,
+    )
+
+    # Place the ports along the edge of the wire
+    for p in ht.ports:
+        if p.orientation == 0.0:
+            p.dcenter = (p.dcenter[0] - 0.5 * p.dwidth, p.dcenter[1] + 0.5 * width)
+        if p.orientation == 180.0:
+            p.dcenter = (p.dcenter[0] + 0.5 * p.dwidth, p.dcenter[1] + 0.5 * width)
+        p.orientation = 90.0
+
+    ht_ref = c << ht
+
+    bps.dcenter = [ht_ref.dcenter.x, bps.dcenter.y]
+    bps.dymin = ht_ref.dymax + pad_vert_offset
+
+    port_contact_width = port_contact_width_ratio * width
+    ht.ports["e1"].dx += 0.5 * (port_contact_width - width)
+    ht.ports["e2"].dx -= 0.5 * (port_contact_width - width)
+
+    routing_params = {
+        "width2": port_contact_width,
+        "layer": LAYER.HT,
+    }
+
+    # Connect pads and heater wire
+    _ = route_quad(
+        c,
+        port1=bps.ports["e11"],
+        port2=ht.ports["e1"],
+        **routing_params,
+    )
+
+    _ = route_quad(
+        c,
+        port1=bps.ports["e12"],
+        port2=ht.ports["e2"],
+        **routing_params,
+    )
+
+    c.add_port(
+        name="e1",
+        port=bps.ports["e11"],
+    )
+    c.add_port(
+        name="e2",
+        port=bps.ports["e12"],
+    )
+
+    c.flatten()
+
+    return c
+
+
 ###############
 # Modulators
 ###############
@@ -810,4 +931,8 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    pass
+    c = heater_straight_single(
+        length=450.0,
+        pad_vert_offset=5.0,
+    )
+    c.show()
