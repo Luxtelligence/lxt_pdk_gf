@@ -1,7 +1,14 @@
 info: {}
-name: mzm_unbalanced_ML7500_L_d6edb752
+name: mzm_unbalanced_ML7500_L_ac44d57c
 settings:
+  bias_tuning_section_length: 750
+  heater_offset: 1.2
+  heater_pad_size:
+  - 75
+  - 75
+  heater_width: 1
   lbend_tune_arm_reff: 75
+  length_imbalance: 100
   modulation_length: 7500
   rf_central_conductor_width: 10
   rf_gap: 4
@@ -9,3 +16,4 @@ settings:
   rf_pad_length_straight: 10
   rf_pad_length_tapered: 190
   rf_pad_start_width: 80
+  with_heater: true

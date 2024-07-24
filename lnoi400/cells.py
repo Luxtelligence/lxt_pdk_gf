@@ -531,6 +531,16 @@ def heater_straight_single(
     )
 
     c.add_port(
+        name="ht_start",
+        port=ht.ports["e1"],
+    )
+
+    c.add_port(
+        name="ht_end",
+        port=ht.ports["e2"],
+    )
+
+    c.add_port(
         name="e1",
         port=bps.ports["e11"],
     )
@@ -683,8 +693,12 @@ def _mzm_interferometer(
         }
         sequence = "bLB_!b!L"
         arm = gf.components.component_sequence(
-            sequence=sequence, symbol_to_component=symbol_to_component
+            sequence=sequence,
+            ports_map={"phase_tuning_segment_start": ("_1", "o1")},
+            symbol_to_component=symbol_to_component,
         )
+
+        arm.add_port(port=arm.ports["phase_tuning_segment_start"])
         arm.flatten()
         return arm
 
@@ -743,6 +757,8 @@ def _mzm_interferometer(
     exposed_ports = [
         ("o1", splt_ref.ports["o1"]),
         ("upper_taper_start", bt.ports["taper_start"]),
+        ("short_bias_branch_start", bs.ports["phase_tuning_segment_start"]),
+        ("long_bias_branch_start", bl.ports["phase_tuning_segment_start"]),
         ("o2", cs.ports["o1"]),
     ]
 
@@ -756,6 +772,7 @@ def _mzm_interferometer(
 @gf.cell
 def mzm_unbalanced(
     modulation_length: float = 7500.0,
+    length_imbalance: float = 100.0,
     lbend_tune_arm_reff: float = 75.0,
     rf_pad_start_width: float = 80.0,
     rf_central_conductor_width: float = 10.0,
@@ -763,6 +780,11 @@ def mzm_unbalanced(
     rf_gap: float = 4.0,
     rf_pad_length_straight: float = 10.0,
     rf_pad_length_tapered: float = 190.0,
+    bias_tuning_section_length: float = 750.0,
+    with_heater: bool = True,
+    heater_offset: float = 1.2,
+    heater_width: float = 1.0,
+    heater_pad_size: tuple[float, float] = (75.0, 75.0),
     **kwargs,
 ) -> gf.Component:
     """Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
@@ -825,6 +847,7 @@ def mzm_unbalanced(
         << partial(
             _mzm_interferometer,
             modulation_length=modulation_length,
+            length_imbalance=length_imbalance,
             sbend_large_size=(
                 sbend_large_AR * sbend_large_v_offset,
                 sbend_large_v_offset,
@@ -844,6 +867,7 @@ def mzm_unbalanced(
             sbend_small_straight_extend=sbend_small_straight_length,
             lbend_tune_arm_reff=lbend_tune_arm_reff,
             lbend_combiner_reff=lbend_combiner_reff,
+            bias_tuning_section_length=bias_tuning_section_length,
             **kwargs,
         )()
     )
@@ -853,6 +877,30 @@ def mzm_unbalanced(
         (0.0, 0.5 * (rf_central_conductor_width + rf_gap)),
     )
 
+    # Add heater for phase tuning
+
+    if with_heater:
+        ht_ref = mzm << heater_straight_single(
+            length=bias_tuning_section_length,
+            width=heater_width,
+            offset=heater_offset,
+            pad_size=heater_pad_size,
+        )
+
+        if length_imbalance < 0.0:
+            heater_disp = [0, 0.5 * heater_width + heater_offset]
+        else:
+            ht_ref.dmirror_y()
+            heater_disp = [0, -0.5 * heater_width - heater_offset]
+
+        ht_ref.dmove(
+            origin=ht_ref.ports["ht_start"].dcenter,
+            destination=(
+                np.array(interferometer.ports["long_bias_branch_start"].dcenter)
+                + heater_disp
+            ),
+        )
+
     # Expose the ports
 
     exposed_ports = [
@@ -861,6 +909,15 @@ def mzm_unbalanced(
         ("e1", rf_line.ports["e1"]),
         ("e2", rf_line.ports["e2"]),
     ]
+
+    if with_heater:
+        exposed_ports += [
+            ("e3", ht_ref.ports["e1"]),
+            (
+                "e4",
+                ht_ref.ports["e2"],
+            ),
+        ]
 
     [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
 
@@ -931,8 +988,8 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    c = heater_straight_single(
-        length=450.0,
-        pad_vert_offset=5.0,
+    mzm = mzm_unbalanced(
+        length_imbalance=0.0,
+        with_heater=False,
     )
-    c.show()
+    mzm.show()
