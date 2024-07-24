@@ -18,9 +18,9 @@ substrate_thickness = 10_000 * nm
 
 
 class LayerMapLNOI400(LayerMap):
-    LN_STRIP = (2, 0)
-    LN_RIB = (3, 0)
-    RIB_NEGATIVE = (3, 1)
+    LN_RIDGE = (2, 0)
+    LN_SLAB = (3, 0)
+    SLAB_NEGATIVE = (3, 1)
     LABELS = (4, 0)
     TL = (21, 0)
     HT = (21, 1)
@@ -70,7 +70,7 @@ def get_layer_stack() -> LayerStack:
                 mesh_order=100,
             ),
             slab=LayerLevel(
-                layer=LogicalLayer(layer=LAYER.LN_RIB),
+                layer=LogicalLayer(layer=LAYER.LN_SLAB),
                 thickness=slab_thickness,
                 zmin=0.0,
                 sidewall_angle=13.0,
@@ -78,7 +78,7 @@ def get_layer_stack() -> LayerStack:
                 mesh_order=1,
             ),
             ridge=LayerLevel(
-                layer=LogicalLayer(layer=LAYER.LN_STRIP),
+                layer=LogicalLayer(layer=LAYER.LN_RIDGE),
                 thickness=ridge_thickness,
                 zmin=slab_thickness,
                 sidewall_angle=13.0,
@@ -122,12 +122,12 @@ LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp)
 
 xs_rwg1000 = partial(
     gf.cross_section.strip,
-    layer=LAYER.LN_STRIP,
+    layer=LAYER.LN_RIDGE,
     width=1.0,
     sections=(
         gf.Section(
             width=10.0,
-            layer="LN_RIB",
+            layer="LN_SLAB",
             name="slab",
             simplify=30 * nm,
         ),
@@ -141,7 +141,7 @@ xs_rwg2500 = partial(
     sections=(
         gf.Section(
             width=11.5,
-            layer="LN_RIB",
+            layer="LN_SLAB",
             name="slab",
             simplify=30 * nm,
         ),
@@ -154,7 +154,7 @@ xs_rwg3000 = partial(
     sections=(
         gf.Section(
             width=12.0,
-            layer="LN_RIB",
+            layer="LN_SLAB",
             name="slab",
             simplify=50 * nm,
         ),
@@ -164,7 +164,7 @@ xs_rwg3000 = partial(
 xs_swg250 = partial(
     gf.cross_section.strip,
     width=0.25,
-    layer="LN_RIB",
+    layer="LN_SLAB",
 )
 
 
