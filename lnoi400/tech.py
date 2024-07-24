@@ -101,7 +101,7 @@ def get_layer_stack() -> LayerStack:
                 mesh_order=6,
             ),
             ht=LayerLevel(
-                layer=LogicalLayer(layer=LAYER.TL),
+                layer=LogicalLayer(layer=LAYER.HT),
                 thickness=tl_thickness,
                 zmin=zmin_electrodes,
                 material="tl_metal",
