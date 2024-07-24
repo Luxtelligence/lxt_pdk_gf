@@ -238,7 +238,7 @@ def double_linear_inverse_taper(
     )
 
     xs_taper_upper_start = partial(
-        gf.cross_section.strip, layer=LAYER.LN_STRIP, width=upper_taper_start_width
+        gf.cross_section.strip, layer=LAYER.LN_RIDGE, width=upper_taper_start_width
     )
 
     xs_taper_upper_end = partial(xs_taper_upper_start, width=upper_taper_end_width)
@@ -290,7 +290,7 @@ def double_linear_inverse_taper(
                 slab_removal_width,
             ),
             centered=True,
-            layer=LAYER.RIB_NEGATIVE,
+            layer=LAYER.SLAB_NEGATIVE,
         )
         bnref = double_taper << bn
         bnref.dmovex(
