@@ -1,11 +1,11 @@
 LayerViews:
-  LN_STRIP_:
+  LN_RIDGE_:
     layer: [2, 0]
     color: "#7d57de"
-  LN_RIB:
+  LN_SLAB:
     layer: [3, 0]
     color: "navy"
-  RIB_NEGATIVE:
+  SLAB_NEGATIVE:
     layer: [3, 1]
     color: "#6750bf"
   LABELS:
