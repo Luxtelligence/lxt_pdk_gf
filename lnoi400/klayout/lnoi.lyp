@@ -17,7 +17,7 @@
     <marked>false</marked>
     <xfill>false</xfill>
     <animation>0</animation>
-    <name>LN_STRIP </name>
+    <name>LN_RIDGE </name>
     <source>2/0@1</source>
   </properties>
 
@@ -36,7 +36,7 @@
     <marked>false</marked>
     <xfill>false</xfill>
     <animation>0</animation>
-    <name>LN_RIB</name>
+    <name>LN_SLAB</name>
     <source>3/0@1</source>
   </properties>
 
@@ -55,7 +55,7 @@
     <marked>false</marked>
     <xfill>false</xfill>
     <animation>0</animation>
-    <name>RIB_NEGATIVE</name>
+    <name>SLAB_NEGATIVE</name>
     <source>3/1@1</source>
   </properties>
 
