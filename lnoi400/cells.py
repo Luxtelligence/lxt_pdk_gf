@@ -227,14 +227,12 @@ def double_linear_inverse_taper(
     lower_taper_start_width = gf.get_cross_section(cross_section_start).width
     upper_taper_end_width = gf.get_cross_section(cross_section_end).width
 
-    xs_taper_lower_end = gf.get_cross_section(
-        cross_section_start,
+    xs_taper_lower_end = partial(
+        gf.cross_section.strip,
         width=lower_taper_start_width
         + (lower_taper_end_width - lower_taper_start_width)
         * (1 + upper_taper_length / lower_taper_length),
-    )
-    xs_taper_upper_start = gf.get_cross_section(
-        cross_section_end, width=upper_taper_start_width
+        layer="LN_SLAB",
     )
 
     xs_taper_upper_start = partial(
