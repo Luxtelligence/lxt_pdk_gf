@@ -778,7 +778,7 @@ def mzm_unbalanced(
     rf_gap: float = 4.0,
     rf_pad_length_straight: float = 10.0,
     rf_pad_length_tapered: float = 190.0,
-    bias_tuning_section_length: float = 750.0,
+    bias_tuning_section_length: float = 700.0,
     with_heater: bool = True,
     heater_offset: float = 1.2,
     heater_width: float = 1.0,
@@ -988,6 +988,6 @@ def chip_frame(
 if __name__ == "__main__":
     mzm = mzm_unbalanced(
         length_imbalance=0.0,
-        with_heater=False,
+        with_heater=True,
     )
     mzm.show()
