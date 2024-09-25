@@ -32,7 +32,7 @@ class LayerMapLNOI400(LayerMap):
     LABELS: Layer = (4, 0)
     TL: Layer = (21, 0)
     HT: Layer = (21, 1)
-    WAFER: Layer = (99999, 0)
+    WAFER: Layer = (990, 0)
 
     # AUX
 
