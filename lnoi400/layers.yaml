@@ -23,3 +23,4 @@ LayerViews:
   HT:
     layer: [21, 1]
     color: "#3503fc"
+    hatch_pattern: coarsely dotted

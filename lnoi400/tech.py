@@ -1,9 +1,15 @@
-import sys
-from functools import partial
-
 import gdsfactory as gf
-from gdsfactory.cross_section import CrossSection, get_cross_sections
-from gdsfactory.technology import LayerLevel, LayerMap, LayerStack, LogicalLayer
+from gdsfactory.cross_section import (
+    CrossSection,
+    LayerSpec,
+)
+from gdsfactory.technology import (
+    LayerLevel,
+    LayerMap,
+    LayerStack,
+    LogicalLayer,
+)
+from gdsfactory.typings import Layer
 
 from lnoi400.config import PATH
 
@@ -18,30 +24,32 @@ substrate_thickness = 10_000 * nm
 
 
 class LayerMapLNOI400(LayerMap):
-    LN_RIDGE = (2, 0)
-    LN_SLAB = (3, 0)
-    SLAB_NEGATIVE = (3, 1)
-    LABELS = (4, 0)
-    TL = (21, 0)
-    HT = (21, 1)
-    WAFER = (99999, 0)
+    """Layer map for LXT lnoi400 technology."""
+
+    LN_RIDGE: Layer = (2, 0)
+    LN_SLAB: Layer = (3, 0)
+    SLAB_NEGATIVE: Layer = (3, 1)
+    LABELS: Layer = (4, 0)
+    TL: Layer = (21, 0)
+    HT: Layer = (21, 1)
+    WAFER: Layer = (99999, 0)
 
     # AUX
 
-    CHIP_CONTOUR = (6, 0)
-    CHIP_EXCLUSION_ZONE = (6, 1)
-    DOC = (201, 0)
-    ERROR = (50, 1)
+    CHIP_CONTOUR: Layer = (6, 0)
+    CHIP_EXCLUSION_ZONE: Layer = (6, 1)
+    DOC: Layer = (201, 0)
+    ERROR: Layer = (50, 1)
 
     # common gdsfactory layers
 
-    LABEL_INSTANCE = (66, 0)
-    DEVREC = (68, 0)
-    PORT = (99, 10)
-    PORTE = (99, 11)
-    TE = (203, 0)
-    TM = (204, 0)
-    TEXT = (66, 0)
+    LABEL_INSTANCE: Layer = (66, 0)
+    DEVREC: Layer = (68, 0)
+    PORT: Layer = (99, 10)
+    PORTE: Layer = (99, 11)
+    TE: Layer = (203, 0)
+    TM: Layer = (204, 0)
+    TEXT: Layer = (66, 0)
 
 
 LAYER = LayerMapLNOI400
@@ -114,60 +122,91 @@ def get_layer_stack() -> LayerStack:
 
 
 LAYER_STACK = get_layer_stack()
-LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp)
+LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp_yaml)
 
 ############################
-# Cross-sections
+# Cross-section functions
 ############################
 
-xs_rwg1000 = partial(
-    gf.cross_section.strip,
-    layer=LAYER.LN_RIDGE,
-    width=1.0,
-    sections=(
+xsection = gf.xsection
+
+
+@xsection
+def xs_rwg1000(
+    layer: LayerSpec = "LN_RIDGE",
+    width: float = 1.0,
+    radius: float = 75.0,
+) -> CrossSection:
+    """Routing rib waveguide cross section"""
+    sections = (
         gf.Section(
             width=10.0,
             layer="LN_SLAB",
             name="slab",
             simplify=30 * nm,
         ),
-    ),
-    radius=75.0,
-)
+    )
+    return gf.cross_section.strip(
+        width=width,
+        layer=layer,
+        sections=sections,
+        radius=radius,
+    )
 
-xs_rwg2500 = partial(
-    xs_rwg1000,
-    width=2.5,
-    sections=(
+
+@xsection
+def xs_rwg2500(
+    layer: LayerSpec = "LN_RIDGE",
+    width: float = 2.5,
+) -> CrossSection:
+    sections = (
         gf.Section(
             width=11.5,
             layer="LN_SLAB",
             name="slab",
             simplify=30 * nm,
         ),
-    ),
-)
+    )
+    return gf.cross_section.strip(
+        width=width,
+        layer=layer,
+        sections=sections,
+    )
 
-xs_rwg3000 = partial(
-    xs_rwg1000,
-    width=3.0,
-    sections=(
+
+@xsection
+def xs_rwg3000(
+    layer: LayerSpec = "LN_RIDGE",
+    width: float = 3.0,
+) -> CrossSection:
+    """Multimode rib waveguide cross section"""
+    sections = (
         gf.Section(
             width=12.0,
             layer="LN_SLAB",
             name="slab",
-            simplify=50 * nm,
+            simplify=30 * nm,
         ),
-    ),
-)
-
-xs_swg250 = partial(
-    gf.cross_section.strip,
-    width=0.25,
-    layer="LN_SLAB",
-)
+    )
+    return gf.cross_section.strip(
+        width=width,
+        layer=layer,
+        sections=sections,
+    )
 
 
+@xsection
+def xs_swg250(
+    layer: LayerSpec = "LN_SLAB",
+    width: float = 0.25,
+):
+    return gf.cross_section.strip(
+        width=width,
+        layer=layer,
+    )
+
+
+@xsection
 def xs_uni_cpw(
     central_conductor_width: float = 15.0,
     ground_planes_width: float = 250.0,
@@ -211,6 +250,3 @@ def xs_uni_cpw(
     )
 
     return xs_cpw
-
-
-cross_sections = get_cross_sections(sys.modules[__name__])

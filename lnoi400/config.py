@@ -17,7 +17,7 @@ class Path:
     module = module_path
     repo = repo_path
     tech_dir = module_path / "klayout"
-    lyp = module_path / "klayout" / "layers.lyp"
+    lyp = module_path / "klayout" / "lnoi.lyp"
     lyp_yaml = module_path / "layers.yaml"
     libs = module_path / "lnoi400"
     # sparameters = module_path / "sparameters"
