@@ -174,3 +174,4 @@ lnoi/**/*.gds
 # Test with different PDK distributions
 
 test_pdk_releases.py
+mmi_test.gds

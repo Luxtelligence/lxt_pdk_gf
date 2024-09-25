@@ -14,7 +14,7 @@
   <marked>false</marked>
   <xfill>false</xfill>
   <animation>0</animation>
-  <name>LN_STRIP_</name>
+  <name>LN_RIDGE</name>
   <source>2/0@1</source>
  </properties>
  <properties>
@@ -31,7 +31,7 @@
   <marked>false</marked>
   <xfill>false</xfill>
   <animation>0</animation>
-  <name>LN_RIB</name>
+  <name>LN_SLAB</name>
   <source>3/0@1</source>
  </properties>
  <properties>
@@ -48,7 +48,7 @@
   <marked>false</marked>
   <xfill>false</xfill>
   <animation>0</animation>
-  <name>RIB_NEGATIVE</name>
+  <name>SLAB_NEGATIVE</name>
   <source>3/1@1</source>
  </properties>
  <properties>
@@ -124,7 +124,7 @@
   <fill-color>#3503fc</fill-color>
   <frame-brightness>0</frame-brightness>
   <fill-brightness>0</fill-brightness>
-  <dither-pattern/>
+  <dither-pattern>I3</dither-pattern>
   <line-style/>
   <valid>true</valid>
   <visible>true</visible>
