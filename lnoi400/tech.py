@@ -199,7 +199,7 @@ def xs_rwg3000(
 def xs_swg250(
     layer: LayerSpec = "LN_SLAB",
     width: float = 0.25,
-):
+) -> CrossSection:
     return gf.cross_section.strip(
         width=width,
         layer=layer,
