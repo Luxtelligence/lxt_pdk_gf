@@ -6,9 +6,9 @@ info:
   route_info_length: 205.358
   route_info_min_bend_radius: 32.684
   route_info_n_bend_90: 2
-  route_info_type: xs_e217ac07
+  route_info_type: xs_rwg3000
   route_info_weight: 205.358
-  route_info_xs_e217ac07_length: 205.358
+  route_info_xs_rwg3000_length: 205.358
 name: U_bend_racetrack_VO90_P_6e64ac0d
 settings:
   cross_section: xs_rwg3000
