@@ -1,3 +1,6 @@
+from functools import lru_cache
+
+from gdsfactory.config import CONF
 from gdsfactory.cross_section import get_cross_sections
 from gdsfactory.get_factories import get_cells
 from gdsfactory.pdk import Pdk
@@ -10,19 +13,31 @@ from lnoi400.tech import LAYER, LAYER_STACK, LAYER_VIEWS
 _models = get_models()
 _cells = get_cells(cells)
 _cross_sections = get_cross_sections(tech)
-# _routing_strategies = get_routing_strategies()
 
-PDK = Pdk(
-    name="lnoi400",
-    cells=_cells,
-    cross_sections=_cross_sections,
-    layers=LAYER,
-    layer_stack=LAYER_STACK,
-    layer_views=LAYER_VIEWS,
-    models=_models,
-    # routing_strategies=_routing_strategies,
-)
-PDK.activate()
+CONF.pdk = "lnoi400"
+
+
+@lru_cache
+def get_pdk() -> Pdk:
+    """Return LXT lnoi400 PDK."""
+    return Pdk(
+        name="lnoi400",
+        cells=_cells,
+        cross_sections=_cross_sections,
+        layers=LAYER,
+        layer_stack=LAYER_STACK,
+        layer_views=LAYER_VIEWS,
+        models=_models,
+        # routing_strategies=_routing_strategies,
+    )
+
+
+def activate_pdk() -> None:
+    pdk = get_pdk()
+    pdk.activate()
+
+
+PDK = get_pdk()
 
 __all__ = [
     "LAYER",
