@@ -12,5 +12,5 @@ parts:
   - caption: Reference
     chapters:
       - file: cells
-      - file: models
+      - file: notebooks/models.ipynb
       - file: changelog

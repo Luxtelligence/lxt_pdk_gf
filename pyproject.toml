@@ -38,10 +38,7 @@ dev = [
 docs = [
   "jupytext",
   "matplotlib",
-  "jupyter-book==1.0.2",
-  "nbsphinx",
-  "Pygments",
-  "ipython"
+  "jupyter-book==1.0.2"
 ]
 
 [tool.codespell]
