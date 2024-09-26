@@ -39,7 +39,9 @@ docs = [
   "jupytext",
   "matplotlib",
   "jupyter-book==1.0.2",
-  "nbsphinx"
+  "nbsphinx",
+  "Pygments",
+  "ipython"
 ]
 
 [tool.codespell]
