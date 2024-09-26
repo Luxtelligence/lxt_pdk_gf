@@ -818,11 +818,13 @@ def chip_frame(
 
 @gf.cell
 def dir_coupl(
-    io_wg_sep: float = 26.35,
+    io_wg_sep: float = 30.35,
     sbend_length: float = 58,
     io_straight_length: float = 10,
     central_straight_length: float = 3.6,
     wg_sep: float = 0.65,
+    cross_section_io="xs_rwg1000",
+    cross_section_central="xs_rwg700",
     **kwargs,
 ) -> gf.Component:
     """Returns directional coupler.
@@ -848,12 +850,74 @@ def dir_coupl(
     wg_trans = gf.path.extrude_transition(P4, Xtrans)
     #add_sbend = dc << wg_trans
     """
-    c = dc << bend_S_spline_extr_transition(
-        size=(58.0, 14.5), cross_section1="xs_rwg700", npoints=201
-    )
-    print(c)
-    dc.flatten()
+    # top right branch
 
+    c_tr = dc << bend_S_spline_extr_transition(
+        io_wg_sep=io_wg_sep,
+        sbend_length=sbend_length,
+        wg_sep=wg_sep,
+        cross_section1=cross_section_central,
+        cross_section2=cross_section_io,
+        npoints=201,
+    )
+    cs_central = gf.get_cross_section(cross_section_central)
+    c_tr.dmove(
+        c_tr.ports["o1"].dcenter,
+        (0.0, 0.5 * (wg_sep + cs_central.sections[0].width)),
+    )
+
+    # bottom right branch
+    c_br = dc << bend_S_spline_extr_transition(
+        io_wg_sep=io_wg_sep,
+        sbend_length=sbend_length,
+        wg_sep=wg_sep,
+        cross_section1=cross_section_central,
+        cross_section2=cross_section_io,
+        npoints=201,
+    )
+    c_br.dmirror_y()
+    c_br.dmove(
+        c_br.ports["o1"].dcenter,
+        (0.0, -0.5 * (wg_sep + cs_central.sections[0].width)),
+    )
+
+    # central waveguides
+    straight_center_up = dc << gf.components.straight(
+        length=central_straight_length, cross_section=cross_section_central
+    )
+    straight_center_up.connect("o2", c_tr.ports["o1"])
+    straight_center_down = dc << gf.components.straight(
+        length=central_straight_length, cross_section=cross_section_central
+    )
+    straight_center_down.connect("o2", c_br.ports["o1"])
+
+    # top left branch
+
+    c_tl = dc << bend_S_spline_extr_transition(
+        io_wg_sep=io_wg_sep,
+        sbend_length=sbend_length,
+        wg_sep=wg_sep,
+        cross_section1=cross_section_central,
+        cross_section2=cross_section_io,
+        npoints=201,
+    )
+    c_tl.dmirror_x()
+    c_tl.dmove(c_tl.ports["o1"].dcenter, straight_center_up.ports["o1"].dcenter)
+
+    # bottom left branch
+
+    c_bl = dc << bend_S_spline_extr_transition(
+        io_wg_sep=io_wg_sep,
+        sbend_length=sbend_length,
+        wg_sep=wg_sep,
+        cross_section1=cross_section_central,
+        cross_section2=cross_section_io,
+        npoints=201,
+    )
+    c_bl.dmirror_x()
+    c_bl.dmirror_y()
+    c_bl.dmove(c_bl.ports["o1"].dcenter, straight_center_down.ports["o1"].dcenter)
+    # dc.flatten()
     return dc
 
 
