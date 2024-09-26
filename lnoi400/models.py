@@ -308,7 +308,7 @@ def eo_phase_shifter(
 ) -> sax.SDict:
     # Default V_pi
     if np.isnan(V_pi):
-        V_pi = 2 * 3.3e4 / length
+        V_pi = 2 * 3.3e4 * wl / length / wl_0
     v = V_dc / V_pi
 
     # Effective index at the operation frequency
