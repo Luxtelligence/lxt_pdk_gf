@@ -1,4 +1,4 @@
-We provide circuit models for the PDK elements, implemented using the [sax](https://flaport.github.io/sax/) circuit simulator. A dictionary with the available models can be obtained by running::
+We provide circuit models for the PDK elements, implemented using the `sax <https://flaport.github.io/sax/>`_ circuit simulator. A dictionary with the available models can be obtained by running::
 
   models = lnoi400.get_models()
 
