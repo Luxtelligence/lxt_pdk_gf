@@ -4,7 +4,11 @@ import gdsfactory as gf
 import numpy as np
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
-from lnoi400.spline import bend_S_spline, spline_clamped_path
+from lnoi400.spline import (
+    bend_S_spline,
+    bend_S_spline_extr_transition,
+    spline_clamped_path,
+)
 from lnoi400.tech import LAYER, xs_uni_cpw
 
 ################
@@ -805,6 +809,52 @@ def chip_frame(
     c.flatten()
 
     return c
+
+
+#####################
+# Directional coupler
+#####################
+
+
+@gf.cell
+def dir_coupl(
+    io_wg_sep: float = 26.35,
+    sbend_length: float = 58,
+    io_straight_length: float = 10,
+    central_straight_length: float = 3.6,
+    wg_sep: float = 0.65,
+    **kwargs,
+) -> gf.Component:
+    """Returns directional coupler.
+    Design based on spline
+
+    Args:
+        io_wg_sep: Separation of the two straights at the input/output, top-to-top.
+        sbend_length: horizontal distance between the input and central waveguides.
+        io_straight_length: length of the input/output waveguides.
+        central_straight_length: length of the central waveguides.
+        wg_sep: Distance between two waveguides in the coupling region.
+    """
+
+    dc = gf.Component()
+    """
+    straight_in = dc << gf.components.straight(length=io_straight_length, cross_section="xs_rwg1000")
+    straight_in.dmove(straight_in.ports["o2"].dcenter, (-sbend_length, io_wg_sep))
+    straight_center = dc << gf.components.straight(length=central_straight_length, cross_section="xs_rwg700")
+    straight_center.dmove(straight_center.ports["o1"].dcenter, (0, wg_sep-30))
+    # Create the transitional CrossSection
+    Xtrans = gf.path.transition(cross_section1="xs_rwg1000", cross_section2="xs_rwg700", width_type="sine")
+    P4 = gf.path.euler(radius=25, angle=45, p=0.5, use_eff=False)
+    wg_trans = gf.path.extrude_transition(P4, Xtrans)
+    #add_sbend = dc << wg_trans
+    """
+    c = dc << bend_S_spline_extr_transition(
+        size=(58.0, 14.5), cross_section1="xs_rwg700", npoints=201
+    )
+    print(c)
+    dc.flatten()
+
+    return dc
 
 
 if __name__ == "__main__":

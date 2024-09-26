@@ -120,6 +120,21 @@ LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp)
 # Cross-sections
 ############################
 
+xs_rwg700 = partial(
+    gf.cross_section.strip,
+    layer=LAYER.LN_RIDGE,
+    width=0.7,
+    sections=(
+        gf.Section(
+            width=9.3,
+            layer="LN_SLAB",
+            name="slab",
+            simplify=30 * nm,
+        ),
+    ),
+    radius=100.0,
+)
+
 xs_rwg1000 = partial(
     gf.cross_section.strip,
     layer=LAYER.LN_RIDGE,

@@ -58,6 +58,28 @@ def bend_S_spline(
     return c
 
 
+@gf.cell
+def bend_S_spline_extr_transition(
+    size: tuple[float, float] = (100.0, 30.0),
+    cross_section1: CrossSectionSpec = "xs_rwg1000",
+    cross_section2: CrossSectionSpec = "xs_rwg700",
+    npoints: int = 201,
+    path_method=spline_clamped_path,
+) -> gf.Component:
+    """A spline bend merging a vertical offset with extrude transition method."""
+
+    t = np.linspace(0, 1, npoints)
+    path = path_method(t, start=(0.0, 0.0), end=size)
+
+    Xtrans = gf.path.transition(
+        cross_section1="xs_rwg700", cross_section2="xs_rwg1000", width_type="sine"
+    )
+    wg_trans = gf.path.extrude_transition(path, Xtrans)
+    c = wg_trans
+
+    return c
+
+
 if __name__ == "__main__":
     # Visualize differences between spline and bezier path
 
