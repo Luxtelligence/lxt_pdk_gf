@@ -12,5 +12,6 @@ parts:
   - caption: Reference
     chapters:
       - file: cells
+      - file: notebooks/circuit_layout.ipynb
       - file: notebooks/models.ipynb
       - file: changelog
