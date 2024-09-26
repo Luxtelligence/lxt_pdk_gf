@@ -196,6 +196,17 @@ def xs_rwg3000(
 
 
 @xsection
+def xs_swg250(
+    layer: LayerSpec = "LN_SLAB",
+    width: float = 0.25,
+) -> CrossSection:
+    return gf.cross_section.strip(
+        width=width,
+        layer=layer,
+    )
+
+
+@xsection
 def xs_ht_wire(
     width: float = 0.9,
     offset: float = 0.0,
@@ -208,17 +219,6 @@ def xs_ht_wire(
         layer=LAYER.HT,
         port_names=gf.cross_section.port_names_electrical,
         port_types=gf.cross_section.port_types_electrical,
-    )
-
-
-@xsection
-def xs_swg250(
-    layer: LayerSpec = "LN_SLAB",
-    width: float = 0.25,
-) -> CrossSection:
-    return gf.cross_section.strip(
-        width=width,
-        layer=layer,
     )
 
 

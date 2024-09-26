@@ -779,7 +779,7 @@ def mzm_unbalanced(
     rf_pad_length_straight: float = 10.0,
     rf_pad_length_tapered: float = 190.0,
     bias_tuning_section_length: float = 700.0,
-    with_heater: bool = True,
+    with_heater: bool = False,
     heater_offset: float = 1.2,
     heater_width: float = 1.0,
     heater_pad_size: tuple[float, float] = (75.0, 75.0),
