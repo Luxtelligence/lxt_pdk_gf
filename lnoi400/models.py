@@ -5,7 +5,6 @@ from functools import partial
 from pathlib import Path
 
 import jax.numpy as jnp
-import matplotlib.pyplot as plt
 import numpy as np
 import sax
 from gplugins.sax.models import phase_shifter as _phase_shifter
@@ -355,7 +354,7 @@ def to_phase_shifter(
     if np.isnan(R):
         R = 25 * heater_length / 700.0 / heater_width
     if np.isnan(P_pi):
-        P_pi = 0.075 * heater_width
+        P_pi = 0.075 * heater_width * wl / wl_0
 
     # Effective index at the operation frequency
     neff = neff_0 - (ng_0 - neff_0) * (wl - wl_0) / wl_0
@@ -488,20 +487,4 @@ def get_models() -> dict[str, Callable[..., sax.SDict]]:
 
 
 if __name__ == "__main__":
-    Vs = np.linspace(-3, 3, 99)
-    Pout = np.zeros_like(Vs)
-
-    for k, V in enumerate(Vs):
-        mzm = partial(
-            mzm_unbalanced,
-            V_ht=V,
-            modulation_length=7500.0,
-            length_imbalance=52.0,
-        )
-
-        Pout[k] = np.abs(mzm()["o2", "o1"]) ** 2
-
-    plt.semilogy(Vs, Pout)
-    plt.show()
-    plt.xlabel("Voltage (V)")
-    plt.ylabel("Transmission")
+    pass
