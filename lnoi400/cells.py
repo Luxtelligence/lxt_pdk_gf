@@ -852,7 +852,7 @@ def dir_coupl(
     cs_central = gf.get_cross_section(cross_section_coupling)
     c_tr.dmove(
         c_tr.ports["o1"].dcenter,
-        (central_straight_length/2, 0.5 * (wg_sep + cs_central.sections[0].width)),
+        (central_straight_length / 2, 0.5 * (wg_sep + cs_central.sections[0].width)),
     )
 
     # bottom right branch
@@ -867,7 +867,7 @@ def dir_coupl(
     c_br.dmirror_y()
     c_br.dmove(
         c_br.ports["o1"].dcenter,
-        (central_straight_length/2, -0.5 * (wg_sep + cs_central.sections[0].width)),
+        (central_straight_length / 2, -0.5 * (wg_sep + cs_central.sections[0].width)),
     )
 
     # central waveguides
