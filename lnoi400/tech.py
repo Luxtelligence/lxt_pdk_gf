@@ -135,6 +135,36 @@ xs_rwg700 = partial(
     radius=100.0,
 )
 
+xs_rwg770 = partial(
+    gf.cross_section.strip,
+    layer=LAYER.LN_RIDGE,
+    width=0.77,
+    sections=(
+        gf.Section(
+            width=9.3,
+            layer="LN_SLAB",
+            name="slab",
+            simplify=30 * nm,
+        ),
+    ),
+    radius=100.0,
+)
+
+xs_rwg800 = partial(
+    gf.cross_section.strip,
+    layer=LAYER.LN_RIDGE,
+    width=0.8,
+    sections=(
+        gf.Section(
+            width=9.3,
+            layer="LN_SLAB",
+            name="slab",
+            simplify=30 * nm,
+        ),
+    ),
+    radius=100.0,
+)
+
 xs_rwg1000 = partial(
     gf.cross_section.strip,
     layer=LAYER.LN_RIDGE,

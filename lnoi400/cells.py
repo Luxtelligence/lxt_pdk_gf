@@ -818,52 +818,41 @@ def chip_frame(
 
 @gf.cell
 def dir_coupl(
-    io_wg_sep: float = 30.35,
+    io_wg_sep: float = 30.6,
     sbend_length: float = 58,
-    io_straight_length: float = 10,
-    central_straight_length: float = 3.6,
-    wg_sep: float = 0.65,
+    central_straight_length: float = 16.92,
+    wg_sep: float = 0.8,
     cross_section_io="xs_rwg1000",
-    cross_section_central="xs_rwg700",
+    cross_section_coupling="xs_rwg800",
     **kwargs,
 ) -> gf.Component:
     """Returns directional coupler.
-    Design based on spline
+    Design of s-bends is based on spline
 
     Args:
         io_wg_sep: Separation of the two straights at the input/output, top-to-top.
-        sbend_length: horizontal distance between the input and central waveguides.
-        io_straight_length: length of the input/output waveguides.
-        central_straight_length: length of the central waveguides.
+        sbend_length: length of the s-bend part.
+        central_straight_length: length of the coupling region.
         wg_sep: Distance between two waveguides in the coupling region.
+        cross_section_io: cross section width of the i/o (must be in tech.py).
+        cross_section_coupling: cross section width of the coupling section (must be in tech.py).
     """
 
     dc = gf.Component()
-    """
-    straight_in = dc << gf.components.straight(length=io_straight_length, cross_section="xs_rwg1000")
-    straight_in.dmove(straight_in.ports["o2"].dcenter, (-sbend_length, io_wg_sep))
-    straight_center = dc << gf.components.straight(length=central_straight_length, cross_section="xs_rwg700")
-    straight_center.dmove(straight_center.ports["o1"].dcenter, (0, wg_sep-30))
-    # Create the transitional CrossSection
-    Xtrans = gf.path.transition(cross_section1="xs_rwg1000", cross_section2="xs_rwg700", width_type="sine")
-    P4 = gf.path.euler(radius=25, angle=45, p=0.5, use_eff=False)
-    wg_trans = gf.path.extrude_transition(P4, Xtrans)
-    #add_sbend = dc << wg_trans
-    """
-    # top right branch
 
+    # top right branch
     c_tr = dc << bend_S_spline_extr_transition(
         io_wg_sep=io_wg_sep,
         sbend_length=sbend_length,
         wg_sep=wg_sep,
-        cross_section1=cross_section_central,
+        cross_section1=cross_section_coupling,
         cross_section2=cross_section_io,
         npoints=201,
     )
-    cs_central = gf.get_cross_section(cross_section_central)
+    cs_central = gf.get_cross_section(cross_section_coupling)
     c_tr.dmove(
         c_tr.ports["o1"].dcenter,
-        (0.0, 0.5 * (wg_sep + cs_central.sections[0].width)),
+        (central_straight_length/2, 0.5 * (wg_sep + cs_central.sections[0].width)),
     )
 
     # bottom right branch
@@ -871,33 +860,32 @@ def dir_coupl(
         io_wg_sep=io_wg_sep,
         sbend_length=sbend_length,
         wg_sep=wg_sep,
-        cross_section1=cross_section_central,
+        cross_section1=cross_section_coupling,
         cross_section2=cross_section_io,
         npoints=201,
     )
     c_br.dmirror_y()
     c_br.dmove(
         c_br.ports["o1"].dcenter,
-        (0.0, -0.5 * (wg_sep + cs_central.sections[0].width)),
+        (central_straight_length/2, -0.5 * (wg_sep + cs_central.sections[0].width)),
     )
 
     # central waveguides
     straight_center_up = dc << gf.components.straight(
-        length=central_straight_length, cross_section=cross_section_central
+        length=central_straight_length, cross_section=cross_section_coupling
     )
     straight_center_up.connect("o2", c_tr.ports["o1"])
     straight_center_down = dc << gf.components.straight(
-        length=central_straight_length, cross_section=cross_section_central
+        length=central_straight_length, cross_section=cross_section_coupling
     )
     straight_center_down.connect("o2", c_br.ports["o1"])
 
     # top left branch
-
     c_tl = dc << bend_S_spline_extr_transition(
         io_wg_sep=io_wg_sep,
         sbend_length=sbend_length,
         wg_sep=wg_sep,
-        cross_section1=cross_section_central,
+        cross_section1=cross_section_coupling,
         cross_section2=cross_section_io,
         npoints=201,
     )
@@ -905,12 +893,11 @@ def dir_coupl(
     c_tl.dmove(c_tl.ports["o1"].dcenter, straight_center_up.ports["o1"].dcenter)
 
     # bottom left branch
-
     c_bl = dc << bend_S_spline_extr_transition(
         io_wg_sep=io_wg_sep,
         sbend_length=sbend_length,
         wg_sep=wg_sep,
-        cross_section1=cross_section_central,
+        cross_section1=cross_section_coupling,
         cross_section2=cross_section_io,
         npoints=201,
     )
