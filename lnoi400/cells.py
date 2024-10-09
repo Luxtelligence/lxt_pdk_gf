@@ -904,7 +904,17 @@ def dir_coupl(
     c_bl.dmirror_x()
     c_bl.dmirror_y()
     c_bl.dmove(c_bl.ports["o1"].dcenter, straight_center_down.ports["o1"].dcenter)
-    # dc.flatten()
+
+    # Expose the ports
+
+    exposed_ports = [
+        ("o1", c_bl.ports["o2"]),
+        ("o2", c_tl.ports["o2"]),
+        ("o3", c_tr.ports["o2"]),
+        ("o4", c_br.ports["o2"]),
+    ]
+
+    [dc.add_port(name=name, port=port) for name, port in exposed_ports]
     return dc
 
 

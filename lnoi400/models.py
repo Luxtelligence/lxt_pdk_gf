@@ -290,6 +290,22 @@ mmi2x2_optimized1550 = partial(
     refl_cross_phase_key="pol_refl_cross_phase",
 )
 
+#####################
+# Directional coupler
+#####################
+
+dir_coupl = partial(
+    _2in_2out_symmetric_poly_model,
+    data_tag="dir_coupl",
+    trans_bar_abs_key="pol_trans_bar_abs",
+    trans_bar_phase_key="pol_trans_bar_phase",
+    trans_cross_abs_key="pol_trans_cross_abs",
+    trans_cross_phase_key="pol_trans_cross_phase",
+    refl_self_abs_key="pol_refl_bar_abs",
+    refl_self_phase_key="pol_refl_bar_phase",
+    refl_cross_abs_key="pol_refl_cross_abs",
+    refl_cross_phase_key="pol_refl_cross_phase",
+)
 
 ################
 # Modulators
