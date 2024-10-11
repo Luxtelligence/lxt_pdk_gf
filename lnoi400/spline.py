@@ -67,11 +67,10 @@ def bend_S_spline_extr_transition(
     cross_section1: CrossSectionSpec = "xs_rwg700",
     cross_section2: CrossSectionSpec = "xs_rwg1000",
     npoints: int = 201,
-    # path_method=spline_clamped_path,
     path_method=spline_null_curvature,
 ) -> gf.Component:
     print(size)
-    """A spline bend merging a vertical offset with extrude transition method."""
+    """A spline bend merging a vertical offset with a simultaneous width transition."""
     cs_central = gf.get_cross_section(cross_section1)
     s_height = (
         io_wg_sep - wg_sep - cs_central.sections[0].width
@@ -80,15 +79,12 @@ def bend_S_spline_extr_transition(
     t = np.linspace(0, 1, npoints)
     path = path_method(t, start=(0.0, 0.0), end=size)
 
-    Xtrans = gf.path.transition(
+    xtrans = gf.path.transition(
         cross_section1=cross_section1,
         cross_section2=cross_section2,
         width_type="linear",
     )
-    wg_trans = gf.path.extrude_transition(path, Xtrans)
-    c = wg_trans
-
-    return c
+    return gf.path.extrude_transition(path, xtrans)
 
 
 if __name__ == "__main__":
