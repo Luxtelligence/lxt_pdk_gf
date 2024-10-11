@@ -8,7 +8,7 @@ The lnoi400 PDK is released open-source, to let users easily evaluate a sample o
 
 ## Installation
 
-Use python3.10 or python3.11. We recommend [VSCode](https://code.visualstudio.com/) as an IDE.
+Use python3.11 or python3.12. We recommend [VSCode](https://code.visualstudio.com/) as an IDE.
 
 If you don't have python installed on your system you can [download anaconda](https://www.anaconda.com/download/)
 

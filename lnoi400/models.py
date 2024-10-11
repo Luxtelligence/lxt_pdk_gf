@@ -5,13 +5,13 @@ from functools import partial
 from pathlib import Path
 
 import jax.numpy as jnp
-import matplotlib.pyplot as plt
 import numpy as np
 import sax
 from gplugins.sax.models import phase_shifter as _phase_shifter
 from gplugins.sax.models import straight as __straight
 from numpy.polynomial import Polynomial
 from numpy.typing import NDArray
+from sax.utils import reciprocal
 
 import lnoi400
 
@@ -324,7 +324,7 @@ def eo_phase_shifter(
 ) -> sax.SDict:
     # Default V_pi
     if np.isnan(V_pi):
-        V_pi = 2 * 3.3e4 / length
+        V_pi = 2 * 3.3e4 * wl / length / wl_0
     v = V_dc / V_pi
 
     # Effective index at the operation frequency
@@ -341,28 +341,93 @@ def eo_phase_shifter(
     return ps
 
 
+def to_phase_shifter(
+    wl: Float = 1.55,
+    wl_0: float = 1.55,
+    neff_0: float = 1.8,
+    ng_0: float = 2.22,
+    loss: float = 2e-5,
+    heater_length: float = 700.0,
+    heater_width: float = 1.0,
+    P_pi: float = np.nan,
+    R: float = np.nan,
+    V_dc: float = 0.0,
+):
+    """Model for a thermal phase shifter.
+
+    Args:
+        wl: wavelength in um.
+        wl_0: center wavelength in um.
+        neff_0: effective index at center wavelength.
+        ng_0: group index at center wavelength.
+        loss: propagation loss (dB/um)
+        heater_length: in um.
+        heater_width: in um.
+        P_pi: dissipated power for a pi phase shift (W).
+        R: resistance (Ohm).
+        V_dc: static voltage applied to the resistor (V).
+    """
+    if np.isnan(R):
+        R = 25 * heater_length / 700.0 / heater_width
+    if np.isnan(P_pi):
+        P_pi = 0.075 * heater_width * wl / wl_0
+
+    # Effective index at the operation frequency
+    neff = neff_0 - (ng_0 - neff_0) * (wl - wl_0) / wl_0
+
+    P = V_dc**2 / R
+    deltaphi = P * jnp.pi / P_pi
+    phase = 2 * jnp.pi * neff * heater_length / wl + deltaphi
+    amplitude = jnp.asarray(10 ** (-loss * heater_length / 20), dtype=complex)
+    transmission = amplitude * jnp.exp(1j * phase)
+    return reciprocal(
+        {
+            ("o1", "o2"): transmission,
+        }
+    )
+
+
 def mzm_unbalanced(
     wl: Float = 1.55,
     length_imbalance: float = 100.0,
     modulation_length: float = 1000.0,
     V_pi: float = np.nan,
+    P_pi: float = np.nan,
     V_dc: float = 0.0,
+    V_ht: float = 0.0,
+    **kwargs,
 ) -> sax.SDict:
+    """Model of a Mach-Zehnder modulator with EO and TO phase tuning mechanisms.
+
+    Args:
+        wl: wavelength in um.
+        length_imbalance: length difference between the MZ branches, in um.
+        modulation_length: length of the EO modulation section, in um.
+        V_pi: voltage dropped on the EO phase modulation section for a pi phase shift (in V).
+        P_pi: power dissipated in the TO element for a pi phase shift (in W).
+        V_dc: voltage applied to the EO shifter (in V).
+        V_ht: voltage applied to the TO shifter (in V).
+        kwargs: to_phase_shifter keyword arguments.
+    """
     mzm, _ = sax.circuit(
         netlist={
             "instances": {
                 "coupler": "mmi",
-                "top": "ps_top",
-                "bot": "ps_bot",
+                "top_shifter": "ps_top",
+                "bot_shifter": "ps_bot",
                 "dl": "wg_straight",
+                "top_tops": "tops",
+                "bot_tops": "dummy_tops",
                 "splitter": "mmi",
             },
             "connections": {
-                "coupler,o2": "top,o1",
-                "coupler,o3": "bot,o1",
-                "bot,o2": "dl,o1",
-                "splitter,o2": "top,o2",
-                "splitter,o3": "dl,o2",
+                "coupler,o2": "top_shifter,o1",
+                "coupler,o3": "bot_shifter,o1",
+                "bot_shifter,o2": "dl,o1",
+                "dl,o2": "bot_tops,o1",
+                "top_shifter,o2": "top_tops,o1",
+                "splitter,o2": "top_tops,o2",
+                "splitter,o3": "bot_tops,o2",
             },
             "ports": {
                 "o1": "coupler,o1",
@@ -394,6 +459,20 @@ def mzm_unbalanced(
                 V_dc=-V_dc,
                 V_pi=V_pi,
             ),
+            "tops": partial(
+                to_phase_shifter,
+                wl=wl,
+                P_pi=P_pi,
+                V_dc=V_ht,
+                **kwargs,
+            ),
+            "dummy_tops": partial(
+                to_phase_shifter,
+                wl=wl,
+                P_pi=P_pi,
+                V_dc=0.0,
+                **kwargs,
+            ),
         },
         backend="default",
     )
@@ -424,21 +503,4 @@ def get_models() -> dict[str, Callable[..., sax.SDict]]:
 
 
 if __name__ == "__main__":
-    import gplugins.sax as gs
-
-    for V in [0, 1.0, 2.0, 3.0]:
-        mzm = partial(
-            mzm_unbalanced,
-            V_dc=V,
-            modulation_length=7500.0,
-            length_imbalance=50.0,
-        )
-
-        gs.plot_model(
-            mzm,
-            wavelength_start=1.4,
-            wavelength_stop=1.7,
-            port1="o1",
-            ports2=("o2",),
-        )
-    plt.show()
+    pass

@@ -1,9 +1,9 @@
 info:
   length: 10
   route_info_length: 10
-  route_info_type: xs_e217ac07
+  route_info_type: xs_rwg3000
   route_info_weight: 10
-  route_info_xs_e217ac07_length: 10
+  route_info_xs_rwg3000_length: 10
   width: 3
 name: straight_rwg3000_L10
 settings:
