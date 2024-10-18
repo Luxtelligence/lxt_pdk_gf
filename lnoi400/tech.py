@@ -160,7 +160,7 @@ xs_rwg770 = partial(
     radius=100.0,
 )
 
-xs_rwg800 = partial(
+xs_rwg800_old = partial(
     gf.cross_section.strip,
     layer=LAYER.LN_RIDGE,
     width=0.8,
@@ -176,6 +176,29 @@ xs_rwg800 = partial(
 )
 
 xsection = gf.xsection
+
+
+@xsection
+def xs_rwg800(
+    layer: LayerSpec = "LN_RIDGE",
+    width: float = 0.8,
+    radius: float = 75.0,
+) -> CrossSection:
+    """Routing rib waveguide cross section"""
+    sections = (
+        gf.Section(
+            width=10.0,
+            layer="LN_SLAB",
+            name="slab",
+            simplify=30 * nm,
+        ),
+    )
+    return gf.cross_section.strip(
+        width=width,
+        layer=layer,
+        sections=sections,
+        radius=radius,
+    )
 
 
 @xsection

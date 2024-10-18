@@ -64,18 +64,36 @@ def bend_S_spline_extr_transition(
     sbend_length: float = 58,
     wg_sep: float = 0.65,
     size: tuple[float, float] = (58, 14.5),
-    cross_section1: CrossSectionSpec = "xs_rwg700",
-    cross_section2: CrossSectionSpec = "xs_rwg1000",
+    cross_section1: CrossSectionSpec = "xs_rwg200",
+    cross_section2: CrossSectionSpec = "xs_rwg300",
     npoints: int = 201,
     path_method=spline_null_curvature,
 ) -> gf.Component:
-    print(size)
-    """A spline bend merging a vertical offset with a simultaneous width transition."""
-    cs_central = gf.get_cross_section(cross_section1)
-    s_height = (
-        io_wg_sep - wg_sep - cs_central.sections[0].width
-    ) / 2  # take into the width of the waveguide
-    size = (sbend_length, s_height)
+    cross_section1_name = str(cross_section1)
+    print(cross_section1_name[6:])
+    cross_section1_width = cross_section1["_default"].width
+    s0 = gf.Section(
+        width=cross_section1_width,
+        offset=0,
+        layer="LN_RIDGE",
+        name="_default",
+        port_names=("o1", "o2"),
+    )
+    s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
+    cross_section1 = gf.CrossSection(sections=[s0, s1])
+
+    cross_section2_width = cross_section2["_default"].width
+    s0 = gf.Section(
+        width=cross_section2_width,
+        offset=0,
+        layer="LN_RIDGE",
+        name="_default",
+        port_names=("o1", "o2"),
+    )
+    s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
+    cross_section2_width = gf.CrossSection(sections=[s0, s1])
+
+    # size = (sbend_length, s_height)
     t = np.linspace(0, 1, npoints)
     path = path_method(t, start=(0.0, 0.0), end=size)
 
