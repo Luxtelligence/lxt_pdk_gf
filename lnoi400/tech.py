@@ -1,5 +1,3 @@
-from functools import partial
-
 import gdsfactory as gf
 from gdsfactory.cross_section import (
     CrossSection,
@@ -130,75 +128,8 @@ LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp_yaml)
 # Cross-section functions
 ############################
 
-xs_rwg700 = partial(
-    gf.cross_section.strip,
-    layer=LAYER.LN_RIDGE,
-    width=0.7,
-    sections=(
-        gf.Section(
-            width=9.3,
-            layer="LN_SLAB",
-            name="slab",
-            simplify=30 * nm,
-        ),
-    ),
-    radius=100.0,
-)
-
-xs_rwg770 = partial(
-    gf.cross_section.strip,
-    layer=LAYER.LN_RIDGE,
-    width=0.77,
-    sections=(
-        gf.Section(
-            width=9.3,
-            layer="LN_SLAB",
-            name="slab",
-            simplify=30 * nm,
-        ),
-    ),
-    radius=100.0,
-)
-
-xs_rwg800_old = partial(
-    gf.cross_section.strip,
-    layer=LAYER.LN_RIDGE,
-    width=0.8,
-    sections=(
-        gf.Section(
-            width=9.3,
-            layer="LN_SLAB",
-            name="slab",
-            simplify=30 * nm,
-        ),
-    ),
-    radius=100.0,
-)
 
 xsection = gf.xsection
-
-
-@xsection
-def xs_rwg800(
-    layer: LayerSpec = "LN_RIDGE",
-    width: float = 0.8,
-    radius: float = 75.0,
-) -> CrossSection:
-    """Routing rib waveguide cross section"""
-    sections = (
-        gf.Section(
-            width=10.0,
-            layer="LN_SLAB",
-            name="slab",
-            simplify=30 * nm,
-        ),
-    )
-    return gf.cross_section.strip(
-        width=width,
-        layer=layer,
-        sections=sections,
-        radius=radius,
-    )
 
 
 @xsection

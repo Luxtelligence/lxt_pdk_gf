@@ -294,9 +294,9 @@ mmi2x2_optimized1550 = partial(
 # Directional coupler
 #####################
 
-dir_coupl = partial(
+directional_coupler_balanced = partial(
     _2in_2out_symmetric_poly_model,
-    data_tag="dir_coupl",
+    data_tag="directional_coupler_balanced",
     trans_bar_abs_key="pol_trans_bar_abs",
     trans_bar_phase_key="pol_trans_bar_phase",
     trans_cross_abs_key="pol_trans_cross_abs",

@@ -7,7 +7,7 @@ from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
 from lnoi400.spline import (
     bend_S_spline,
-    bend_S_spline_extr_transition,
+    bend_S_spline_varying_width,
     spline_clamped_path,
 )
 from lnoi400.tech import LAYER, xs_uni_cpw
@@ -1013,11 +1013,12 @@ def directional_coupler_balanced(
         sbend_length: length of the s-bend part.
         central_straight_length: length of the coupling region.
         wg_sep: Distance between two waveguides in the coupling region.
-        cross_section_io: cross section width of the i/o (must be in tech.py).
+        cross_section_io: cross section width of the i/o (can be arbitrary, for ex.: "xs_rwg222").
         cross_section_coupling: cross section width of the coupling section (must be in tech.py).
+        Default parameters give a 50/50 splitting at 1550 nm.
     """
-
-    dc = gf.Component()
+    # create new cross section to have liberty in width selection for
+    # central straight section
     cross_section_coupling_name = str(cross_section_coupling)
     coupling_section_width = float(cross_section_coupling_name[6:]) * 1e-3
     s0 = gf.Section(
@@ -1031,26 +1032,21 @@ def directional_coupler_balanced(
     cross_section_coupling = gf.CrossSection(sections=[s0, s1])
 
     cross_section_io_name = str(cross_section_io)
-    io_section_width = float(cross_section_io_name[6:]) * 1e-3
-    s0 = gf.Section(
-        width=io_section_width,
-        offset=0,
-        layer="LN_RIDGE",
-        name="_default",
-        port_names=("o1", "o2"),
-    )
-    s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
-    cross_section_io = gf.CrossSection(sections=[s0, s1])
+    cross_section_io = gf.get_cross_section(
+        cross_section_io
+    )  # error if cross section is not from PDK
 
     s_height = (
         io_wg_sep - wg_sep - coupling_section_width
-    ) / 2  # take into the width of the waveguide
+    ) / 2  # take into account the width of the waveguide
     size = (sbend_length, s_height)
+
+    dc = gf.Component()
     # top right branch
-    c_tr = dc << bend_S_spline_extr_transition(
+    c_tr = dc << bend_S_spline_varying_width(
         size=size,
-        cross_section1=cross_section_coupling,
-        cross_section2=cross_section_io,
+        cross_section1=cross_section_coupling_name,
+        cross_section2=cross_section_io_name,
         npoints=201,
     )
     c_tr.dmove(
@@ -1059,10 +1055,10 @@ def directional_coupler_balanced(
     )
 
     # bottom right branch
-    c_br = dc << bend_S_spline_extr_transition(
+    c_br = dc << bend_S_spline_varying_width(
         size=size,
-        cross_section1=cross_section_coupling,
-        cross_section2=cross_section_io,
+        cross_section1=cross_section_coupling_name,
+        cross_section2=cross_section_io_name,
         npoints=201,
     )
     c_br.dmirror_y()
@@ -1082,20 +1078,20 @@ def directional_coupler_balanced(
     straight_center_down.connect("o2", c_br.ports["o1"])
 
     # top left branch
-    c_tl = dc << bend_S_spline_extr_transition(
+    c_tl = dc << bend_S_spline_varying_width(
         size=size,
-        cross_section1=cross_section_coupling,
-        cross_section2=cross_section_io,
+        cross_section1=cross_section_coupling_name,
+        cross_section2=cross_section_io_name,
         npoints=201,
     )
     c_tl.dmirror_x()
     c_tl.dmove(c_tl.ports["o1"].dcenter, straight_center_up.ports["o1"].dcenter)
 
     # bottom left branch
-    c_bl = dc << bend_S_spline_extr_transition(
+    c_bl = dc << bend_S_spline_varying_width(
         size=size,
-        cross_section1=cross_section_coupling,
-        cross_section2=cross_section_io,
+        cross_section1=cross_section_coupling_name,
+        cross_section2=cross_section_io_name,
         npoints=201,
     )
     c_bl.dmirror_x()
