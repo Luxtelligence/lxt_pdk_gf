@@ -58,6 +58,55 @@ def bend_S_spline(
     return c
 
 
+@gf.cell
+def bend_S_spline_varying_width(
+    size: tuple[float, float] = (58, 14.5),
+    cross_section1: CrossSectionSpec = "xs_rwg200",
+    cross_section2: CrossSectionSpec = "xs_rwg300",
+    npoints: int = 201,
+    path_method=spline_null_curvature,
+) -> gf.Component:
+    """
+    A spline bend merging a vertical offset with zero
+    curvature at both ends. Can accept random cross sections.
+    Not tested as a standalone PDK element.
+    """
+    # creating new cross sections to have liberty in width selection
+    cross_section1_name = str(cross_section1)
+    cross_section1_width = float(cross_section1_name[6:]) * 1e-3
+    s0 = gf.Section(
+        width=cross_section1_width,
+        offset=0,
+        layer="LN_RIDGE",
+        name="_default",
+        port_names=("o1", "o2"),
+    )
+    s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
+    cross_section1 = gf.CrossSection(sections=[s0, s1])
+
+    cross_section2_name = str(cross_section2)
+    cross_section2_width = float(cross_section2_name[6:]) * 1e-3
+    s0 = gf.Section(
+        width=cross_section2_width,
+        offset=0,
+        layer="LN_RIDGE",
+        name="_default",
+        port_names=("o1", "o2"),
+    )
+    s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
+    cross_section2 = gf.CrossSection(sections=[s0, s1])
+
+    t = np.linspace(0, 1, npoints)
+    path = path_method(t, start=(0.0, 0.0), end=size)
+
+    xtrans = gf.path.transition(
+        cross_section1=cross_section1,
+        cross_section2=cross_section2,
+        width_type="linear",
+    )
+    return gf.path.extrude_transition(path, xtrans)
+
+
 if __name__ == "__main__":
     # Visualize differences between spline and bezier path
 
