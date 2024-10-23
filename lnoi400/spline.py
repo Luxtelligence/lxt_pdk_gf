@@ -69,7 +69,8 @@ def bend_S_spline_varying_width(
     """
     A spline bend merging a vertical offset with zero
     curvature at both ends. Can accept random cross sections.
-    Not tested as a standalone PDK element.
+    Not tested as a standalone PDK element. Used as a building
+    block for cells with knows behaviour.
     """
     # creating new cross sections to have liberty in width selection
     cross_section1_name = str(cross_section1)
