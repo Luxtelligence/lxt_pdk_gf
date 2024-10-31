@@ -1,0 +1,10 @@
+info: {}
+name: directional_coupler_bal_4441d18f
+settings:
+  central_straight_length: 16.92
+  coupl_wg_sep: 0.8
+  coupling_section_width: 0.8
+  cross_section_coupling: xs_rwg800
+  cross_section_io: xs_rwg1000
+  io_wg_sep: 30.6
+  sbend_length: 58

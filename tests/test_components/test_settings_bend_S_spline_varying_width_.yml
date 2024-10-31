@@ -1,0 +1,11 @@
+info:
+  length: 60.493
+name: bend_S_spline_varying_w_26d310ea
+settings:
+  cross_section1: xs_rwg200
+  cross_section2: xs_rwg300
+  npoints: 201
+  path_method: spline_null_curvature
+  size:
+  - 58
+  - 14.5
