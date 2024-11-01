@@ -17,7 +17,7 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  "gdsfactory~=8.8.8",
+  "gdsfactory~=8.17.0",
   "gplugins[sax]>=1,<2"
 ]
 description = "Luxtelligence lnoi400 pdk"
@@ -38,7 +38,7 @@ dev = [
 docs = [
   "jupytext",
   "matplotlib",
-  "jupyter-book==1.0.2"
+  "jupyter-book==1.0.3"
 ]
 
 [tool.codespell]
