@@ -73,7 +73,6 @@ def bend_S_spline_varying_width(
     """
 
     if not cross_section1:
-
         s0 = gf.Section(
             width=0.2,
             offset=0,
@@ -81,7 +80,9 @@ def bend_S_spline_varying_width(
             name="_default",
             port_names=("o1", "o2"),
         )
-        s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
+        s1 = gf.Section(
+            width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03
+        )
         cross_section1 = gf.CrossSection(sections=[s0, s1])
 
     if not cross_section2:
@@ -92,7 +93,9 @@ def bend_S_spline_varying_width(
             name="_default",
             port_names=("o1", "o2"),
         )
-        s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
+        s1 = gf.Section(
+            width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03
+        )
         cross_section2 = gf.CrossSection(sections=[s0, s1])
 
     t = np.linspace(0, 1, npoints)

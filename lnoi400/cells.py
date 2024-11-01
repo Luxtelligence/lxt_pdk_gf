@@ -1026,9 +1026,7 @@ def directional_coupler_balanced(
     s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
     cross_section_coupling = gf.CrossSection(sections=[s0, s1])
 
-    cross_section_io = gf.get_cross_section(
-        cross_section_io
-    )
+    cross_section_io = gf.get_cross_section(cross_section_io)
 
     s_height = (
         io_wg_sep - coupl_wg_sep - coupling_section_width
