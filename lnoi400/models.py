@@ -290,9 +290,9 @@ mmi2x2_optimized1550 = partial(
     refl_cross_phase_key="pol_refl_cross_phase",
 )
 
-#######################
-# Directional couplers
-#######################
+#####################
+# Directional coupler
+#####################
 
 directional_coupler_balanced = partial(
     _2in_2out_symmetric_poly_model,
