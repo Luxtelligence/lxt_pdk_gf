@@ -1000,29 +1000,24 @@ def directional_coupler_balanced(
     sbend_length: float = 58,
     central_straight_length: float = 16.92,
     coupl_wg_sep: float = 0.8,
-    cross_section_coupling: CrossSectionSpec = "xs_rwg800",
+    coup_wg_width: float = 0.8,
     cross_section_io: CrossSectionSpec = "xs_rwg1000",
     coupling_section_width: float = 0.8,
-    **kwargs,
 ) -> gf.Component:
-    """Returns a directional coupler.
-    Design of the s-bends is based on a spline method
+    """Returns a 50-50 directional coupler.
 
     Args:
         io_wg_sep: Separation of the two straights at the input/output, top-to-top.
         sbend_length: length of the s-bend part.
         central_straight_length: length of the coupling region.
         coupl_wg_sep: Distance between two waveguides in the coupling region (side to side).
-        cross_section_io: cross section width of the i/o (must be in tech.py).
-        cross_section_coupling: cross section width of the coupling section (can be arbitrary, for ex.: "xs_rwg222").
+        cross_section_io: cross section spec at the i/o (must be in tech.py).
+        coup_wg_width: waveguide width at the coupling section.
         Default parameters give a 50/50 splitting at 1550 nm.
     """
-    # Create new cross section to have liberty in width selection for
-    # the central straight section
-    cross_section_coupling_name = str(cross_section_coupling)
-    coupling_section_width = float(cross_section_coupling_name[6:]) * 1e-3
+
     s0 = gf.Section(
-        width=coupling_section_width,
+        width=coup_wg_width,
         offset=0,
         layer="LN_RIDGE",
         name="_default",
@@ -1031,10 +1026,9 @@ def directional_coupler_balanced(
     s1 = gf.Section(width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03)
     cross_section_coupling = gf.CrossSection(sections=[s0, s1])
 
-    cross_section_io_name = str(cross_section_io)
     cross_section_io = gf.get_cross_section(
         cross_section_io
-    )  # error if cross section is not from PDK
+    )
 
     s_height = (
         io_wg_sep - coupl_wg_sep - coupling_section_width
@@ -1044,11 +1038,11 @@ def directional_coupler_balanced(
     # s-bend settings
     settings_s_bend = {
         "size": size,
-        "cross_section1": cross_section_coupling_name,
-        "cross_section2": cross_section_io_name,
+        "cross_section1": cross_section_coupling,
+        "cross_section2": cross_section_io,
         "npoints": 201,
     }
-    dc = gf.Component("directional_coupler_balanced")
+    dc = gf.Component()
     # top right branch
     c_tr = dc << bend_S_spline_varying_width(**settings_s_bend)
     c_tr.dmove(
@@ -1098,8 +1092,5 @@ def directional_coupler_balanced(
 
 
 if __name__ == "__main__":
-    mzm = mzm_unbalanced(
-        length_imbalance=0.0,
-        with_heater=True,
-    )
-    mzm.show()
+    dc = directional_coupler_balanced()
+    dc.show()
