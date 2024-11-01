@@ -1011,7 +1011,7 @@ def directional_coupler_balanced(
         sbend_length: length of the s-bend part.
         central_straight_length: length of the coupling region.
         coupl_wg_sep: Distance between two waveguides in the coupling region (side to side).
-        cross_section_io: cross section spec at the i/o (must be in tech.py).
+        cross_section_io: cross section spec at the i/o (must be defined in tech.py).
         coup_wg_width: waveguide width at the coupling section.
         Default parameters give a 50/50 splitting at 1550 nm.
     """
