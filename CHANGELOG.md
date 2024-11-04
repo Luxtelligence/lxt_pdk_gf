@@ -2,6 +2,13 @@
 
 The release naming convention follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v0.1.1
+
+### Bug fixes
+- Fix typo for the heater layer in LayerStack
+- Fix optics layer names (ridge, slab)
+- Use center parameter in chip_frame
+
 ## v0.1.0
 
 ### Added
