@@ -1002,7 +1002,6 @@ def directional_coupler_balanced(
     coupl_wg_sep: float = 0.8,
     coup_wg_width: float = 0.8,
     cross_section_io: CrossSectionSpec = "xs_rwg1000",
-    coupling_section_width: float = 0.8,
 ) -> gf.Component:
     """Returns a 50-50 directional coupler.
 
@@ -1029,7 +1028,7 @@ def directional_coupler_balanced(
     cross_section_io = gf.get_cross_section(cross_section_io)
 
     s_height = (
-        io_wg_sep - coupl_wg_sep - coupling_section_width
+        io_wg_sep - coupl_wg_sep - coup_wg_width
     ) / 2  # take into account the width of the waveguide
     size = (sbend_length, s_height)
 
@@ -1045,7 +1044,7 @@ def directional_coupler_balanced(
     c_tr = dc << bend_S_spline_varying_width(**settings_s_bend)
     c_tr.dmove(
         c_tr.ports["o1"].dcenter,
-        (central_straight_length / 2, 0.5 * (coupl_wg_sep + coupling_section_width)),
+        (central_straight_length / 2, 0.5 * (coupl_wg_sep + coup_wg_width)),
     )
 
     # bottom right branch
@@ -1053,7 +1052,7 @@ def directional_coupler_balanced(
     c_br.dmirror_y()
     c_br.dmove(
         c_br.ports["o1"].dcenter,
-        (central_straight_length / 2, -0.5 * (coupl_wg_sep + coupling_section_width)),
+        (central_straight_length / 2, -0.5 * (coupl_wg_sep + coup_wg_width)),
     )
 
     # central waveguides
