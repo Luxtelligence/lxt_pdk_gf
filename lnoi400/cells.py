@@ -807,6 +807,17 @@ def _mzm_interferometer(
 
     splt = gf.get_component(splitter)
 
+    # Uniformly handle the cases of a 1x2 or 2x2 MMI
+
+    if "2x2" in splitter:
+        splt.ports["o3"].name = "out_top"
+        splt.ports["o4"].name = "out_bottom"
+    elif "1x2" in splitter:
+        splt.ports["o2"].name = "out_top"
+        splt.ports["o3"].name = "out_bottom"
+    else:
+        raise ValueError(f"Splitter cell {splitter} not supported.")
+
     def combiner_section():
         comb_section = gf.Component()
         lbend_combiner = L_turn_bend(radius=lbend_combiner_reff)
@@ -814,8 +825,8 @@ def _mzm_interferometer(
         lbend_bottom = comb_section << lbend_combiner
         lbend_bottom.dmirror_y()
         combiner = comb_section << splt
-        lbend_top.connect("o1", combiner.ports["o2"])
-        lbend_bottom.connect("o1", combiner.ports["o3"])
+        lbend_top.connect("o1", combiner.ports["out_top"])
+        lbend_bottom.connect("o1", combiner.ports["out_bottom"])
 
         # comb_section.flatten()
 
@@ -824,6 +835,11 @@ def _mzm_interferometer(
             ("o1", combiner.ports["o1"]),
             ("o3", lbend_bottom.ports["o2"]),
         ]
+
+        if "2x2" in splitter:
+            exposed_ports.append(
+                ("in2", combiner.ports["o2"]),
+            )
 
         for name, port in exposed_ports:
             comb_section.add_port(name=name, port=port)
@@ -837,8 +853,8 @@ def _mzm_interferometer(
     bl = interferometer << branch_tune_long(abs(0.5 * length_imbalance))
     cs = interferometer << combiner_section()
     bb.dmirror_y()
-    bt.connect("o1", splt_ref.ports["o2"])
-    bb.connect("o1", splt_ref.ports["o3"])
+    bt.connect("o1", splt_ref.ports["out_top"])
+    bb.connect("o1", splt_ref.ports["out_bottom"])
     if length_imbalance >= 0:
         bs.dmirror_y()
         bs.connect("o1", bb.ports["o2"])
@@ -861,6 +877,14 @@ def _mzm_interferometer(
         ("long_bias_branch_start", bl.ports["phase_tuning_segment_start"]),
         ("o2", cs.ports["o1"]),
     ]
+
+    if "2x2" in splitter:
+        exposed_ports.extend(
+            [
+                ("out2", cs.ports["in2"]),
+                ("in2", splt_ref.ports["o2"]),
+            ]
+        )
 
     for name, port in exposed_ports:
         interferometer.add_port(name=name, port=port)
@@ -919,8 +943,8 @@ def mzm_unbalanced(
     # Interferometer subcell
 
     if "splitter" not in kwargs.keys():
-        splitter = "mmi1x2_optimized1550"
-        kwargs["splitter"] = splitter
+        kwargs["splitter"] = "mmi1x2_optimized1550"
+    splitter = kwargs["splitter"]
 
     splitter = gf.get_component(splitter)
 
@@ -1004,11 +1028,26 @@ def mzm_unbalanced(
     # Expose the ports
 
     exposed_ports = [
-        ("o1", interferometer.ports["o1"]),
-        ("o2", interferometer.ports["o2"]),
         ("e1", rf_line.ports["e1"]),
         ("e2", rf_line.ports["e2"]),
     ]
+
+    if "1x2" in kwargs["splitter"]:
+        exposed_ports.extend(
+            [
+                ("o1", interferometer.ports["o1"]),
+                ("o2", interferometer.ports["o2"]),
+             ]
+        )
+    elif "2x2" in kwargs["splitter"]:
+        exposed_ports.extend(
+            [
+                ("o1", interferometer.ports["o1"]),
+                ("o2", interferometer.ports["in2"]),
+                ("o3", interferometer.ports["out2"]),
+                ("o4", interferometer.ports["o2"]),
+             ]
+        )
 
     if with_heater:
         exposed_ports += [
@@ -1088,5 +1127,9 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    dc = directional_coupler_balanced()
-    dc.show()
+    mzm = mzm_unbalanced(
+        splitter="mmi2x2optimized1550",
+        length_imbalance=1200,
+        with_heater=True,
+    )
+    mzm.show()
