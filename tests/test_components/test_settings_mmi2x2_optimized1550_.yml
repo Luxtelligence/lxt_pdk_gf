@@ -1,0 +1,9 @@
+info: {}
+name: mmi2x2optimized1550_WM5_2abd2da3
+settings:
+  cross_section: xs_rwg1000
+  length_mmi: 76.5
+  length_taper: 25
+  port_ratio: 0.7
+  width_mmi: 5
+  width_taper: 1.5

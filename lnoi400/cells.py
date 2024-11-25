@@ -209,6 +209,7 @@ def mmi2x2optimized1550(
         **kwargs,
     )
 
+mmi2x2_optimized1550 = mmi2x2optimized1550
 
 #####################
 # Directional coupler
@@ -580,7 +581,8 @@ def heater_straight_single(
     bondpads = gf.components.pad_array(
         pad=gf.components.pad,
         size=pad_size,
-        spacing=(pad_pitch, pad_pitch),
+        column_pitch=pad_pitch,
+        row_pitch=pad_pitch,
         columns=2,
         port_orientation=-90.0,
         layer=LAYER.HT,
@@ -1128,7 +1130,7 @@ def chip_frame(
 
 if __name__ == "__main__":
     mzm = mzm_unbalanced(
-        splitter="mmi2x2optimized1550",
+        splitter="mmi2x2_optimized1550",
         length_imbalance=1200,
         with_heater=True,
     )
