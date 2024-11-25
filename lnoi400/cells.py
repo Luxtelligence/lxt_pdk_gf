@@ -1037,7 +1037,7 @@ def mzm_unbalanced(
             [
                 ("o1", interferometer.ports["o1"]),
                 ("o2", interferometer.ports["o2"]),
-             ]
+            ]
         )
     elif "2x2" in kwargs["splitter"]:
         exposed_ports.extend(
@@ -1046,7 +1046,7 @@ def mzm_unbalanced(
                 ("o2", interferometer.ports["in2"]),
                 ("o3", interferometer.ports["out2"]),
                 ("o4", interferometer.ports["o2"]),
-             ]
+            ]
         )
 
     if with_heater:
