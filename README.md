@@ -28,7 +28,7 @@ Then you need to restart Klayout to make sure the new technology installed appea
 
 ## Examples
 
-After installing the PDK in your environment, you can validate that it is correctly working by running the Jupyter notebooks in the examples folder [lnoi400/examples](https://github.com/Luxtelligence/lxt_pdk_gf/tree/main/lnoi400/examples).
+After installing the PDK in your environment, you can validate that it is correctly working by running the Jupyter notebooks in the examples folder [docs/notebooks](https://github.com/Luxtelligence/lxt_pdk_gf/tree/main/docs/notebooks).
 
 ## Documentation
 
