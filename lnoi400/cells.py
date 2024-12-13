@@ -1130,7 +1130,6 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-
     mzm1 = mzm_unbalanced(
         splitter="mmi1x2_optimized1550",
         length_imbalance=1200,
