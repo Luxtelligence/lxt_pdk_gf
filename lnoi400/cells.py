@@ -813,11 +813,11 @@ def _mzm_interferometer(
     # Uniformly handle the cases of a 1x2 or 2x2 MMI
 
     if "2x2" in splitter:
-        splt.ports["o3"].name = "out_top"
-        splt.ports["o4"].name = "out_bottom"
+        out_top = splt.ports["o3"]
+        out_bottom = splt.ports["o4"]
     elif "1x2" in splitter:
-        splt.ports["o2"].name = "out_top"
-        splt.ports["o3"].name = "out_bottom"
+        out_top = splt.ports["o2"]
+        out_bottom = splt.ports["o3"]
     else:
         raise ValueError(f"Splitter cell {splitter} not supported.")
 
@@ -828,8 +828,8 @@ def _mzm_interferometer(
         lbend_bottom = comb_section << lbend_combiner
         lbend_bottom.dmirror_y()
         combiner = comb_section << splt
-        lbend_top.connect("o1", combiner.ports["out_top"])
-        lbend_bottom.connect("o1", combiner.ports["out_bottom"])
+        lbend_top.connect("o1", out_top)
+        lbend_bottom.connect("o1", out_bottom)
 
         # comb_section.flatten()
 
@@ -856,8 +856,8 @@ def _mzm_interferometer(
     bl = interferometer << branch_tune_long(abs(0.5 * length_imbalance))
     cs = interferometer << combiner_section()
     bb.dmirror_y()
-    bt.connect("o1", splt_ref.ports["out_top"])
-    bb.connect("o1", splt_ref.ports["out_bottom"])
+    bt.connect("o1", out_top)
+    bb.connect("o1", out_bottom)
     if length_imbalance >= 0:
         bs.dmirror_y()
         bs.connect("o1", bb.ports["o2"])
@@ -1130,9 +1130,9 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    mzm = mzm_unbalanced(
-        splitter="mmi2x2_optimized1550",
+    mzm1 = mzm_unbalanced(
+        splitter="mmi1x2_optimized1550",
         length_imbalance=1200,
         with_heater=True,
     )
-    mzm.show()
+    mzm1.show()
