@@ -1,7 +1,6 @@
 import gdsfactory as gf
 from gdsfactory.cross_section import (
     CrossSection,
-    LayerSpec,
 )
 from gdsfactory.technology import (
     LayerLevel,
@@ -9,7 +8,7 @@ from gdsfactory.technology import (
     LayerStack,
     LogicalLayer,
 )
-from gdsfactory.typings import Layer
+from gdsfactory.typings import Layer, LayerSpec
 
 from lnoi400.config import PATH
 
