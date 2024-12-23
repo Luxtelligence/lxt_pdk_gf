@@ -17,7 +17,7 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  "gdsfactory~=8.20.0",
+  "gdsfactory~=8.26.2",
   "gplugins[sax]>=1,<2"
 ]
 description = "Luxtelligence lnoi400 pdk"
@@ -26,7 +26,7 @@ license = {file = "LICENSE"}
 name = "lnoi400"
 readme = "README.md"
 requires-python = ">=3.11"
-version = "0.1.0"
+version = "1.2.0"
 
 [project.optional-dependencies]
 dev = [
