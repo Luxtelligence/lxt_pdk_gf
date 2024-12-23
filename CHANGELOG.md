@@ -2,6 +2,14 @@
 
 The release naming convention follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.2.0
+
+### New
+
+- Balanced directional coupler building block
+- Add wavelength dependence to phase shifter model
+- Add thermo-optical phase shifter cell
+
 ## v0.1.1
 
 ### Bug fixes
@@ -11,7 +19,7 @@ The release naming convention follows [Semantic Versioning](https://semver.org/s
 
 ## v0.1.0
 
-### Added
+### New
 - Technology definition for lnoi400
 - Basic Component definitions: bends, edge coupler, mmis, uniform CPWs, phase and amplitude modulators
 - Circuit models based on [sax](https://github.com/flaport/sax)
