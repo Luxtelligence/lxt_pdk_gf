@@ -528,7 +528,7 @@ def uni_cpw_straight(
 
 @gf.cell()
 def trail_cpw(
-    length: float = 3000.,
+    length: float = 3000.0,
     signal_width: float = 21,
     gap_width: float = 4,
     ground_planes_width: float = 250,
@@ -540,11 +540,11 @@ def trail_cpw(
     rounding_radius: float = 0.5,
     num_cells: int = 30,
     bondpad: ComponentSpec = "CPW_pad_linear",
-    cross_section: CrossSectionSpec = xs_uni_cpw
+    cross_section: CrossSectionSpec = xs_uni_cpw,
 ) -> gf.Component:
     """A CPW transmission line with periodic T-rails on all electrodes"""
 
-    num_cells = (np.floor(length / (tl + tc)))
+    num_cells = np.floor(length / (tl + tc))
     gap_width_corrected = gap_width + 2 * th + 2 * tt  # total gap width with T-rails
 
     # redefine cross section to include T-rails
@@ -594,9 +594,7 @@ def trail_cpw(
 
     # Create T-rail component
     trailcomp = gf.Component()
-    _ = trailcomp.add_polygon(
-        trailpol, layer=cross_section().layer
-    )
+    _ = trailcomp.add_polygon(trailpol, layer=cross_section().layer)
 
     # Apply roc to the T-rail corners
     trailround = gf.Component()
@@ -626,7 +624,12 @@ def trail_cpw(
     [ref.dmovex(dl_tr) for ref in (inc_t1, inc_t2, inc_t3, inc_t4)]
 
     # Duplicate cell
-    cpw.add_ref(trail_uc, columns=num_cells, rows=1, column_pitch=tl + tc,)
+    cpw.add_ref(
+        trail_uc,
+        columns=num_cells,
+        rows=1,
+        column_pitch=tl + tc,
+    )
 
     cpw.flatten()
 
