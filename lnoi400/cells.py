@@ -526,6 +526,113 @@ def uni_cpw_straight(
     return cpw
 
 
+@gf.cell()
+def trail_cpw(
+    length: float = 3000.,
+    signal_width: float = 21,
+    gap_width: float = 4,
+    ground_planes_width: float = 250,
+    th: float = 1.5,
+    tl: float = 44.7,
+    tw: float = 7.0,
+    tt: float = 1.5,
+    tc: float = 5.0,
+    rounding_radius: float = 0.5,
+    num_cells: int = 30,
+    bondpad: ComponentSpec = "CPW_pad_linear",
+    cross_section: CrossSectionSpec = xs_uni_cpw
+) -> gf.Component:
+    """A CPW transmission line with periodic T-rails on all electrodes"""
+
+    num_cells = (np.floor(length / (tl + tc)))
+    gap_width_corrected = gap_width + 2 * th + 2 * tt  # total gap width with T-rails
+
+    # redefine cross section to include T-rails
+    xs_cpw_trail = partial(
+        cross_section,
+        central_conductor_width=signal_width,
+        gap=gap_width_corrected,
+        ground_planes_width=ground_planes_width,
+    )
+
+    cpw = gf.Component()
+    bp = gf.get_component(bondpad, cross_section=xs_cpw_trail)
+    strght = cpw << gf.components.straight(length=length, cross_section=xs_cpw_trail)
+    bp1 = cpw << bp
+    bp2 = cpw << bp
+    bp1.connect("e2", strght.ports["e1"])
+    bp2.dmirror()
+    bp2.connect("e2", strght.ports["e2"])
+    cpw.add_ports(strght.ports)
+
+    cpw.add_port(
+        name="bp1",
+        port=bp1.ports["e1"],
+    )
+    cpw.add_port(
+        name="bp2",
+        port=bp2.ports["e1"],
+    )
+
+    # Initiate T-rail polygon element. Create a bit more to ensure round corners close to electrodes
+    trailpol = gf.kdb.DPolygon(
+        [
+            (tl, signal_width / 2),
+            (tl, signal_width / 2 - tt),
+            (0, signal_width / 2 - tt),
+            (0, signal_width / 2),
+            (tl / 2 - tw / 2, signal_width / 2),
+            (tl / 2 - tw / 2, signal_width / 2 + th),
+            (0, signal_width / 2 + th),
+            (0, signal_width / 2 + th + tt),
+            (tl, signal_width / 2 + th + tt),
+            (tl, signal_width / 2 + th),
+            (tl / 2 + tw / 2, signal_width / 2 + th),
+            (tl / 2 + tw / 2, signal_width / 2),
+        ]
+    )
+
+    # Create T-rail component
+    trailcomp = gf.Component()
+    _ = trailcomp.add_polygon(
+        trailpol, layer=cross_section().layer
+    )
+
+    # Apply roc to the T-rail corners
+    trailround = gf.Component()
+    rinner = rounding_radius * 1000  # 	The circle radius of inner corners (in nm).
+    router = rounding_radius * 1000  # 	The circle radius of outer corners (in nm).
+    n = 30  # 	The number of points per full circle.
+
+    for layer, polygons in trailcomp.get_polygons().items():
+        for p in polygons:
+            p_round = p.round_corners(rinner, router, n)
+            trailround.add_polygon(p_round, layer=layer)
+
+    # Create T-rail unit cell
+    trail_uc = gf.Component()
+    inc_t1 = trail_uc << trailround
+    inc_t2 = trail_uc << trailround
+    inc_t2.dmovey(gap_width_corrected - th)
+    inc_t3 = trail_uc << trailround
+    inc_t3.dmovey(-signal_width - th)
+    inc_t4 = trail_uc << trailround
+    inc_t4.dmovey(-signal_width - gap_width_corrected)
+
+    # Place T-rails symmetrically w/r to bondpads
+
+    dl_tr = 0.5 * (length - num_cells * tl - (num_cells - 1) * tc)
+
+    [ref.dmovex(dl_tr) for ref in (inc_t1, inc_t2, inc_t3, inc_t4)]
+
+    # Duplicate cell
+    cpw.add_ref(trail_uc, columns=num_cells, rows=1, column_pitch=tl + tc,)
+
+    cpw.flatten()
+
+    return cpw
+
+
 ###################
 # Thermal shifters
 ###################
@@ -1130,9 +1237,4 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    mzm1 = mzm_unbalanced(
-        splitter="mmi1x2_optimized1550",
-        length_imbalance=1200,
-        with_heater=True,
-    )
-    mzm1.show()
+    trail_cpw().show()
