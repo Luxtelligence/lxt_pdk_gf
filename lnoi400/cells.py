@@ -718,7 +718,7 @@ def heater_straight_single(
 
     ht_ref = c << ht
 
-    bps.dcenter = [ht_ref.dcenter.x, bps.dcenter.y]
+    bps.dcenter = ht_ref.dcenter
     bps.dymin = ht_ref.dymax + pad_vert_offset
 
     port_contact_width = port_contact_width_ratio * width
@@ -1260,5 +1260,4 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    # mzm_unbalanced(splitter="mmi2x2_optimized1550").show()
-    uni_cpw_straight().show()
+    mzm_unbalanced(splitter="mmi2x2_optimized1550", with_heater=True).show()
