@@ -1,7 +1,7 @@
 info: {}
-name: uni_cpw_straight_L3000__d19048f2
+name: uni_cpw_straight_L1000__860cc07c
 settings:
   bondpad: CPW_pad_linear
   cross_section: xs_uni_cpw
-  length: 3000
+  length: 1000
   signal_width: 15

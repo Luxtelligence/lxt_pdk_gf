@@ -495,7 +495,7 @@ def CPW_pad_linear(
 
 @gf.cell()
 def uni_cpw_straight(
-    length: float = 3000.0,
+    length: float = 1000.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw",
     signal_width: float = 15.0,
     bondpad: ComponentSpec = "CPW_pad_linear",
@@ -530,7 +530,7 @@ def uni_cpw_straight(
 
 @gf.cell()
 def trail_cpw(
-    length: float = 3000.0,
+    length: float = 1000.0,
     signal_width: float = 21,
     gap_width: float = 4,
     ground_planes_width: float = 250,
