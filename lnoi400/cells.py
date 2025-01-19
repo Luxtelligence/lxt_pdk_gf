@@ -497,12 +497,12 @@ def CPW_pad_linear(
 def uni_cpw_straight(
     length: float = 3000.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw",
-    signal_width: float = 10.0,
+    signal_width: float = 15.0,
     bondpad: ComponentSpec = "CPW_pad_linear",
 ) -> gf.Component:
     """A CPW transmission line for microwaves, with a uniform cross section."""
 
-    cpw_xs = gf.get_component(cross_section, central_conductor_width=signal_width)
+    cpw_xs = gf.get_cross_section(cross_section, central_conductor_width=signal_width)
     cpw = gf.Component()
     bp = gf.get_component(bondpad, cross_section=cpw_xs)
 
@@ -1260,4 +1260,5 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    mzm_unbalanced(spillter="mmi2x2_optimized1550").show()
+    # mzm_unbalanced(splitter="mmi2x2_optimized1550").show()
+    uni_cpw_straight().show()
