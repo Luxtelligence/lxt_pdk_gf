@@ -497,14 +497,16 @@ def CPW_pad_linear(
 def uni_cpw_straight(
     length: float = 3000.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw",
+    signal_width: float = 10.0,
     bondpad: ComponentSpec = "CPW_pad_linear",
 ) -> gf.Component:
     """A CPW transmission line for microwaves, with a uniform cross section."""
 
+    cpw_xs = gf.get_component(cross_section, central_conductor_width=signal_width)
     cpw = gf.Component()
-    bp = gf.get_component(bondpad, cross_section=cross_section)
+    bp = gf.get_component(bondpad, cross_section=cpw_xs)
 
-    tl = cpw << gf.components.straight(length=length, cross_section=cross_section)
+    tl = cpw << gf.components.straight(length=length, cross_section=cpw_xs)
     bp1 = cpw << bp
     bp2 = cpw << bp
 
@@ -777,9 +779,10 @@ def eo_phase_shifter(
     rib_core_width_modulator: float = 2.5,
     taper_length: float = 100.0,
     modulation_length: float = 7500.0,
-    rf_central_conductor_width: float = 10.0,
+    rf_central_conductor_width: float = 21.0,
     rf_ground_planes_width: float = 180.0,
     rf_gap: float = 4.0,
+    cpw_cell: ComponentSpec = trail_cpw,
     draw_cpw: bool = True,
 ) -> gf.Component:
     """Phase shifter based on the Pockels effect. The waveguide is located
@@ -817,18 +820,24 @@ def eo_phase_shifter(
             gap=rf_gap,
         )
 
-        tl = ps << gf.components.straight(
-            length=modulation_length, cross_section=xs_cpw
+        tl = ps << cpw_cell(
+            length=modulation_length,
+            cross_section=xs_cpw,
+            signal_width=rf_central_conductor_width,
+        )
+
+        gap_eff = rf_gap + 2 * np.sum(
+            [tl.cell.settings[key] for key in ("tt", "th") if key in tl.cell.settings]
         )
 
         tl.dmove(
             tl.ports["e1"].dcenter,
-            (0.0, -0.5 * rf_central_conductor_width - 0.5 * rf_gap),
+            (0.0, -0.5 * rf_central_conductor_width - 0.5 * gap_eff),
         )
 
         for name, port in [
-            ("e1", tl.ports["e1"]),
-            ("e2", tl.ports["e2"]),
+            ("e1", tl.ports["bp1"]),
+            ("e2", tl.ports["bp2"]),
         ]:
             ps.add_port(name=name, port=port)
 
@@ -922,10 +931,10 @@ def _mzm_interferometer(
 
     # Uniformly handle the cases of a 1x2 or 2x2 MMI
 
-    if "2x2" in splitter:
+    if len(splt.ports) == 4:
         out_top = splt.ports["o3"]
         out_bottom = splt.ports["o4"]
-    elif "1x2" in splitter:
+    elif len(splt.ports) == 3:
         out_top = splt.ports["o2"]
         out_bottom = splt.ports["o3"]
     else:
@@ -1012,12 +1021,13 @@ def mzm_unbalanced(
     length_imbalance: float = 100.0,
     lbend_tune_arm_reff: float = 75.0,
     rf_pad_start_width: float = 80.0,
-    rf_central_conductor_width: float = 10.0,
+    rf_central_conductor_width: float = 21.0,
     rf_ground_planes_width: float = 180.0,
     rf_gap: float = 4.0,
     rf_pad_length_straight: float = 10.0,
-    rf_pad_length_tapered: float = 190.0,
+    rf_pad_length_tapered: float = 300.0,
     bias_tuning_section_length: float = 700.0,
+    cpw_cell: ComponentSpec = trail_cpw,
     with_heater: bool = False,
     heater_offset: float = 1.2,
     heater_width: float = 1.0,
@@ -1038,7 +1048,7 @@ def mzm_unbalanced(
         gap=rf_gap,
     )
 
-    rf_line = mzm << uni_cpw_straight(
+    rf_line = mzm << cpw_cell(
         bondpad={
             "component": "CPW_pad_linear",
             "settings": {
@@ -1048,7 +1058,8 @@ def mzm_unbalanced(
             },
         },
         length=modulation_length,
-        cross_section=xs_cpw(),
+        signal_width=rf_central_conductor_width,
+        cross_section=xs_cpw,
     )
 
     rf_line.dmove(rf_line.ports["e1"].dcenter, (0.0, 0.0))
@@ -1062,6 +1073,15 @@ def mzm_unbalanced(
     splitter = gf.get_component(splitter)
 
     sbend_large_AR = 3.6
+
+    gap_eff = rf_gap + 2 * np.sum(
+        [
+            rf_line.cell.settings[key]
+            for key in ("tt", "th")
+            if key in rf_line.cell.settings
+        ]
+    )
+
     GS_separation = rf_pad_start_width * rf_gap / rf_central_conductor_width
 
     sbend_large_v_offset = (
@@ -1098,7 +1118,7 @@ def mzm_unbalanced(
                     rf_pad_start_width
                     - rf_central_conductor_width
                     + GS_separation
-                    - rf_gap
+                    - gap_eff
                 ),
             ),
             sbend_small_straight_extend=sbend_small_straight_length,
@@ -1111,7 +1131,7 @@ def mzm_unbalanced(
 
     interferometer.dmove(
         interferometer.ports["upper_taper_start"].dcenter,
-        (0.0, 0.5 * (rf_central_conductor_width + rf_gap)),
+        (0.0, 0.5 * (rf_central_conductor_width + gap_eff)),
     )
 
     # Add heater for phase tuning
@@ -1141,8 +1161,8 @@ def mzm_unbalanced(
     # Expose the ports
 
     exposed_ports = [
-        ("e1", rf_line.ports["e1"]),
-        ("e2", rf_line.ports["e2"]),
+        ("e1", rf_line.ports["bp1"]),
+        ("e2", rf_line.ports["bp2"]),
     ]
 
     if "1x2" in kwargs["splitter"]:
@@ -1240,4 +1260,4 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    trail_cpw().show()
+    mzm_unbalanced(spillter="mmi2x2_optimized1550").show()
