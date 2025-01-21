@@ -1048,14 +1048,13 @@ def mzm_unbalanced(
         gap=rf_gap,
     )
 
-    if cpw_cell.__name__ == 'trail_cpw':
+    if cpw_cell.__name__ == "trail_cpw":
         prms_t_rail = {
-        "ground_planes_width" : rf_ground_planes_width,
-        "gap_width" : rf_gap,
+            "ground_planes_width": rf_ground_planes_width,
+            "gap_width": rf_gap,
         }
     else:
-        prms_t_rail = {
-        }
+        prms_t_rail = {}
     rf_line = mzm << cpw_cell(
         bondpad={
             "component": "CPW_pad_linear",
