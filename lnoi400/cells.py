@@ -509,7 +509,7 @@ def uni_cpw_straight(
         central_conductor_width=signal_width,
         gap=gap_width,
         ground_planes_width=ground_planes_width,
-        )
+    )
     cpw = gf.Component()
     bp = gf.get_component(bondpad, cross_section=cpw_xs)
 
