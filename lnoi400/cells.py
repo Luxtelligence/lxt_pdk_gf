@@ -497,12 +497,19 @@ def CPW_pad_linear(
 def uni_cpw_straight(
     length: float = 1000.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw",
-    signal_width: float = 15.0,
+    signal_width: float = 10.0,
+    gap_width: float = 4.0,
+    ground_planes_width: float = 250.0,
     bondpad: ComponentSpec = "CPW_pad_linear",
 ) -> gf.Component:
     """A CPW transmission line for microwaves, with a uniform cross section."""
 
-    cpw_xs = gf.get_cross_section(cross_section, central_conductor_width=signal_width)
+    cpw_xs = gf.get_cross_section(
+        cross_section,
+        central_conductor_width=signal_width,
+        gap=gap_width,
+        ground_planes_width=ground_planes_width,
+        )
     cpw = gf.Component()
     bp = gf.get_component(bondpad, cross_section=cpw_xs)
 
@@ -533,12 +540,12 @@ def trail_cpw(
     length: float = 1000.0,
     signal_width: float = 21,
     gap_width: float = 4,
-    ground_planes_width: float = 250,
     th: float = 1.5,
     tl: float = 44.7,
     tw: float = 7.0,
     tt: float = 1.5,
     tc: float = 5.0,
+    ground_planes_width: float = 180.0,
     rounding_radius: float = 0.5,
     num_cells: int = 30,
     bondpad: ComponentSpec = "CPW_pad_linear",
@@ -1048,13 +1055,6 @@ def mzm_unbalanced(
         gap=rf_gap,
     )
 
-    if cpw_cell.__name__ == "trail_cpw":
-        prms_t_rail = {
-            "ground_planes_width": rf_ground_planes_width,
-            "gap_width": rf_gap,
-        }
-    else:
-        prms_t_rail = {}
     rf_line = mzm << cpw_cell(
         bondpad={
             "component": "CPW_pad_linear",
@@ -1066,8 +1066,9 @@ def mzm_unbalanced(
         },
         length=modulation_length,
         signal_width=rf_central_conductor_width,
-        **prms_t_rail,
         cross_section=xs_cpw,
+        ground_planes_width=rf_ground_planes_width,
+        gap_width=rf_gap,
     )
 
     rf_line.dmove(rf_line.ports["e1"].dcenter, (0.0, 0.0))

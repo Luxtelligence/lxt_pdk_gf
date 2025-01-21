@@ -1,7 +1,9 @@
 info: {}
-name: uni_cpw_straight_L1000__860cc07c
+name: uni_cpw_straight_L1000__ab5142b1
 settings:
   bondpad: CPW_pad_linear
   cross_section: xs_uni_cpw
+  gap_width: 4
+  ground_planes_width: 250
   length: 1000
-  signal_width: 15
+  signal_width: 10

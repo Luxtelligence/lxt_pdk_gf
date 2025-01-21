@@ -1,10 +1,10 @@
 info: {}
-name: trail_cpw_L1000_SW21_GW_8eb6674c
+name: trail_cpw_L1000_SW21_GW_4037e6b8
 settings:
   bondpad: CPW_pad_linear
   cross_section: xs_uni_cpw
   gap_width: 4
-  ground_planes_width: 250
+  ground_planes_width: 180
   length: 1000
   num_cells: 30
   rounding_radius: 0.5
