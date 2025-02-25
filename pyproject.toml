@@ -38,7 +38,7 @@ dev = [
 docs = [
   "jupytext",
   "matplotlib",
-  "jupyter-book==1.0.3"
+  "jupyter-book==1.0.4"
 ]
 
 [tool.codespell]
