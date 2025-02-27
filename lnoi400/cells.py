@@ -547,7 +547,6 @@ def trail_cpw(
     tc: float = 5.0,
     ground_planes_width: float = 180.0,
     rounding_radius: float = 0.5,
-    num_cells: int = 30,
     bondpad: ComponentSpec = "CPW_pad_linear",
     cross_section: CrossSectionSpec = xs_uni_cpw,
 ) -> gf.Component:
