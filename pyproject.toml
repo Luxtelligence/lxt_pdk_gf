@@ -44,14 +44,14 @@ plus = [
   "gdsfactoryplus"
 ]
 
-[tool.gdsfactoryplus.pdk]
-name = "lnoi400"
+[tool.codespell]
+ignore-words-list = "te, te/tm, te, ba, fpr, fpr_spacing, ro, nd, donot, schem"
 
 [tool.gdsfactoryplus.drc]
 timeout = 300
 
-[tool.codespell]
-ignore-words-list = "te, te/tm, te, ba, fpr, fpr_spacing, ro, nd, donot, schem"
+[tool.gdsfactoryplus.pdk]
+name = "lnoi400"
 
 [tool.mypy]
 python_version = "3.11"
