@@ -18,7 +18,6 @@ classifiers = [
 ]
 dependencies = [
   "gdsfactory~=8.26.2",
-  "gdsfactoryplus",
   "gplugins[sax]>=1,<2"
 ]
 description = "Luxtelligence lnoi400 pdk"
@@ -40,6 +39,9 @@ docs = [
   "jupytext",
   "matplotlib",
   "jupyter-book==1.0.3"
+]
+plus = [
+  "gdsfactoryplus"
 ]
 
 [tool.gdsfactoryplus.pdk]

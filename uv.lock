@@ -1351,7 +1351,6 @@ version = "1.2.0"
 source = { editable = "." }
 dependencies = [
     { name = "gdsfactory" },
-    { name = "gdsfactoryplus" },
     { name = "gplugins", extra = ["sax"] },
 ]
 
@@ -1367,11 +1366,14 @@ docs = [
     { name = "jupytext" },
     { name = "matplotlib" },
 ]
+plus = [
+    { name = "gdsfactoryplus" },
+]
 
 [package.metadata]
 requires-dist = [
     { name = "gdsfactory", specifier = "~=8.26.2" },
-    { name = "gdsfactoryplus" },
+    { name = "gdsfactoryplus", marker = "extra == 'plus'" },
     { name = "gplugins", extras = ["sax"], specifier = ">=1,<2" },
     { name = "jupyter-book", marker = "extra == 'docs'", specifier = "==1.0.3" },
     { name = "jupytext", marker = "extra == 'docs'" },
