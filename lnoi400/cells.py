@@ -459,11 +459,11 @@ def CPW_pad_linear(
         (0.0, end_width / 2.0 + end_gap + ground_planes_width),
     ]
 
-    bottom_ground_shape = gf.Path(ground_plane_shape).mirror((0, 0), (1, 0))
+    bottom_ground_shape = [(p[0], -p[1]) for p in ground_plane_shape]
 
     pad.add_polygon(central_conductor_shape, layer="TL")
     pad.add_polygon(ground_plane_shape, layer="TL")
-    pad.add_polygon(bottom_ground_shape.points, layer="TL")
+    pad.add_polygon(bottom_ground_shape, layer="TL")
 
     # Ports definition
 
@@ -495,16 +495,25 @@ def CPW_pad_linear(
 
 @gf.cell()
 def uni_cpw_straight(
-    length: float = 3000.0,
+    length: float = 1000.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw",
+    signal_width: float = 10.0,
+    gap_width: float = 4.0,
+    ground_planes_width: float = 250.0,
     bondpad: ComponentSpec = "CPW_pad_linear",
 ) -> gf.Component:
     """A CPW transmission line for microwaves, with a uniform cross section."""
 
+    cpw_xs = gf.get_cross_section(
+        cross_section,
+        central_conductor_width=signal_width,
+        gap=gap_width,
+        ground_planes_width=ground_planes_width,
+    )
     cpw = gf.Component()
-    bp = gf.get_component(bondpad, cross_section=cross_section)
+    bp = gf.get_component(bondpad, cross_section=cpw_xs)
 
-    tl = cpw << gf.components.straight(length=length, cross_section=cross_section)
+    tl = cpw << gf.components.straight(length=length, cross_section=cpw_xs)
     bp1 = cpw << bp
     bp2 = cpw << bp
 
@@ -521,6 +530,115 @@ def uni_cpw_straight(
         name="bp2",
         port=bp2.ports["e1"],
     )
+    cpw.flatten()
+
+    return cpw
+
+
+@gf.cell()
+def trail_cpw(
+    length: float = 1000.0,
+    signal_width: float = 21,
+    gap_width: float = 4,
+    th: float = 1.5,
+    tl: float = 44.7,
+    tw: float = 7.0,
+    tt: float = 1.5,
+    tc: float = 5.0,
+    ground_planes_width: float = 180.0,
+    rounding_radius: float = 0.5,
+    bondpad: ComponentSpec = "CPW_pad_linear",
+    cross_section: CrossSectionSpec = xs_uni_cpw,
+) -> gf.Component:
+    """A CPW transmission line with periodic T-rails on all electrodes"""
+
+    num_cells = np.floor(length / (tl + tc))
+    gap_width_corrected = gap_width + 2 * th + 2 * tt  # total gap width with T-rails
+
+    # redefine cross section to include T-rails
+    xs_cpw_trail = partial(
+        cross_section,
+        central_conductor_width=signal_width,
+        gap=gap_width_corrected,
+        ground_planes_width=ground_planes_width,
+    )
+
+    cpw = gf.Component()
+    bp = gf.get_component(bondpad, cross_section=xs_cpw_trail)
+    strght = cpw << gf.components.straight(length=length, cross_section=xs_cpw_trail)
+    bp1 = cpw << bp
+    bp2 = cpw << bp
+    bp1.connect("e2", strght.ports["e1"])
+    bp2.dmirror()
+    bp2.connect("e2", strght.ports["e2"])
+    cpw.add_ports(strght.ports)
+
+    cpw.add_port(
+        name="bp1",
+        port=bp1.ports["e1"],
+    )
+    cpw.add_port(
+        name="bp2",
+        port=bp2.ports["e1"],
+    )
+
+    # Initiate T-rail polygon element. Create a bit more to ensure round corners close to electrodes
+    trailpol = gf.kdb.DPolygon(
+        [
+            (tl, signal_width / 2),
+            (tl, signal_width / 2 - tt),
+            (0, signal_width / 2 - tt),
+            (0, signal_width / 2),
+            (tl / 2 - tw / 2, signal_width / 2),
+            (tl / 2 - tw / 2, signal_width / 2 + th),
+            (0, signal_width / 2 + th),
+            (0, signal_width / 2 + th + tt),
+            (tl, signal_width / 2 + th + tt),
+            (tl, signal_width / 2 + th),
+            (tl / 2 + tw / 2, signal_width / 2 + th),
+            (tl / 2 + tw / 2, signal_width / 2),
+        ]
+    )
+
+    # Create T-rail component
+    trailcomp = gf.Component()
+    _ = trailcomp.add_polygon(trailpol, layer=cross_section().layer)
+
+    # Apply roc to the T-rail corners
+    trailround = gf.Component()
+    rinner = rounding_radius * 1000  # 	The circle radius of inner corners (in nm).
+    router = rounding_radius * 1000  # 	The circle radius of outer corners (in nm).
+    n = 30  # 	The number of points per full circle.
+
+    for layer, polygons in trailcomp.get_polygons().items():
+        for p in polygons:
+            p_round = p.round_corners(rinner, router, n)
+            trailround.add_polygon(p_round, layer=layer)
+
+    # Create T-rail unit cell
+    trail_uc = gf.Component()
+    inc_t1 = trail_uc << trailround
+    inc_t2 = trail_uc << trailround
+    inc_t2.dmovey(gap_width_corrected - th)
+    inc_t3 = trail_uc << trailround
+    inc_t3.dmovey(-signal_width - th)
+    inc_t4 = trail_uc << trailround
+    inc_t4.dmovey(-signal_width - gap_width_corrected)
+
+    # Place T-rails symmetrically w/r to bondpads
+
+    dl_tr = 0.5 * (length - num_cells * tl - (num_cells - 1) * tc)
+
+    [ref.dmovex(dl_tr) for ref in (inc_t1, inc_t2, inc_t3, inc_t4)]
+
+    # Duplicate cell
+    cpw.add_ref(
+        trail_uc,
+        columns=num_cells,
+        rows=1,
+        column_pitch=tl + tc,
+    )
+
     cpw.flatten()
 
     return cpw
@@ -606,7 +724,7 @@ def heater_straight_single(
 
     ht_ref = c << ht
 
-    bps.dcenter = [ht_ref.dcenter.x, bps.dcenter.y]
+    bps.dcenter = ht_ref.dcenter
     bps.dymin = ht_ref.dymax + pad_vert_offset
 
     port_contact_width = port_contact_width_ratio * width
@@ -667,9 +785,10 @@ def eo_phase_shifter(
     rib_core_width_modulator: float = 2.5,
     taper_length: float = 100.0,
     modulation_length: float = 7500.0,
-    rf_central_conductor_width: float = 10.0,
+    rf_central_conductor_width: float = 21.0,
     rf_ground_planes_width: float = 180.0,
     rf_gap: float = 4.0,
+    cpw_cell: ComponentSpec = trail_cpw,
     draw_cpw: bool = True,
 ) -> gf.Component:
     """Phase shifter based on the Pockels effect. The waveguide is located
@@ -707,18 +826,24 @@ def eo_phase_shifter(
             gap=rf_gap,
         )
 
-        tl = ps << gf.components.straight(
-            length=modulation_length, cross_section=xs_cpw
+        tl = ps << cpw_cell(
+            length=modulation_length,
+            cross_section=xs_cpw,
+            signal_width=rf_central_conductor_width,
+        )
+
+        gap_eff = rf_gap + 2 * np.sum(
+            [tl.cell.settings[key] for key in ("tt", "th") if key in tl.cell.settings]
         )
 
         tl.dmove(
             tl.ports["e1"].dcenter,
-            (0.0, -0.5 * rf_central_conductor_width - 0.5 * rf_gap),
+            (0.0, -0.5 * rf_central_conductor_width - 0.5 * gap_eff),
         )
 
         for name, port in [
-            ("e1", tl.ports["e1"]),
-            ("e2", tl.ports["e2"]),
+            ("e1", tl.ports["bp1"]),
+            ("e2", tl.ports["bp2"]),
         ]:
             ps.add_port(name=name, port=port)
 
@@ -812,10 +937,10 @@ def _mzm_interferometer(
 
     # Uniformly handle the cases of a 1x2 or 2x2 MMI
 
-    if "2x2" in splitter:
+    if len(splt.ports) == 4:
         out_top = splt.ports["o3"]
         out_bottom = splt.ports["o4"]
-    elif "1x2" in splitter:
+    elif len(splt.ports) == 3:
         out_top = splt.ports["o2"]
         out_bottom = splt.ports["o3"]
     else:
@@ -902,12 +1027,13 @@ def mzm_unbalanced(
     length_imbalance: float = 100.0,
     lbend_tune_arm_reff: float = 75.0,
     rf_pad_start_width: float = 80.0,
-    rf_central_conductor_width: float = 10.0,
+    rf_central_conductor_width: float = 21.0,
     rf_ground_planes_width: float = 180.0,
     rf_gap: float = 4.0,
     rf_pad_length_straight: float = 10.0,
-    rf_pad_length_tapered: float = 190.0,
+    rf_pad_length_tapered: float = 300.0,
     bias_tuning_section_length: float = 700.0,
+    cpw_cell: ComponentSpec = trail_cpw,
     with_heater: bool = False,
     heater_offset: float = 1.2,
     heater_width: float = 1.0,
@@ -928,7 +1054,7 @@ def mzm_unbalanced(
         gap=rf_gap,
     )
 
-    rf_line = mzm << uni_cpw_straight(
+    rf_line = mzm << cpw_cell(
         bondpad={
             "component": "CPW_pad_linear",
             "settings": {
@@ -938,7 +1064,10 @@ def mzm_unbalanced(
             },
         },
         length=modulation_length,
-        cross_section=xs_cpw(),
+        signal_width=rf_central_conductor_width,
+        cross_section=xs_cpw,
+        ground_planes_width=rf_ground_planes_width,
+        gap_width=rf_gap,
     )
 
     rf_line.dmove(rf_line.ports["e1"].dcenter, (0.0, 0.0))
@@ -952,6 +1081,15 @@ def mzm_unbalanced(
     splitter = gf.get_component(splitter)
 
     sbend_large_AR = 3.6
+
+    gap_eff = rf_gap + 2 * np.sum(
+        [
+            rf_line.cell.settings[key]
+            for key in ("tt", "th")
+            if key in rf_line.cell.settings
+        ]
+    )
+
     GS_separation = rf_pad_start_width * rf_gap / rf_central_conductor_width
 
     sbend_large_v_offset = (
@@ -988,7 +1126,7 @@ def mzm_unbalanced(
                     rf_pad_start_width
                     - rf_central_conductor_width
                     + GS_separation
-                    - rf_gap
+                    - gap_eff
                 ),
             ),
             sbend_small_straight_extend=sbend_small_straight_length,
@@ -1001,7 +1139,7 @@ def mzm_unbalanced(
 
     interferometer.dmove(
         interferometer.ports["upper_taper_start"].dcenter,
-        (0.0, 0.5 * (rf_central_conductor_width + rf_gap)),
+        (0.0, 0.5 * (rf_central_conductor_width + gap_eff)),
     )
 
     # Add heater for phase tuning
@@ -1031,8 +1169,8 @@ def mzm_unbalanced(
     # Expose the ports
 
     exposed_ports = [
-        ("e1", rf_line.ports["e1"]),
-        ("e2", rf_line.ports["e2"]),
+        ("e1", rf_line.ports["bp1"]),
+        ("e2", rf_line.ports["bp2"]),
     ]
 
     if "1x2" in kwargs["splitter"]:
@@ -1130,9 +1268,4 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    mzm1 = mzm_unbalanced(
-        splitter="mmi1x2_optimized1550",
-        length_imbalance=1200,
-        with_heater=True,
-    )
-    mzm1.show()
+    mzm_unbalanced(splitter="mmi2x2_optimized1550", with_heater=True).show()
