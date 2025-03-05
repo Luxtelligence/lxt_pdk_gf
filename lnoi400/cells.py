@@ -459,11 +459,11 @@ def CPW_pad_linear(
         (0.0, end_width / 2.0 + end_gap + ground_planes_width),
     ]
 
-    bottom_ground_shape = gf.Path(ground_plane_shape).mirror((0, 0), (1, 0))
+    bottom_ground_shape = [(p[0], -p[1]) for p in ground_plane_shape]
 
     pad.add_polygon(central_conductor_shape, layer="TL")
     pad.add_polygon(ground_plane_shape, layer="TL")
-    pad.add_polygon(bottom_ground_shape.points, layer="TL")
+    pad.add_polygon(bottom_ground_shape, layer="TL")
 
     # Ports definition
 
