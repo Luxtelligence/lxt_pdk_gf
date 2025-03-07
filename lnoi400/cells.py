@@ -1090,7 +1090,7 @@ def mzm_unbalanced(
         ]
     )
 
-    GS_separation = rf_pad_start_width * rf_gap / rf_central_conductor_width
+    GS_separation = rf_pad_start_width * gap_eff / rf_central_conductor_width
 
     sbend_large_v_offset = (
         0.5 * rf_pad_start_width
