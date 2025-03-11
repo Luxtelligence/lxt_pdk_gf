@@ -1,20 +1,3 @@
 info: {}
-name: mzm_unbalanced_high_spe_d26a8f72
-settings:
-  bias_tuning_section_length: 700
-  cpw_cell: trail_cpw
-  heater_offset: 1.2
-  heater_pad_size:
-  - 75
-  - 75
-  heater_width: 1
-  lbend_tune_arm_reff: 75
-  length_imbalance: 100
-  modulation_length: 7500
-  rf_central_conductor_width: 21
-  rf_gap: 4
-  rf_ground_planes_width: 180
-  rf_pad_length_straight: 10
-  rf_pad_length_tapered: 300
-  rf_pad_start_width: 80
-  with_heater: false
+name: mzm_unbalanced_high_speed
+settings: {}

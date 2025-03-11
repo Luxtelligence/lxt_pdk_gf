@@ -852,6 +852,7 @@ def eo_phase_shifter(
 
     return ps
 
+
 @gf.cell
 def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     """High-speed phase shifter based on the Pockels effect. The waveguide is located
@@ -1214,6 +1215,7 @@ def mzm_unbalanced(
 
     return mzm
 
+
 @gf.cell
 def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     """High-speed Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
@@ -1223,6 +1225,7 @@ def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     kwargs.setdefault("rf_central_conductor_width", 21.0)
     kwargs.setdefault("cpw_cell", trail_cpw)
     return mzm_unbalanced(**kwargs)
+
 
 ##################
 # Chip floorplan
