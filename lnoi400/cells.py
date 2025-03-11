@@ -825,11 +825,12 @@ def eo_phase_shifter(
             ground_planes_width=rf_ground_planes_width,
             gap=rf_gap,
         )
-
         tl = ps << cpw_cell(
             length=modulation_length,
             cross_section=xs_cpw,
+            gap_width=rf_gap,
             signal_width=rf_central_conductor_width,
+            ground_planes_width=rf_ground_planes_width,
         )
 
         gap_eff = rf_gap + 2 * np.sum(
