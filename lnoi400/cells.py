@@ -862,7 +862,9 @@ def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     """
     kwargs.setdefault("rf_central_conductor_width", 21.0)
     kwargs.setdefault("cpw_cell", trail_cpw)
-    return eo_phase_shifter(**kwargs)
+    ps = eo_phase_shifter(**kwargs)
+    ps.info["additional_settings"] = dict(ps.settings)
+    return ps
 
 
 @gf.cell
@@ -1226,7 +1228,9 @@ def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     """
     kwargs.setdefault("rf_central_conductor_width", 21.0)
     kwargs.setdefault("cpw_cell", trail_cpw)
-    return mzm_unbalanced(**kwargs)
+    mzm = mzm_unbalanced(**kwargs)
+    mzm.info["additional_settings"] = dict(mzm.settings)
+    return mzm
 
 
 ##################
@@ -1293,4 +1297,4 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    mzm_unbalanced(splitter="mmi2x2_optimized1550", with_heater=True).show()
+    pass
