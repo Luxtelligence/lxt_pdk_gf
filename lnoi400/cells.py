@@ -856,9 +856,10 @@ def eo_phase_shifter(
 @gf.cell
 def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     """High-speed phase shifter based on the Pockels effect. The waveguide is located
-    within the gap of a CPW transmission line."""
-    # Note: The base variants (eo_phase_shifter and mzm_unbalanced) use a default of 10.0,
-    # while high-speed variants explicitly pass 21.0 for rf_central_conductor_width to achieve the desired high-speed properties.
+    within the gap of a CPW transmission line.
+    Note: The base variant (eo_phase_shifter) uses a default central conductor width of 10.0,
+    while this high-speed variant explicitly passes 21.0 for rf_central_conductor_width to achieve the desired high-speed properties.
+    """
     kwargs.setdefault("rf_central_conductor_width", 21.0)
     kwargs.setdefault("cpw_cell", trail_cpw)
     return eo_phase_shifter(**kwargs)
@@ -1219,9 +1220,10 @@ def mzm_unbalanced(
 @gf.cell
 def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     """High-speed Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
-    The modulator works in a differential push-pull configuration driven by a single GSG line."""
-    # Note: The base variants (eo_phase_shifter and mzm_unbalanced) use a default of 10.0,
-    # while high-speed variants explicitly pass 21.0 for rf_central_conductor_width to achieve the desired high-speed properties.
+    The modulator works in a differential push-pull configuration driven by a single GSG line.
+    Note: The base variant (mzm_unbalanced) uses a default central conductor width of 10.0,
+    while this high-speed variant explicitly passes 21.0 for rf_central_conductor_width to achieve the desired high-speed properties.
+    """
     kwargs.setdefault("rf_central_conductor_width", 21.0)
     kwargs.setdefault("cpw_cell", trail_cpw)
     return mzm_unbalanced(**kwargs)
