@@ -785,10 +785,10 @@ def eo_phase_shifter(
     rib_core_width_modulator: float = 2.5,
     taper_length: float = 100.0,
     modulation_length: float = 7500.0,
-    rf_central_conductor_width: float = 21.0,
+    rf_central_conductor_width: float = 10.0,
     rf_ground_planes_width: float = 180.0,
     rf_gap: float = 4.0,
-    cpw_cell: ComponentSpec = trail_cpw,
+    cpw_cell: ComponentSpec = uni_cpw_straight,
     draw_cpw: bool = True,
 ) -> gf.Component:
     """Phase shifter based on the Pockels effect. The waveguide is located
@@ -825,11 +825,12 @@ def eo_phase_shifter(
             ground_planes_width=rf_ground_planes_width,
             gap=rf_gap,
         )
-
         tl = ps << cpw_cell(
             length=modulation_length,
             cross_section=xs_cpw,
+            gap_width=rf_gap,
             signal_width=rf_central_conductor_width,
+            ground_planes_width=rf_ground_planes_width,
         )
 
         gap_eff = rf_gap + 2 * np.sum(
@@ -849,6 +850,20 @@ def eo_phase_shifter(
 
     ps.flatten()
 
+    return ps
+
+
+@gf.cell
+def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
+    """High-speed phase shifter based on the Pockels effect. The waveguide is located
+    within the gap of a CPW transmission line.
+    Note: The base variant (eo_phase_shifter) uses a default central conductor width of 10.0,
+    while this high-speed variant explicitly passes 21.0 for rf_central_conductor_width to achieve the desired high-speed properties.
+    """
+    kwargs.setdefault("rf_central_conductor_width", 21.0)
+    kwargs.setdefault("cpw_cell", trail_cpw)
+    ps = eo_phase_shifter(**kwargs)
+    ps.info["additional_settings"] = dict(ps.settings)
     return ps
 
 
@@ -1027,13 +1042,13 @@ def mzm_unbalanced(
     length_imbalance: float = 100.0,
     lbend_tune_arm_reff: float = 75.0,
     rf_pad_start_width: float = 80.0,
-    rf_central_conductor_width: float = 21.0,
+    rf_central_conductor_width: float = 10.0,
     rf_ground_planes_width: float = 180.0,
     rf_gap: float = 4.0,
     rf_pad_length_straight: float = 10.0,
     rf_pad_length_tapered: float = 300.0,
     bias_tuning_section_length: float = 700.0,
-    cpw_cell: ComponentSpec = trail_cpw,
+    cpw_cell: ComponentSpec = uni_cpw_straight,
     with_heater: bool = False,
     heater_offset: float = 1.2,
     heater_width: float = 1.0,
@@ -1090,7 +1105,7 @@ def mzm_unbalanced(
         ]
     )
 
-    GS_separation = rf_pad_start_width * rf_gap / rf_central_conductor_width
+    GS_separation = rf_pad_start_width * gap_eff / rf_central_conductor_width
 
     sbend_large_v_offset = (
         0.5 * rf_pad_start_width
@@ -1204,6 +1219,20 @@ def mzm_unbalanced(
     return mzm
 
 
+@gf.cell
+def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
+    """High-speed Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
+    The modulator works in a differential push-pull configuration driven by a single GSG line.
+    Note: The base variant (mzm_unbalanced) uses a default central conductor width of 10.0,
+    while this high-speed variant explicitly passes 21.0 for rf_central_conductor_width to achieve the desired high-speed properties.
+    """
+    kwargs.setdefault("rf_central_conductor_width", 21.0)
+    kwargs.setdefault("cpw_cell", trail_cpw)
+    mzm = mzm_unbalanced(**kwargs)
+    mzm.info["additional_settings"] = dict(mzm.settings)
+    return mzm
+
+
 ##################
 # Chip floorplan
 ##################
@@ -1268,4 +1297,4 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    mzm_unbalanced(splitter="mmi2x2_optimized1550", with_heater=True).show()
+    pass
