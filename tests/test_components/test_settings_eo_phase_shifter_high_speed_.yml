@@ -1,3 +1,12 @@
-info: {}
+info:
+  additional_settings:
+    cpw_cell: trail_cpw
+    draw_cpw: true
+    modulation_length: 7500
+    rf_central_conductor_width: 21
+    rf_gap: 4
+    rf_ground_planes_width: 180
+    rib_core_width_modulator: 2.5
+    taper_length: 100
 name: eo_phase_shifter_high_speed
 settings: {}
