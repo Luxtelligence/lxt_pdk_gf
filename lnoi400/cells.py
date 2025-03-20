@@ -419,7 +419,7 @@ def CPW_pad_linear(
 ) -> gf.Component:
     """RF access line for high-frequency GSG probes. The probe pad maintains a
     fixed gap/central conductor ratio across its length, to achieve a good
-    impedance matching"""
+    impedance matching."""
 
     xs_cpw = gf.get_cross_section(cross_section)
 
@@ -550,7 +550,7 @@ def trail_cpw(
     bondpad: ComponentSpec = "CPW_pad_linear",
     cross_section: CrossSectionSpec = xs_uni_cpw,
 ) -> gf.Component:
-    """A CPW transmission line with periodic T-rails on all electrodes"""
+    """A CPW transmission line with periodic T-rails on all electrodes."""
 
     num_cells = np.floor(length / (tl + tc))
     gap_width_corrected = gap_width + 2 * th + 2 * tt  # total gap width with T-rails
@@ -859,6 +859,7 @@ def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     within the gap of a CPW transmission line.
     Note: The base variant (eo_phase_shifter) uses a default central conductor width of 10.0,
     while this high-speed variant explicitly passes 21.0 for rf_central_conductor_width to achieve the desired high-speed properties.
+    Pass the parameter set of eo_phase_shifter to modify.
     """
     kwargs.setdefault("rf_central_conductor_width", 21.0)
     kwargs.setdefault("cpw_cell", trail_cpw)
@@ -1225,6 +1226,7 @@ def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     The modulator works in a differential push-pull configuration driven by a single GSG line.
     Note: The base variant (mzm_unbalanced) uses a default central conductor width of 10.0,
     while this high-speed variant explicitly passes 21.0 for rf_central_conductor_width to achieve the desired high-speed properties.
+    Pass the parameter set of mzm_unbalanced to modify.
     """
     kwargs.setdefault("rf_central_conductor_width", 21.0)
     kwargs.setdefault("cpw_cell", trail_cpw)
