@@ -2,6 +2,21 @@
 
 The release naming convention follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v1.3.0
+
+### New
+
+
+- Added high-speed versions of mzm_unbalanced and eo_phase_shifter #107
+- Making project compatible with gdsfactoryplus #105
+- Support 2x2 MMI in MZM cell
+
+### Bug fixes
+
+- Fix layerspec import
+- MZM caching bugfix
+
+
 ## v1.2.0
 
 ### New
