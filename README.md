@@ -6,6 +6,20 @@
 
 The lnoi400 PDK is released open-source, to let users easily evaluate a sample of the offering of Luxtelligence. Please [contact us](mailto:foundry@luxtelligence.ai) for information on advanced building blocks and variations on the standard PDK geometry.
 
+## GDSFactory+
+
+This PDK harnesses the full power of **GDSFactory+**, providing advanced tools for photonic design, including:
+
+- **Simulations**: Seamlessly integrate and run photonic simulations.
+- **Design Rule Checking (DRC)**: Ensure your designs meet fabrication requirements. Coming soon!
+- **Layout Versus Schematic (LVS)**: Verify that your layouts match the intended schematics.
+
+For subscription details, please contact [**contact@gdsfactory.com**](mailto:contact@gdsfactory.com) or visit [**gdsfactory.com**](https://gdsfactory.com/).
+
+- You can see the Getting started guide in the [docs](https://gdsfactory.com/plus/) and the videos.
+- Upload the wheels to your organization's account. Make sure you upload all the operating systems if your colleagues use Windows, MacOs or Linux. See [video](https://gdsfactory.com/plus/videos.html#uploading-private-python-packages-to-a-private-package-index)
+
+
 ## Installation
 
 Use python3.11 or python3.12. We recommend [VSCode](https://code.visualstudio.com/) as an IDE.

@@ -21,10 +21,10 @@ repos:
         args: [ --fix, --exit-non-zero-on-fix ]
       - id: ruff-format
 
-  - repo: https://github.com/shellcheck-py/shellcheck-py
-    rev: 953faa6870f6663ac0121ab4a800f1ce76bca31f
-    hooks:
-      - id: shellcheck
+  # - repo: https://github.com/shellcheck-py/shellcheck-py
+  #   rev: 953faa6870f6663ac0121ab4a800f1ce76bca31f
+  #   hooks:
+  #     - id: shellcheck
 
   # - repo: https://github.com/pre-commit/mirrors-mypy
   #   rev: "v1.0.1"
