@@ -1,5 +1,7 @@
 from functools import lru_cache
+from functools import partial
 
+import gdsfactory as gf 
 from gdsfactory.config import CONF
 from gdsfactory.cross_section import get_cross_sections
 from gdsfactory.get_factories import get_cells
@@ -16,6 +18,10 @@ _cross_sections = get_cross_sections(tech)
 
 CONF.pdk = "lnoi400"
 
+_routing_strategies = dict(
+    route_bundle=partial(gf.routing.route_bundle, cross_section="xs_rwg1000")
+)
+
 
 @lru_cache
 def get_pdk() -> Pdk:
@@ -28,7 +34,7 @@ def get_pdk() -> Pdk:
         layer_stack=LAYER_STACK,
         layer_views=LAYER_VIEWS,
         models=_models,
-        # routing_strategies=_routing_strategies,
+        routing_strategies=_routing_strategies,
     )
 
 
