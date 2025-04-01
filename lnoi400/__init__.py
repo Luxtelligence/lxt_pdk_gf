@@ -19,7 +19,7 @@ _cross_sections = get_cross_sections(tech)
 CONF.pdk = "lnoi400"
 
 _routing_strategies = dict(
-    route_bundle=partial(gf.routing.route_bundle, cross_section="xs_rwg1000")
+    route_bundle_rwg1000=tech.route_bundle_rwg1000,
 )
 
 

@@ -1,0 +1,44 @@
+# yaml-language-server: $schema=../build/schemas/sample_mzm_chip.json
+instances:
+  mzi:
+    component: mzm_unbalanced
+    settings: {}
+  ec_in:
+    component: double_linear_inverse_taper
+    settings: {}
+  ec_out:
+    component: double_linear_inverse_taper
+    settings: {}
+  d:
+    component: chip_frame
+    settings: {}
+connections: {}
+routes:
+  my_bundle:
+    links:
+      mzi,o2: ec_out,o2
+    routing_strategy: route_bundle
+    settings:
+      end_straight_length: 5
+nets: []
+ports:
+  o1: ec_in,o1
+  o2: ec_out,o1
+placements:
+  mzi:
+    dx: 972.428
+    dy: 1851.087
+    rotation: 0
+    mirror: false
+  ec_out:
+    x: 10000
+    y: 0
+    dx: 257.305
+    dy: -24.323
+    rotation: 180
+    mirror: false
+  d:
+    dx: 5212.018
+    dy: 1616.203
+    rotation: 0
+    mirror: false

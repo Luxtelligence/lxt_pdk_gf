@@ -1,3 +1,4 @@
+from functools import partial 
 import gdsfactory as gf
 from gdsfactory.cross_section import (
     CrossSection,
@@ -265,3 +266,7 @@ def xs_uni_cpw(
     )
 
     return xs_cpw
+
+
+route_bundle_rwg1000 = partial(gf.routing.route_bundle, cross_section="xs_rwg1000", bend='L_turn_bend')
+

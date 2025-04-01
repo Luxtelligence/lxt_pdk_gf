@@ -10,6 +10,8 @@ uv.lock
 extra/
 # C extensions
 *.so
+*.json
+ports/
 
 # Distribution / packaging
 .Python
