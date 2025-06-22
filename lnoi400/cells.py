@@ -1215,8 +1215,8 @@ def mzm_unbalanced(
             ),
         ]
 
+    mzm.flatten()
     [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
-
     return mzm
 
 
@@ -1299,4 +1299,8 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    pass
+    c = double_linear_inverse_taper()
+    # c = gf.c.straight(cross_section="xs_rwg1000")
+    # c = mzm_unbalanced()
+    c.pprint_ports()
+    c.show()
