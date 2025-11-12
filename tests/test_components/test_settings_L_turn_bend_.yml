@@ -10,7 +10,7 @@ info:
   route_info_weight: 134.393
   route_info_xs_rwg1000_length: 134.393
   width: 1
-name: L_turn_bend_R80_P1_WAFT_1389679a
+name: L_turn_bend_R80_P1_WAFTrue_CSxs_rwg1000
 settings:
   cross_section: xs_rwg1000
   p: 1
