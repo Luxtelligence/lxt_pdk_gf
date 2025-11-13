@@ -1300,5 +1300,4 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    c = mzm_unbalanced_high_speed()
-    c.show()
+    pass
