@@ -1,17 +1,17 @@
-from collections.abc import Iterable
+from collections.abc import Iterable, Sequence
+from typing import Literal
 
 import gdsfactory as gf
 from gdsfactory.cross_section import (
     CrossSection,
 )
-from gdsfactory.routing.route_bundle import ManhattanRoute
 from gdsfactory.technology import (
     LayerLevel,
     LayerMap,
     LayerStack,
     LogicalLayer,
 )
-from gdsfactory.typings import ComponentSpec, CrossSectionSpec, Layer, LayerSpec
+from gdsfactory.typings import ComponentSpec, CrossSectionSpec, Layer, LayerSpec, Route
 
 from lnoi400.config import PATH
 
@@ -286,14 +286,14 @@ def route_bundle_rwg1000(
     min_straight_taper: float = 100.0,
     port_type: str | None = None,
     collision_check_layers: Iterable[LayerSpec] = (),
-    on_collision: str | None = "show_error",
+    on_collision: Literal["error", "show_error"] | None = "show_error",
     bboxes: list | None = None,
     allow_width_mismatch: bool = False,
     radius: float | None = 60.0,
     cross_section: CrossSectionSpec = "xs_rwg1000",
     straight: ComponentSpec = "straight_rwg1000",
     bend: ComponentSpec = gf.components.bend_euler,
-) -> list[ManhattanRoute]:
+) -> Sequence[Route]:
     """Route two bundles of ports with an RWG1000 cross-section."""
     return gf.routing.route_bundle(
         component=component,

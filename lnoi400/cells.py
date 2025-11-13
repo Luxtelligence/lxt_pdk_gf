@@ -1301,8 +1301,5 @@ def chip_frame(
 
 
 if __name__ == "__main__":
-    c = double_linear_inverse_taper()
-    # c = gf.c.straight(cross_section="xs_rwg1000")
-    # c = mzm_unbalanced()
-    c.pprint_ports()
+    c = mzm_unbalanced_high_speed()
     c.show()
