@@ -1,13 +1,14 @@
 LayerViews:
   LN_RIDGE:
     layer: [2, 0]
-    color: "#7d57de"
+    color: "#ca84f5"
+    width: 1
   LN_SLAB:
     layer: [3, 0]
-    color: "navy"
+    color: "#875dd4"
   SLAB_NEGATIVE:
     layer: [3, 1]
-    color: "#6750bf"
+    color: "#4c209e"
   LABELS:
     layer: [4, 0]
     color: "#5179b5"
@@ -19,8 +20,8 @@ LayerViews:
     color: "#00fe9c"
   TL:
     layer: [21, 0]
-    color: "#3503fc"
+    color: "#8dc2f7"
   HT:
     layer: [21, 1]
-    color: "#3503fc"
+    color: "#8dc2f7"
     hatch_pattern: coarsely dotted

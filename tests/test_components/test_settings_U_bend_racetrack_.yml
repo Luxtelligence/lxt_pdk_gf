@@ -10,7 +10,7 @@ info:
   route_info_weight: 205.358
   route_info_xs_rwg3000_length: 205.358
   width: 3
-name: U_bend_racetrack_VO90_P_6e64ac0d
+name: U_bend_racetrack_VO90_P1_WAFTrue_CSxs_rwg3000
 settings:
   cross_section: xs_rwg3000
   p: 1

@@ -76,7 +76,7 @@ def _straight(
         return __straight(
             wl=wl,
             length=length,
-            loss=2e-5,
+            loss_dB_cm=0.2,
             wl0=1.55,
             neff=1.8,
             ng=2.22,
@@ -86,7 +86,7 @@ def _straight(
         return __straight(
             wl=wl,
             length=length,
-            loss=1e-4,
+            loss_dB_cm=1.0,
             wl0=1.55,
             neff=1.44,
             ng=1.7,

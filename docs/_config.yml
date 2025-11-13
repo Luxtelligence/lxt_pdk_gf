@@ -3,6 +3,7 @@
 
 title: lnoi400
 author: Luxtelligence
+logo: LXT_Icon.png
 
 # Force re-execution of notebooks on each build.
 # See https://jupyterbook.org/content/execute.html
