@@ -1,16 +1,17 @@
-from functools import partial
+from collections.abc import Iterable
 
 import gdsfactory as gf
 from gdsfactory.cross_section import (
     CrossSection,
 )
+from gdsfactory.routing.route_bundle import ManhattanRoute
 from gdsfactory.technology import (
     LayerLevel,
     LayerMap,
     LayerStack,
     LogicalLayer,
 )
-from gdsfactory.typings import Layer, LayerSpec
+from gdsfactory.typings import ComponentSpec, CrossSectionSpec, Layer, LayerSpec
 
 from lnoi400.config import PATH
 
@@ -269,8 +270,47 @@ def xs_uni_cpw(
     return xs_cpw
 
 
-# Routing strategies
+############################
+# Routing functions
+############################
 
-route_bundle_rwg1000 = partial(
-    gf.routing.route_bundle, cross_section="xs_rwg1000", bend="L_turn_bend"
-)
+
+def route_bundle_rwg1000(
+    component: gf.Component,
+    ports1: list[gf.Port],
+    ports2: list[gf.Port],
+    separation: float = 6.0,
+    sort_ports: bool = False,
+    start_straight_length: float = 5.0,
+    end_straight_length: float = 5.0,
+    min_straight_taper: float = 100.0,
+    port_type: str | None = None,
+    collision_check_layers: Iterable[LayerSpec] = (),
+    on_collision: str | None = "show_error",
+    bboxes: list | None = None,
+    allow_width_mismatch: bool = False,
+    radius: float | None = 60.0,
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    straight: ComponentSpec = "straight_rwg1000",
+    bend: ComponentSpec = gf.components.bend_euler,
+) -> list[ManhattanRoute]:
+    """Route two bundles of ports with an RWG1000 cross-section."""
+    return gf.routing.route_bundle(
+        component=component,
+        ports1=ports1,
+        ports2=ports2,
+        separation=separation,
+        sort_ports=sort_ports,
+        start_straight_length=start_straight_length,
+        end_straight_length=end_straight_length,
+        min_straight_taper=min_straight_taper,
+        port_type=port_type,
+        collision_check_layers=tuple(collision_check_layers),
+        on_collision=on_collision,
+        bboxes=bboxes,
+        allow_width_mismatch=allow_width_mismatch,
+        radius=radius,
+        cross_section=cross_section,
+        straight=straight,
+        bend=bend,
+    )
