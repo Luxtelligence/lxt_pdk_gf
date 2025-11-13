@@ -1,7 +1,5 @@
 from functools import lru_cache
-from functools import partial
 
-import gdsfactory as gf 
 from gdsfactory.config import CONF
 from gdsfactory.cross_section import get_cross_sections
 from gdsfactory.get_factories import get_cells
