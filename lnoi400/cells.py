@@ -1217,7 +1217,6 @@ def mzm_unbalanced(
             ),
         ]
 
-    mzm.flatten()
     [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
     return mzm
 
