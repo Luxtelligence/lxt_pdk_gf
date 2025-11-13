@@ -21,10 +21,12 @@ from lnoi400.tech import LAYER, xs_uni_cpw
 def _straight(
     length: float = 10.0,
     cross_section: CrossSectionSpec = "xs_rwg1000",
+    **kwargs,
 ) -> gf.Component:
     return gf.components.straight(
         length=length,
         cross_section=cross_section,
+        **kwargs,
     )
 
 
