@@ -16,6 +16,10 @@ _cross_sections = get_cross_sections(tech)
 
 CONF.pdk = "lnoi400"
 
+_routing_strategies = dict(
+    route_bundle_rwg1000=tech.route_bundle_rwg1000,
+)
+
 
 @lru_cache
 def get_pdk() -> Pdk:
@@ -28,7 +32,7 @@ def get_pdk() -> Pdk:
         layer_stack=LAYER_STACK,
         layer_views=LAYER_VIEWS,
         models=_models,
-        # routing_strategies=_routing_strategies,
+        routing_strategies=_routing_strategies,
     )
 
 

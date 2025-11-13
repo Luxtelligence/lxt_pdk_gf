@@ -1,3 +1,5 @@
+from functools import partial
+
 import gdsfactory as gf
 from gdsfactory.cross_section import (
     CrossSection,
@@ -134,7 +136,7 @@ xsection = gf.xsection
 def xs_rwg1000(
     layer: LayerSpec = "LN_RIDGE",
     width: float = 1.0,
-    radius: float = 75.0,
+    radius: float = 60.0,
 ) -> CrossSection:
     """Routing rib waveguide cross section"""
     sections = (
@@ -265,3 +267,25 @@ def xs_uni_cpw(
     )
 
     return xs_cpw
+
+
+############################
+# Routing functions
+############################
+
+
+route_bundle_rwg1000 = partial(
+    gf.routing.route_bundle,
+    cross_section="xs_rwg1000",
+    straight="straight_rwg1000",
+    bend=gf.components.bend_euler,
+    radius=60.0,
+    separation=7.5,
+    start_straight_length=5.0,
+    end_straight_length=5.0,
+    min_straight_taper=100.0,
+    on_collision="show_error",
+)
+
+if __name__ == "__main__":
+    pass
