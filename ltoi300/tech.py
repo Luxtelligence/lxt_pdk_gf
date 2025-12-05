@@ -116,7 +116,7 @@ xsection = gf.xsection
 
 @xsection
 def xs_rwg700(
-    layer: LayerSpec = (2, 0),
+    layer: LayerSpec = LAYER.LT_RIDGE,
     width: float = 0.7,
     radius: float = 50.0,
     cladding_offset: float = 6.0,
@@ -127,13 +127,13 @@ def xs_rwg700(
         layer=layer,
         radius=radius,
         cladding_offsets=(cladding_offset,),
-        cladding_layers=((3, 0),),
+        cladding_layers=(LAYER.LT_SLAB,),
     )
 
 
 @xsection
 def xs_rwg900(
-    layer: LayerSpec = (2, 0),
+    layer: LayerSpec = LAYER.LT_RIDGE,
     width: float = 0.9,
     radius: float = 50.0,
     cladding_offset: float = 6.0,
@@ -144,13 +144,13 @@ def xs_rwg900(
         layer=layer,
         radius=radius,
         cladding_offsets=(cladding_offset,),
-        cladding_layers=((3, 0),),
+        cladding_layers=(LAYER.LT_SLAB,),
     )
 
 
 @xsection
 def xs_swg350(
-    layer: LayerSpec = (3, 0),
+    layer: LayerSpec = LAYER.LT_SLAB,
     width: float = 0.35,
 ) -> CrossSection:
     """Narrow strip waveguide cross section"""
@@ -162,7 +162,7 @@ def xs_swg350(
 
 @xsection
 def xs_swg450(
-    layer: LayerSpec = (3, 0),
+    layer: LayerSpec = LAYER.LT_SLAB,
     width: float = 0.35,
 ) -> CrossSection:
     """Narrow strip waveguide cross section"""
@@ -236,5 +236,5 @@ def xs_ht_wire(
 
 
 if __name__ == "__main__":
-    c = gf.components.straight(length=100, cross_section=xs_rwg700())
+    c = gf.components.straight(length=100, cross_section=xs_swg350())
     c.show()
