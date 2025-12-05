@@ -1,0 +1,23 @@
+LayerViews:
+  LT_RIDGE:
+    layer: [2, 10]
+    color: "#ca84f5"
+    width: 1
+  LT_SLAB:
+    layer: [3, 10]
+    color: "#875dd4"
+  SLAB_NEGATIVE:
+    layer: [3, 11]
+    color: "#4c209e"
+  LABELS:
+    layer: [4, 10]
+    color: "#5179b5"
+  CHIP_CONTOUR:
+    layer: [6, 0]
+    color: "#ffc6b8"
+  CHIP_EXCLUSION_ZONE:
+    layer: [6, 1]
+    color: "#00fe9c"
+  M1:
+    layer: [20, 0]
+    color: "#8dc2f7"
