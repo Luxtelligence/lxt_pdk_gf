@@ -2,8 +2,26 @@
 
 <layer-properties>
  <properties>
-  <frame-color>#7d57de</frame-color>
-  <fill-color>#7d57de</fill-color>
+  <frame-color>#ca84f5</frame-color>
+  <fill-color>#ca84f5</fill-color>
+  <frame-brightness>0</frame-brightness>
+  <fill-brightness>0</fill-brightness>
+  <dither-pattern/>
+  <line-style/>
+  <valid>true</valid>
+  <visible>true</visible>
+  <transparent>false</transparent>
+  <width>1</width>
+  <marked>false</marked>
+  <xfill>false</xfill>
+  <animation>0</animation>
+  <name>LT_RIDGE</name>
+  <source>2/10@1</source>
+ </properties>
+
+ <properties>
+  <frame-color>#875dd4</frame-color>
+  <fill-color>#875dd4</fill-color>
   <frame-brightness>0</frame-brightness>
   <fill-brightness>0</fill-brightness>
   <dither-pattern/>
@@ -15,31 +33,13 @@
   <marked>false</marked>
   <xfill>false</xfill>
   <animation>0</animation>
-  <name>LN_RIDGE</name>
-  <source>2/0@1</source>
+  <name>LT_SLAB</name>
+  <source>3/10@1</source>
  </properties>
 
  <properties>
-  <frame-color>#000080</frame-color>
-  <fill-color>#000080</fill-color>
-  <frame-brightness>0</frame-brightness>
-  <fill-brightness>0</fill-brightness>
-  <dither-pattern/>
-  <line-style/>
-  <valid>true</valid>
-  <visible>true</visible>
-  <transparent>false</transparent>
-  <width/>
-  <marked>false</marked>
-  <xfill>false</xfill>
-  <animation>0</animation>
-  <name>LN_SLAB</name>
-  <source>3/0@1</source>
- </properties>
-
- <properties>
-  <frame-color>#6750bf</frame-color>
-  <fill-color>#6750bf</fill-color>
+  <frame-color>#4c209e</frame-color>
+  <fill-color>#4c209e</fill-color>
   <frame-brightness>0</frame-brightness>
   <fill-brightness>0</fill-brightness>
   <dither-pattern/>
@@ -52,7 +52,7 @@
   <xfill>false</xfill>
   <animation>0</animation>
   <name>SLAB_NEGATIVE</name>
-  <source>3/1@1</source>
+  <source>3/11@1</source>
  </properties>
 
  <properties>
@@ -110,8 +110,8 @@
  </properties>
 
  <properties>
-  <frame-color>#3503fc</frame-color>
-  <fill-color>#3503fc</fill-color>
+  <frame-color>#8dc2f7</frame-color>
+  <fill-color>#8dc2f7</fill-color>
   <frame-brightness>0</frame-brightness>
   <fill-brightness>0</fill-brightness>
   <dither-pattern/>
@@ -123,13 +123,31 @@
   <marked>false</marked>
   <xfill>false</xfill>
   <animation>0</animation>
-  <name>TL</name>
-  <source>21/0@1</source>
+  <name>M1</name>
+  <source>20/0@1</source>
  </properties>
 
  <properties>
-  <frame-color>#3503fc</frame-color>
-  <fill-color>#3503fc</fill-color>
+  <frame-color>#4a90e2</frame-color>
+  <fill-color>#4a90e2</fill-color>
+  <frame-brightness>0</frame-brightness>
+  <fill-brightness>0</fill-brightness>
+  <dither-pattern/>
+  <line-style/>
+  <valid>true</valid>
+  <visible>true</visible>
+  <transparent>false</transparent>
+  <width/>
+  <marked>false</marked>
+  <xfill>false</xfill>
+  <animation>0</animation>
+  <name>M2</name>
+  <source>22/0@1</source>
+ </properties>
+
+ <properties>
+  <frame-color>#aaaaaa</frame-color>
+  <fill-color>#aaaaaa</fill-color>
   <frame-brightness>0</frame-brightness>
   <fill-brightness>0</fill-brightness>
   <dither-pattern>I3</dither-pattern>
@@ -141,7 +159,43 @@
   <marked>false</marked>
   <xfill>false</xfill>
   <animation>0</animation>
-  <name>HT</name>
-  <source>21/1@1</source>
+  <name>V2</name>
+  <source>40/0@1</source>
+ </properties>
+
+ <properties>
+  <frame-color>#595555</frame-color>
+  <fill-color>#595555</fill-color>
+  <frame-brightness>0</frame-brightness>
+  <fill-brightness>0</fill-brightness>
+  <dither-pattern>I3</dither-pattern>
+  <line-style/>
+  <valid>true</valid>
+  <visible>true</visible>
+  <transparent>false</transparent>
+  <width/>
+  <marked>false</marked>
+  <xfill>false</xfill>
+  <animation>0</animation>
+  <name>V3</name>
+  <source>41/0@1</source>
+ </properties>
+
+ <properties>
+  <frame-color>#e06666</frame-color>
+  <fill-color>#e06666</fill-color>
+  <frame-brightness>0</frame-brightness>
+  <fill-brightness>0</fill-brightness>
+  <dither-pattern/>
+  <line-style/>
+  <valid>true</valid>
+  <visible>true</visible>
+  <transparent>false</transparent>
+  <width/>
+  <marked>false</marked>
+  <xfill>false</xfill>
+  <animation>0</animation>
+  <name>HRM</name>
+  <source>23/0@1</source>
  </properties>
 </layer-properties>

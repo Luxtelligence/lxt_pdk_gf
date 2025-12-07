@@ -28,8 +28,9 @@ class LayerMapLTOI300(LayerMap):
     SLAB_NEGATIVE: Layer = (3, 11)
     LABELS: Layer = (4, 0)
     M1: Layer = (20, 0)
-    V2: Layer = (40, 0)
     M2: Layer = (22, 0)
+    V2: Layer = (40, 0)
+    V3: Layer = (41, 0)
     HRM: Layer = (23, 0)
     WAFER: Layer = (990, 0)
 
@@ -233,8 +234,3 @@ def xs_ht_wire(
         port_names=gf.cross_section.port_names_electrical,
         port_types=gf.cross_section.port_types_electrical,
     )
-
-
-if __name__ == "__main__":
-    c = gf.components.straight(length=100, cross_section=xs_swg350())
-    c.show()
