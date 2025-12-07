@@ -5,7 +5,7 @@ import numpy as np
 from gdsfactory.routing import route_quad
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
-from lnoi400.spline import (
+from _utils.spline import (
     bend_S_spline,
     bend_S_spline_varying_width,
     spline_clamped_path,
