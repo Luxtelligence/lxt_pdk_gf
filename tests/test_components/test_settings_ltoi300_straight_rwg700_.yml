@@ -1,0 +1,10 @@
+info:
+  length: 10
+  route_info_length: 10
+  route_info_type: xs_rwg700
+  route_info_weight: 10
+  route_info_xs_rwg700_length: 10
+  width: 0.7
+name: straight_rwg700_L10
+settings:
+  length: 10

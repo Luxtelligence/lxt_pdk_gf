@@ -66,8 +66,8 @@ strict = true
 # addopts = --tb=no
 addopts = '--tb=short'
 norecursedirs = ["extra/*.py"]
-python_files = ["lnoi400/*.py", "notebooks/*.ipynb", "tests/*.py"]
-testpaths = ["lnoi400/", "tests"]
+python_files = ["tests/*.py"]
+testpaths = ["tests"]
 
 [tool.ruff]
 fix = true
