@@ -1,58 +1,24 @@
-import inspect
-import json
-from collections.abc import Callable
 from functools import partial
-from pathlib import Path
 
 import jax.numpy as jnp
 import numpy as np
 import sax
 from gplugins.sax.models import phase_shifter as _phase_shifter
 from gplugins.sax.models import straight as __straight
-from numpy.polynomial import Polynomial
 from numpy.typing import NDArray
 from sax.utils import reciprocal
 
 import lnoi400
+from _utils.models import (
+    _1in_2out_symmetric_poly_model,
+    _2in_2out_symmetric_poly_model,
+    _2port_poly_model,
+)
 
 nm = 1e-3
 
 FloatArray = NDArray[jnp.floating]
 Float = float | FloatArray
-
-####################
-# Utility functions
-####################
-
-
-def get_json_data(
-    data_tag: str,
-) -> dict:
-    """Load data from a json structure."""
-
-    path = Path(lnoi400.__file__).parent / "data" / f"{data_tag}.json"
-    with open(path) as f:
-        data_dict = json.load(f)
-    return data_dict
-
-
-def poly_eval_from_json(
-    wl: np.ndarray,
-    data_tag: str,
-    key: str,
-) -> np.ndarray:
-    """Evaluate a polynomial model for frequency-dependent response
-    stored in json format."""
-
-    cell_data = get_json_data(data_tag)
-    if "center_wavelength" in cell_data.keys():
-        wl0 = cell_data["center_wavelength"]
-    else:
-        wl0 = 0.0
-    poly_coef = cell_data[key]
-    poly_coef.reverse()
-    poly_model = Polynomial(poly_coef)
-    return poly_model(wl - wl0)
 
 
 ################
@@ -107,37 +73,9 @@ straight_swg250 = partial(_straight, cross_section="xs_swg250")
 ################
 
 
-def _2port_poly_model(
-    *,
-    wl: Float = 1.55,
-    data_tag: str,
-    trans_abs_key: str = "",
-    trans_phase_key: str = "",
-    refl_abs_key: str = "",
-    refl_phase_key: str = "",
-) -> sax.SDict:
-    s_par = {}
-    locs = locals()
-    for key in ["trans_abs_key", "trans_phase_key", "refl_abs_key", "refl_phase_key"]:
-        if locs[key]:
-            s_par[key] = poly_eval_from_json(wl, data_tag, locs[key])
-        else:
-            s_par[key] = np.zeros_like(wl)
-
-    trans = s_par["trans_abs_key"] * jnp.exp(1j * s_par["trans_phase_key"])
-    refl = s_par["refl_abs_key"] * jnp.exp(1j * s_par["refl_phase_key"])
-
-    return sax.reciprocal(
-        {
-            ("o2", "o1"): trans,
-            ("o1", "o1"): refl,
-            ("o2", "o2"): refl,
-        }
-    )
-
-
 U_bend_racetrack = partial(
     _2port_poly_model,
+    module=lnoi400,
     data_tag="ubend_racetrack",
     trans_abs_key="pol_trans_abs",
     trans_phase_key="pol_trans_phase",
@@ -151,6 +89,7 @@ U_bend_racetrack = partial(
 
 double_linear_inverse_taper = partial(
     _2port_poly_model,
+    module=lnoi400,
     data_tag="edge_coupler_double_linear_taper",
     trans_abs_key="pol_trans_abs",
     trans_phase_key="pol_trans_phase",
@@ -162,106 +101,6 @@ double_linear_inverse_taper = partial(
 ################
 # MMIs
 ################
-
-
-def _1in_2out_symmetric_poly_model(
-    *,
-    wl: Float = 1.55,
-    data_tag: str,
-    trans_abs_key: str = "",
-    trans_phase_key: str = "",
-    rin_abs_key: str = "",
-    rin_phase_key: str = "",
-    rout_abs_key: str = "",
-    rout_phase_key: str = "",
-    rcross_abs_key: str = "",
-    rcross_phase_key: str = "",
-) -> sax.SDict:
-    s_par = {}
-    locs = locals()
-    for key in [
-        "trans_abs_key",
-        "trans_phase_key",
-        "rin_abs_key",
-        "rin_phase_key",
-        "rout_abs_key",
-        "rout_phase_key",
-        "rcross_abs_key",
-        "rcross_phase_key",
-    ]:
-        if locs[key]:
-            s_par[key] = poly_eval_from_json(wl, data_tag, locs[key])
-        else:
-            s_par[key] = np.zeros_like(wl)
-
-    trans = s_par["trans_abs_key"] * jnp.exp(1j * s_par["trans_phase_key"])
-    rin = s_par["rin_abs_key"] * jnp.exp(1j * s_par["rin_phase_key"])
-    rout = s_par["rout_abs_key"] * jnp.exp(1j * s_par["rout_phase_key"])
-    rcross = s_par["rcross_abs_key"] * jnp.exp(1j * s_par["rcross_phase_key"])
-
-    return sax.reciprocal(
-        {
-            ("o2", "o1"): trans,
-            ("o3", "o1"): trans,
-            ("o1", "o1"): rin,
-            ("o2", "o2"): rout,
-            ("o3", "o3"): rout,
-            ("o2", "o3"): rcross,
-        }
-    )
-
-
-def _2in_2out_symmetric_poly_model(
-    *,
-    wl: Float = 1.55,
-    data_tag: str,
-    trans_bar_abs_key: str = "",
-    trans_bar_phase_key: str = "",
-    trans_cross_abs_key: str = "",
-    trans_cross_phase_key: str = "",
-    refl_self_abs_key: str = "",
-    refl_self_phase_key: str = "",
-    refl_cross_abs_key: str = "",
-    refl_cross_phase_key: str = "",
-) -> sax.SDict:
-    s_par = {}
-    locs = locals()
-    for key in [
-        "trans_bar_abs_key",
-        "trans_bar_phase_key",
-        "trans_cross_abs_key",
-        "trans_cross_phase_key",
-        "refl_self_abs_key",
-        "refl_self_phase_key",
-        "refl_cross_abs_key",
-        "refl_cross_phase_key",
-    ]:
-        if locs[key]:
-            s_par[key] = poly_eval_from_json(wl, data_tag, locs[key])
-        else:
-            s_par[key] = np.zeros_like(wl)
-
-    bar = s_par["trans_bar_abs_key"] * jnp.exp(1j * s_par["trans_bar_phase_key"])
-    cross = s_par["trans_cross_abs_key"] * jnp.exp(1j * s_par["trans_cross_phase_key"])
-    refl_self = s_par["refl_self_abs_key"] * jnp.exp(1j * s_par["refl_self_phase_key"])
-    refl_cross = s_par["refl_cross_abs_key"] * jnp.exp(
-        1j * s_par["refl_cross_phase_key"]
-    )
-
-    sdict = {
-        ("o1", "o4"): bar,
-        ("o2", "o3"): bar,
-        ("o1", "o3"): cross,
-        ("o2", "o4"): cross,
-        ("o1", "o2"): refl_cross,
-        ("o3", "o4"): refl_cross,
-    }
-
-    for n in range(1, 5):
-        port = f"o{n}"
-        sdict[(port, port)] = refl_self
-
-    return sax.reciprocal(sdict)
 
 
 mmi1x2_optimized1550 = partial(
@@ -477,29 +316,6 @@ def mzm_unbalanced(
         backend="default",
     )
     return mzm()
-
-
-################
-# Models Dict
-################
-
-
-def get_models() -> dict[str, Callable[..., sax.SDict]]:
-    models = {}
-    for name, func in list(globals().items()):
-        if name[0] != "_":
-            if not callable(func):
-                continue
-            _func = func
-            while isinstance(_func, partial):
-                _func = _func.func
-            try:
-                sig = inspect.signature(_func)
-            except ValueError:
-                continue
-            if sig.return_annotation == sax.SDict:
-                models[name] = func
-    return models
 
 
 if __name__ == "__main__":
