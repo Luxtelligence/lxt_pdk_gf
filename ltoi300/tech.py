@@ -119,7 +119,7 @@ xsection = gf.xsection
 def xs_rwg700(
     layer: LayerSpec = LAYER.LT_RIDGE,
     width: float = 0.7,
-    radius: float = 50.0,
+    radius: float = 60.0,
     cladding_offset: float = 6.0,
 ) -> CrossSection:
     """Default routing rib waveguide cross section for O-band"""
@@ -151,18 +151,6 @@ def xs_rwg900(
 
 @xsection
 def xs_swg350(
-    layer: LayerSpec = LAYER.LT_SLAB,
-    width: float = 0.35,
-) -> CrossSection:
-    """Narrow strip waveguide cross section"""
-    return gf.cross_section.strip(
-        width=width,
-        layer=layer,
-    )
-
-
-@xsection
-def xs_swg450(
     layer: LayerSpec = LAYER.LT_SLAB,
     width: float = 0.35,
 ) -> CrossSection:
