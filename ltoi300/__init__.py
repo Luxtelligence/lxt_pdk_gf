@@ -5,20 +5,20 @@ from gdsfactory.cross_section import get_cross_sections
 from gdsfactory.get_factories import get_cells
 from gdsfactory.pdk import Pdk
 
-from ltoi300 import cells, config, tech
+from _utils.models import get_models
+from ltoi300 import cells, config, models, tech
 from ltoi300.config import PATH
-from ltoi300.models import get_models
 from ltoi300.tech import LAYER, LAYER_STACK, LAYER_VIEWS
 
-_models = get_models()
+_models = get_models(models)
 _cells = get_cells(cells)
 _cross_sections = get_cross_sections(tech)
 
 CONF.pdk = "ltoi300"
 
-_routing_strategies = dict(
-    route_bundle_rwg1000=tech.route_bundle_rwg1000,
-)
+# _routing_strategies = dict(
+#     route_bundle_rwg1000=tech.route_bundle_rwg1000,
+# )
 
 
 @lru_cache
@@ -32,7 +32,7 @@ def get_pdk() -> Pdk:
         layer_stack=LAYER_STACK,
         layer_views=LAYER_VIEWS,
         models=_models,
-        routing_strategies=_routing_strategies,
+        # routing_strategies=_routing_strategies,
     )
 
 

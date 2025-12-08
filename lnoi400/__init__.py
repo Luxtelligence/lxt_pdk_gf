@@ -6,7 +6,7 @@ from gdsfactory.get_factories import get_cells
 from gdsfactory.pdk import Pdk
 
 from _utils.models import get_models
-from lnoi400 import cells, models, tech
+from lnoi400 import cells, config, models, tech
 from lnoi400.config import PATH
 from lnoi400.tech import LAYER, LAYER_STACK, LAYER_VIEWS
 
