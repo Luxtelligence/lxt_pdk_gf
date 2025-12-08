@@ -105,6 +105,7 @@ double_linear_inverse_taper = partial(
 
 mmi1x2_optimized1550 = partial(
     _1in_2out_symmetric_poly_model,
+    module=lnoi400,
     data_tag="mmi_1x2_optimized_1550",
     trans_abs_key="pol_trans_abs",
     trans_phase_key="pol_trans_phase",
@@ -118,6 +119,7 @@ mmi1x2_optimized1550 = partial(
 
 mmi2x2_optimized1550 = partial(
     _2in_2out_symmetric_poly_model,
+    module=lnoi400,
     data_tag="mmi_2x2_optimized_1550",
     trans_bar_abs_key="pol_trans_bar_abs",
     trans_bar_phase_key="pol_trans_bar_phase",
@@ -135,6 +137,7 @@ mmi2x2_optimized1550 = partial(
 
 directional_coupler_balanced = partial(
     _2in_2out_symmetric_poly_model,
+    module=lnoi400,
     data_tag="directional_coupler_balanced",
     trans_bar_abs_key="pol_trans_bar_abs",
     trans_bar_phase_key="pol_trans_bar_phase",
