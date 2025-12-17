@@ -20,7 +20,7 @@ def build_mmi1x2_oband(
 
     gap_mmi = port_separation - width_taper
 
-    return mmi1x2(
+    c = mmi1x2(
         width_mmi=width_mmi,
         length_mmi=length_mmi,
         gap_mmi=gap_mmi,
@@ -29,6 +29,8 @@ def build_mmi1x2_oband(
         cross_section=cross_section,
         **kwargs,
     )
+    c.info["port_separation"] = port_separation  # for simple routing
+    return c
 
 
 def build_mmi2x2_oband(
@@ -44,7 +46,7 @@ def build_mmi2x2_oband(
 
     gap_mmi = port_separation - width_taper
 
-    return mmi2x2(
+    c = mmi2x2(
         width_mmi=width_mmi,
         length_mmi=length_mmi,
         gap_mmi=gap_mmi,
@@ -53,6 +55,8 @@ def build_mmi2x2_oband(
         cross_section=cross_section,
         **kwargs,
     )
+    c.info["port_separation"] = port_separation  # for simple routing
+    return c
 
 
 #########################
@@ -73,7 +77,7 @@ def build_mmi1x2_cband(
 
     gap_mmi = port_separation - width_taper
 
-    return mmi1x2(
+    c = mmi1x2(
         width_mmi=width_mmi,
         length_mmi=length_mmi,
         gap_mmi=gap_mmi,
@@ -82,6 +86,8 @@ def build_mmi1x2_cband(
         cross_section=cross_section,
         **kwargs,
     )
+    c.info["port_separation"] = port_separation  # for simple routing
+    return c
 
 
 def build_mmi2x2_cband(
@@ -97,7 +103,7 @@ def build_mmi2x2_cband(
 
     gap_mmi = port_separation - width_taper
 
-    return mmi2x2(
+    c = mmi2x2(
         width_mmi=width_mmi,
         length_mmi=length_mmi,
         gap_mmi=gap_mmi,
@@ -106,3 +112,5 @@ def build_mmi2x2_cband(
         cross_section=cross_section,
         **kwargs,
     )
+    c.info["port_separation"] = port_separation  # for simple routing
+    return c

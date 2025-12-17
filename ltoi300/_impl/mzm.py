@@ -1367,7 +1367,7 @@ def mzm_unbalanced_LT(
     sbend_large_v_offset = (
         0.5 * rf_pad_start_width
         + 0.5 * GS_separation
-        - 0.5 * splitter.settings["port_separation"]
+        - 0.5 * splitter.info["port_separation"]
     )
 
     sbend_small_straight_length = rf_pad_length_straight * 0.5
@@ -1376,7 +1376,7 @@ def mzm_unbalanced_LT(
         0.5 * rf_pad_start_width
         + lbend_tune_arm_reff
         + 0.5 * GS_separation
-        - 0.5 * splitter.settings["port_separation"]
+        - 0.5 * splitter.info["port_separation"]
     )
     interferometer = (
         mzm
