@@ -4,12 +4,15 @@ import gdsfactory as gf
 import numpy as np
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec, Layer
 
-from lnoi400.cells import (
+from ltoi300._builders.mmis import (
+    build_mmi1x2_cband,
+    build_mmi1x2_oband,
+    build_mmi2x2_cband,
+    build_mmi2x2_oband,
+)
+from ltoi300._impl.bends import (
     L_turn_bend,
     S_bend_vert,
-)
-from ltoi300._builders.mmis import (
-    build_mmi1x2_oband,
 )
 from ltoi300._impl.thermal_phase_shifters_gsg_pads import add_gsg_heater, add_heater
 from ltoi300.tech import LAYER, xs_rwg700, xs_rwg900, xs_uni_cpw
@@ -1094,7 +1097,7 @@ def eo_phase_shifter_LT(
 
 @gf.cell
 def _mzm_interferometer_LT(
-    splitter: ComponentSpec = build_mmi1x2_oband(),
+    splitter: ComponentSpec = build_mmi1x2_cband(),
     taper_length: float = 100.0,
     rib_core_width_modulator: float = 2.5,
     modulation_length: float = 7500.0,
@@ -1335,12 +1338,18 @@ def mzm_unbalanced_LT(
     # Interferometer subcell
     if "splitter" not in kwargs.keys():
         kwargs["splitter"] = (
-            "mmi1x2_oband" if communication_band == "O-band" else "mmi1x2_cband"
+            build_mmi1x2_oband()
+            if communication_band == "O-band"
+            else build_mmi1x2_cband()
         )
-        splitter = gf.get_component(kwargs["splitter"])
+    splitter = kwargs["splitter"]
 
     if "2x2" in kwargs["splitter"]:
-        splitter = gf.get_component(kwargs["splitter"])
+        splitter = (
+            build_mmi2x2_oband()
+            if communication_band == "O-band"
+            else build_mmi2x2_cband()
+        )
     if ("oband" in kwargs["splitter"] and communication_band == "C-band") or (
         "cband" in kwargs["splitter"] and communication_band == "O-band"
     ):
