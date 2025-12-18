@@ -27,3 +27,14 @@ def build_straight_rwg700(length: float = 10.0, **kwargs) -> gf.Component:
         length=length,
         **kwargs,
     )
+
+
+@gf.cell
+def build_straight_rwg2500(length: float = 10.0, **kwargs) -> gf.Component:
+    """Straight single-mode waveguide for O-band propagation."""
+    if "cross_section" not in kwargs:
+        kwargs["cross_section"] = "xs_rwg2500"
+    return _straight(
+        length=length,
+        **kwargs,
+    )

@@ -150,6 +150,23 @@ def xs_rwg900(
 
 
 @xsection
+def xs_rwg2500(
+    layer: LayerSpec = LAYER.LT_RIDGE,
+    width: float = 2.5,
+    radius: float = 50.0,
+    cladding_offset: float = 6.0,
+) -> CrossSection:
+    """Default low-loss multimode rib waveguide cross section for O-band and C-band"""
+    return gf.cross_section.rib(
+        width=width,
+        layer=layer,
+        radius=radius,
+        cladding_offsets=(cladding_offset,),
+        cladding_layers=(LAYER.LT_SLAB,),
+    )
+
+
+@xsection
 def xs_swg350(
     layer: LayerSpec = LAYER.LT_SLAB,
     width: float = 0.35,

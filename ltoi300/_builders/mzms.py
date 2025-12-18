@@ -13,7 +13,6 @@ def build_terminated_mzm_cband(
     c = gf.Component()
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi2x2_cband")
-    kwargs.setdefault("length_imbalance", 100)
     kwargs.setdefault("heater_on_both_branches", False)
     kwargs.setdefault("with_heater", False)
     kwargs.setdefault("heater_offset", 0.0)
@@ -31,7 +30,6 @@ def build_terminated_mzm_cband(
     c << mzm_unbalanced_LT(
         **kwargs,
         terminated=terminated,
-        bias_tuning_section_length=0.0,
         add_M2andOpenings=True,
     )
     return c
