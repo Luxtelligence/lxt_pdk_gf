@@ -1336,20 +1336,14 @@ def mzm_unbalanced_LT(
     mzm = gf.Component()
 
     # Interferometer subcell
-    if "splitter" not in kwargs.keys():
-        kwargs["splitter"] = (
-            build_mmi1x2_oband()
-            if communication_band == "O-band"
-            else build_mmi1x2_cband()
-        )
-    splitter = kwargs["splitter"]
-
-    if "2x2" in kwargs["splitter"]:
-        splitter = (
-            build_mmi2x2_oband()
-            if communication_band == "O-band"
-            else build_mmi2x2_cband()
-        )
+    if "mmi2x2_oband" in kwargs["splitter"]:
+        splitter = build_mmi2x2_oband()
+    if "mmi2x2_cband" in kwargs["splitter"]:
+        splitter = build_mmi2x2_cband()
+    if "mmi1x2_oband" in kwargs["splitter"]:
+        splitter = build_mmi1x2_oband()
+    if "mmi1x2_cband" in kwargs["splitter"]:
+        splitter = build_mmi1x2_cband()
     if ("oband" in kwargs["splitter"] and communication_band == "C-band") or (
         "cband" in kwargs["splitter"] and communication_band == "O-band"
     ):

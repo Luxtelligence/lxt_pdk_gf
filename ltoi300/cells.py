@@ -7,7 +7,16 @@ from ltoi300._builders.mmis import (
     build_mmi2x2_cband,
     build_mmi2x2_oband,
 )
-from ltoi300._builders.mzms import build_terminated_mzm_cband
+from ltoi300._builders.mzms import (
+    build_terminated_mzm_1x2mmi_cband,
+    build_terminated_mzm_1x2mmi_oband,
+    build_terminated_mzm_2x2mmi_cband,
+    build_terminated_mzm_2x2mmi_oband,
+    build_unterminated_mzm_1x2mmi_cband,
+    build_unterminated_mzm_1x2mmi_oband,
+    build_unterminated_mzm_2x2mmi_cband,
+    build_unterminated_mzm_2x2mmi_oband,
+)
 from ltoi300._builders.straights import (
     build_straight_rwg700,
     build_straight_rwg900,
@@ -25,7 +34,15 @@ from ltoi300._builders.straights import (
 
 @gf.cell
 def straight_rwg700_oband(length: float = 10.0) -> gf.Component:
-    """Standard straight single-mode waveguide for O-band propagation."""
+    """Returns a standard straight 700 nm-wide single-mode waveguide for O-band propagation.
+    Args:
+        length: straight length (um).
+
+    .. code::
+
+        o1  ──────────────── o2
+                length
+    """
     return build_straight_rwg700(
         length=length,
     )
@@ -33,38 +50,18 @@ def straight_rwg700_oband(length: float = 10.0) -> gf.Component:
 
 @gf.cell
 def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
-    """Standard straight multi-mode waveguide for O-band propagation."""
+    """Returns a standard straight 2500 nm-wide multi-mode waveguide for O-band propagation.
+    Args:
+        length: straight length (um).
+
+    .. code::
+
+        o1  ──────────────── o2
+                length
+    """
     return build_straight_rwg2500(
         length=length,
     )
-
-
-################
-# Modulators
-################
-
-
-# @gf.cell
-# def terminated_mzm_cband(
-#     modulation_length: float = 5000.0,
-#     length_imbalance: float = 100.0,
-#     rf_pad_start_width: float = 80.0,
-#     rf_ground_planes_width: float = 180.0,
-#     rf_pad_length_straight: float = 10.0,
-#     rf_pad_length_tapered: float = 300.0,
-#     bias_tuning_section_length: float = 700.0,
-# ):
-#     """Create a routed terminated MZM for wafer-scale testing with edge couplers."""
-
-#     return build_terminated_mzm_cband(
-#         modulation_length=modulation_length,
-#         length_imbalance=length_imbalance,
-#         rf_pad_start_width=rf_pad_start_width,
-#         rf_ground_planes_width=rf_ground_planes_width,
-#         rf_pad_length_straight=rf_pad_length_straight,
-#         rf_pad_length_tapered=rf_pad_length_tapered,
-#         bias_tuning_section_length=bias_tuning_section_length,
-#     )
 
 
 #####################
@@ -74,16 +71,150 @@ def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
 
 @gf.cell
 def mmi1x2_oband() -> gf.Component:
-    """1x2 MMI optimized for low insertion loss on a 300/120 stack in the O-band (at 1310 nm)."""
+    r"""Returns a standard 1x2 MMI optimized for low insertion loss on a 300/120 stack in the O-band (at 1310 nm).
+    .. code::
+                ________
+               |        |
+               |         \__
+               |          __  o2
+            __/          /
+         o1 __          |
+              \          \__
+               |          __  o3
+               |         /
+               |________|
+    """
 
     return build_mmi1x2_oband()
 
 
 @gf.cell
 def mmi2x2_oband() -> gf.Component:
-    """1x2 MMI optimized for 50% splitting on a 300/120 stack in the O-band (at 1310 nm)."""
+    r"""Returns a standard 2x2 MMI optimized for 50% splitting on a 300/120 stack in the O-band (at 1310 nm).
+    .. code::
+                ________
+               |        |
+            __/          \__
+        o2  __            __  o3
+              \          /
+              |         |
+            __/          \__
+        o1  __            __  o4
+              \          /
+               |________|
+
+    """
 
     return build_mmi2x2_oband()
+
+
+################
+# Modulators
+################
+
+
+@gf.cell
+def terminated_mzm_1x2mmi_oband(
+    modulation_length: float = 5000.0,
+    length_imbalance: float = 100.0,
+    rf_pad_start_width: float = 80.0,
+    rf_ground_planes_width: float = 180.0,
+    rf_pad_length_straight: float = 10.0,
+    rf_pad_length_tapered: float = 300.0,
+    bias_tuning_section_length: float = 700.0,
+    with_heater: bool = True,
+):
+    """Returns a terminated MZM with 1x2 MMI splitter with effective index matching
+    for O-band operation."""
+
+    return build_terminated_mzm_1x2mmi_oband(
+        modulation_length=modulation_length,
+        length_imbalance=length_imbalance,
+        rf_pad_start_width=rf_pad_start_width,
+        rf_ground_planes_width=rf_ground_planes_width,
+        rf_pad_length_straight=rf_pad_length_straight,
+        rf_pad_length_tapered=rf_pad_length_tapered,
+        bias_tuning_section_length=bias_tuning_section_length,
+        with_heater=with_heater,
+    )
+
+
+@gf.cell
+def unterminated_mzm_1x2mmi_oband(
+    modulation_length: float = 5000.0,
+    length_imbalance: float = 100.0,
+    rf_pad_start_width: float = 80.0,
+    rf_ground_planes_width: float = 180.0,
+    rf_pad_length_straight: float = 10.0,
+    rf_pad_length_tapered: float = 300.0,
+    bias_tuning_section_length: float = 700.0,
+    with_heater: bool = True,
+):
+    """Returns a unterminated MZM with 1x2 MMI splitter with effective index matching
+    for O-band operation."""
+
+    return build_unterminated_mzm_1x2mmi_oband(
+        modulation_length=modulation_length,
+        length_imbalance=length_imbalance,
+        rf_pad_start_width=rf_pad_start_width,
+        rf_ground_planes_width=rf_ground_planes_width,
+        rf_pad_length_straight=rf_pad_length_straight,
+        rf_pad_length_tapered=rf_pad_length_tapered,
+        bias_tuning_section_length=bias_tuning_section_length,
+        with_heater=with_heater,
+    )
+
+
+@gf.cell
+def terminated_mzm_2x2mmi_oband(
+    modulation_length: float = 5000.0,
+    length_imbalance: float = 100.0,
+    rf_pad_start_width: float = 80.0,
+    rf_ground_planes_width: float = 180.0,
+    rf_pad_length_straight: float = 10.0,
+    rf_pad_length_tapered: float = 300.0,
+    bias_tuning_section_length: float = 700.0,
+    with_heater: bool = True,
+) -> gf.Component:
+    """Returns a terminated MZM with 2x2 MMI splitter with effective index matching
+    for O-band operation."""
+
+    return build_terminated_mzm_2x2mmi_oband(
+        modulation_length=modulation_length,
+        length_imbalance=length_imbalance,
+        rf_pad_start_width=rf_pad_start_width,
+        rf_ground_planes_width=rf_ground_planes_width,
+        rf_pad_length_straight=rf_pad_length_straight,
+        rf_pad_length_tapered=rf_pad_length_tapered,
+        bias_tuning_section_length=bias_tuning_section_length,
+        with_heater=with_heater,
+    )
+
+
+@gf.cell
+def unterminated_mzm_2x2mmi_oband(
+    modulation_length: float = 5000.0,
+    length_imbalance: float = 100.0,
+    rf_pad_start_width: float = 80.0,
+    rf_ground_planes_width: float = 180.0,
+    rf_pad_length_straight: float = 10.0,
+    rf_pad_length_tapered: float = 300.0,
+    bias_tuning_section_length: float = 700.0,
+    with_heater: bool = True,
+) -> gf.Component:
+    """Returns an unterminated MZM with 2x2 MMI splitter with effective index matching
+    for O-band operation."""
+
+    return build_unterminated_mzm_2x2mmi_oband(
+        modulation_length=modulation_length,
+        length_imbalance=length_imbalance,
+        rf_pad_start_width=rf_pad_start_width,
+        rf_ground_planes_width=rf_ground_planes_width,
+        rf_pad_length_straight=rf_pad_length_straight,
+        rf_pad_length_tapered=rf_pad_length_tapered,
+        bias_tuning_section_length=bias_tuning_section_length,
+        with_heater=with_heater,
+    )
 
 
 ############################################
@@ -150,7 +281,7 @@ def mmi2x2_cband() -> gf.Component:
 
 
 @gf.cell
-def terminated_mzm_cband(
+def terminated_mzm_1x2mmi_cband(
     modulation_length: float = 5000.0,
     length_imbalance: float = 100.0,
     rf_pad_start_width: float = 80.0,
@@ -158,10 +289,12 @@ def terminated_mzm_cband(
     rf_pad_length_straight: float = 10.0,
     rf_pad_length_tapered: float = 300.0,
     bias_tuning_section_length: float = 700.0,
+    with_heater: bool = True,
 ):
-    """Create a routed terminated MZM for wafer-scale testing with edge couplers."""
+    """Returns a terminated MZM with 1x2 MMI splitter with effective index matching
+    for C-band operation."""
 
-    return build_terminated_mzm_cband(
+    return build_terminated_mzm_1x2mmi_cband(
         modulation_length=modulation_length,
         length_imbalance=length_imbalance,
         rf_pad_start_width=rf_pad_start_width,
@@ -169,8 +302,87 @@ def terminated_mzm_cband(
         rf_pad_length_straight=rf_pad_length_straight,
         rf_pad_length_tapered=rf_pad_length_tapered,
         bias_tuning_section_length=bias_tuning_section_length,
+        with_heater=with_heater,
+    )
+
+
+@gf.cell
+def unterminated_mzm_1x2mmi_cband(
+    modulation_length: float = 5000.0,
+    length_imbalance: float = 100.0,
+    rf_pad_start_width: float = 80.0,
+    rf_ground_planes_width: float = 180.0,
+    rf_pad_length_straight: float = 10.0,
+    rf_pad_length_tapered: float = 300.0,
+    bias_tuning_section_length: float = 700.0,
+    with_heater: bool = True,
+):
+    """Returns a unterminated MZM with 1x2 MMI splitter with effective index matching
+    for C-band operation."""
+
+    return build_unterminated_mzm_1x2mmi_cband(
+        modulation_length=modulation_length,
+        length_imbalance=length_imbalance,
+        rf_pad_start_width=rf_pad_start_width,
+        rf_ground_planes_width=rf_ground_planes_width,
+        rf_pad_length_straight=rf_pad_length_straight,
+        rf_pad_length_tapered=rf_pad_length_tapered,
+        bias_tuning_section_length=bias_tuning_section_length,
+        with_heater=with_heater,
+    )
+
+
+@gf.cell
+def terminated_mzm_2x2mmi_cband(
+    modulation_length: float = 5000.0,
+    length_imbalance: float = 100.0,
+    rf_pad_start_width: float = 80.0,
+    rf_ground_planes_width: float = 180.0,
+    rf_pad_length_straight: float = 10.0,
+    rf_pad_length_tapered: float = 300.0,
+    bias_tuning_section_length: float = 700.0,
+    with_heater: bool = True,
+) -> gf.Component:
+    """Returns a terminated MZM with 2x2 MMI splitter with effective index matching
+    for C-band operation."""
+
+    return build_terminated_mzm_2x2mmi_cband(
+        modulation_length=modulation_length,
+        length_imbalance=length_imbalance,
+        rf_pad_start_width=rf_pad_start_width,
+        rf_ground_planes_width=rf_ground_planes_width,
+        rf_pad_length_straight=rf_pad_length_straight,
+        rf_pad_length_tapered=rf_pad_length_tapered,
+        bias_tuning_section_length=bias_tuning_section_length,
+        with_heater=with_heater,
+    )
+
+
+@gf.cell
+def unterminated_mzm_2x2mmi_cband(
+    modulation_length: float = 5000.0,
+    length_imbalance: float = 100.0,
+    rf_pad_start_width: float = 80.0,
+    rf_ground_planes_width: float = 180.0,
+    rf_pad_length_straight: float = 10.0,
+    rf_pad_length_tapered: float = 300.0,
+    bias_tuning_section_length: float = 700.0,
+    with_heater: bool = True,
+) -> gf.Component:
+    """Returns an unterminated MZM with 2x2 MMI splitter with effective index matching
+    for C-band operation."""
+
+    return build_unterminated_mzm_2x2mmi_cband(
+        modulation_length=modulation_length,
+        length_imbalance=length_imbalance,
+        rf_pad_start_width=rf_pad_start_width,
+        rf_ground_planes_width=rf_ground_planes_width,
+        rf_pad_length_straight=rf_pad_length_straight,
+        rf_pad_length_tapered=rf_pad_length_tapered,
+        bias_tuning_section_length=bias_tuning_section_length,
+        with_heater=with_heater,
     )
 
 
 if __name__ == "__main__":
-    terminated_mzm_cband().show()
+    terminated_mzm_1x2mmi_oband().show()
