@@ -16,16 +16,16 @@ from ltoi300._builders.straights import build_straight_rwg700, build_straight_rw
 
 
 @gf.cell
-def straight_rwg900(length: float = 10.0) -> gf.Component:
-    """Straight single-mode waveguide for C-band propagation."""
+def straight_rwg900_cband(length: float = 10.0) -> gf.Component:
+    """Standard straight single-mode waveguide for C-band propagation."""
     return build_straight_rwg900(
         length=length,
     )
 
 
 @gf.cell
-def straight_rwg700(length: float = 10.0) -> gf.Component:
-    """Straight single-mode waveguide for O-band propagation."""
+def straight_rwg700_oband(length: float = 10.0) -> gf.Component:
+    """Standard straight single-mode waveguide for O-band propagation."""
     return build_straight_rwg700(
         length=length,
     )
@@ -38,7 +38,7 @@ def straight_arbitrary(
     **kwargs,
 ) -> gf.Component:
     """An arbitrary R&D straight waveguide with unknown specs.
-    Only the minimal width of 250 nm is accepted."""
+    Arbitrary cross-section is accepted with the minimal possible waveguide width of 250 nm."""
 
     return gf.components.straight(
         length=length,
