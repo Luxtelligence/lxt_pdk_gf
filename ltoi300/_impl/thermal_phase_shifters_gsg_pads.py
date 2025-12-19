@@ -315,7 +315,7 @@ def add_gsg_heater(
     c.add_port(name="gsg_e2", port=heater_routing.ports["gsg_e2"])
     c.add_port(name="gsg_e3", port=heater_routing.ports["gsg_e3"])
     c.add_port(name="gsg_e4", port=heater_routing.ports["gsg_e4"])
-
+    c.flatten()
     return c
 
 

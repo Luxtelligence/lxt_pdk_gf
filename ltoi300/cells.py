@@ -71,39 +71,14 @@ def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
 
 @gf.cell
 def mmi1x2_oband() -> gf.Component:
-    r"""Returns a standard 1x2 MMI optimized for low insertion loss on a 300/120 stack in the O-band (at 1310 nm).
-    .. code::
-                ________
-               |        |
-               |         \__
-               |          __  o2
-            __/          /
-         o1 __          |
-              \          \__
-               |          __  o3
-               |         /
-               |________|
-    """
+    r"""Returns a standard 1x2 MMI optimized for low insertion loss on a 300/120 stack in the O-band (at 1310 nm)."""
 
     return build_mmi1x2_oband()
 
 
 @gf.cell
 def mmi2x2_oband() -> gf.Component:
-    r"""Returns a standard 2x2 MMI optimized for 50% splitting on a 300/120 stack in the O-band (at 1310 nm).
-    .. code::
-                ________
-               |        |
-            __/          \__
-        o2  __            __  o3
-              \          /
-              |         |
-            __/          \__
-        o1  __            __  o4
-              \          /
-               |________|
-
-    """
+    r"""Returns a standard 2x2 MMI optimized for 50% splitting on a 300/120 stack in the O-band (at 1310 nm)."""
 
     return build_mmi2x2_oband()
 
