@@ -1,6 +1,6 @@
 import gdsfactory as gf
 
-from ltoi300._impl.mzm import mzm_unbalanced_LT
+from _utils.mzm import mzm_unbalanced_LT
 from ltoi300.tech import LAYER
 
 ############################################

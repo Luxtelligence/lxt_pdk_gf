@@ -37,11 +37,6 @@ def straight_rwg700_oband(length: float = 10.0) -> gf.Component:
     """Returns a standard straight 700 nm-wide single-mode waveguide for O-band propagation.
     Args:
         length: straight length (um).
-
-    .. code::
-
-        o1  ──────────────── o2
-                length
     """
     return build_straight_rwg700(
         length=length,
@@ -53,11 +48,6 @@ def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
     """Returns a standard straight 2500 nm-wide multi-mode waveguide for O-band propagation.
     Args:
         length: straight length (um).
-
-    .. code::
-
-        o1  ──────────────── o2
-                length
     """
     return build_straight_rwg2500(
         length=length,

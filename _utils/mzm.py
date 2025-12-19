@@ -4,17 +4,17 @@ import gdsfactory as gf
 import numpy as np
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec, Layer
 
+from _utils.bends import (
+    L_turn_bend,
+    S_bend_vert,
+)
+from _utils.thermal_phase_shifters_gsg_pads import add_gsg_heater, add_heater
 from ltoi300._builders.mmis import (
     build_mmi1x2_cband,
     build_mmi1x2_oband,
     build_mmi2x2_cband,
     build_mmi2x2_oband,
 )
-from ltoi300._impl.bends import (
-    L_turn_bend,
-    S_bend_vert,
-)
-from ltoi300._impl.thermal_phase_shifters_gsg_pads import add_gsg_heater, add_heater
 from ltoi300.tech import LAYER, xs_rwg700, xs_rwg900, xs_uni_cpw
 
 
