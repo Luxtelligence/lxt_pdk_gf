@@ -30,10 +30,11 @@ def template_build_mzm_oband(
     kwargs.setdefault("heater_width", 2.5)
     kwargs.setdefault("resistor_length", 190.0 / 2)
     # kwargs.setdefault("terminated", True)
-    c << mzm_unbalanced_LT(
+    mzm_ref = c << mzm_unbalanced_LT(
         **kwargs,
         add_M2andOpenings=True,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -45,9 +46,10 @@ def build_terminated_mzm_1x2mmi_oband(
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi1x2_oband")
     kwargs.setdefault("terminated", True)
-    c << template_build_mzm_oband(
+    mzm_ref = c << template_build_mzm_oband(
         **kwargs,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -59,9 +61,10 @@ def build_unterminated_mzm_1x2mmi_oband(
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi1x2_oband")
     kwargs.setdefault("terminated", False)
-    c << template_build_mzm_oband(
+    mzm_ref = c << template_build_mzm_oband(
         **kwargs,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -73,9 +76,10 @@ def build_terminated_mzm_2x2mmi_oband(
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi2x2_oband")
     kwargs.setdefault("terminated", True)
-    c << template_build_mzm_oband(
+    mzm_ref = c << template_build_mzm_oband(
         **kwargs,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -87,9 +91,10 @@ def build_unterminated_mzm_2x2mmi_oband(
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi2x2_oband")
     kwargs.setdefault("terminated", False)
-    c << template_build_mzm_oband(
+    mzm_ref = c << template_build_mzm_oband(
         **kwargs,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -118,10 +123,11 @@ def template_build_mzm_cband(
     kwargs.setdefault("termination_layer", LAYER.HRM)
     kwargs.setdefault("heater_width", 2.5)
     kwargs.setdefault("resistor_length", 190.0 / 2)
-    c << mzm_unbalanced_LT(
+    mzm_ref = c << mzm_unbalanced_LT(
         **kwargs,
         add_M2andOpenings=True,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -133,9 +139,10 @@ def build_terminated_mzm_1x2mmi_cband(
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi1x2_cband")
     kwargs.setdefault("terminated", True)
-    c << template_build_mzm_cband(
+    mzm_ref = c << template_build_mzm_cband(
         **kwargs,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -147,9 +154,10 @@ def build_unterminated_mzm_1x2mmi_cband(
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi1x2_cband")
     kwargs.setdefault("terminated", False)
-    c << template_build_mzm_cband(
+    mzm_ref = c << template_build_mzm_cband(
         **kwargs,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -161,9 +169,10 @@ def build_terminated_mzm_2x2mmi_cband(
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi2x2_cband")
     kwargs.setdefault("terminated", True)
-    c << template_build_mzm_cband(
+    mzm_ref = c << template_build_mzm_cband(
         **kwargs,
     )
+    c.add_ports(mzm_ref.ports)
     return c
 
 
@@ -175,7 +184,8 @@ def build_unterminated_mzm_2x2mmi_cband(
     # Create the MZM component
     kwargs.setdefault("splitter", "mmi2x2_cband")
     kwargs.setdefault("terminated", False)
-    c << template_build_mzm_cband(
+    mzm_ref = c << template_build_mzm_cband(
         **kwargs,
     )
+    c.add_ports(mzm_ref.ports)
     return c
