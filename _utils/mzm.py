@@ -1163,7 +1163,7 @@ def _mzm_interferometer_LT(
             else "xs_rwg900",
         )
         straight_y = gf.components.straight(
-            length=20.0 + straight_unbalance,
+            length=123.0 + straight_unbalance,
             cross_section="xs_rwg700"
             if communication_band == "O-band"
             else "xs_rwg900",
