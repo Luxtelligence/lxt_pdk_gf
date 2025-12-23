@@ -60,17 +60,45 @@ def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
 
 
 @gf.cell
-def mmi1x2_oband() -> gf.Component:
-    r"""Returns a standard 1x2 MMI optimized for low insertion loss on a 300/120 stack in the O-band (at 1310 nm)."""
+def mmi1x2_oband(**kwargs) -> gf.Component:
+    r"""Returns a standard 1x2 MMI optimized for low insertion loss on a 300/120 stack in the O-band (at 1310 nm).
 
-    return build_mmi1x2_oband()
+    Use with default parameters for standard designs: `mmi = mmi1x2_oband()`. Parameters can be overridden at the user's risk.
+
+    Args:
+        width_mmi: Width of the MMI region in micrometers
+        length_mmi: Length of the MMI region in micrometers
+        width_taper: Width of the taper at the MMI interface in micrometers
+        length_taper: Length of the input/output tapers in micrometers
+        port_separation: Center-to-center separation between output ports in micrometers
+        cross_section: Cross-section specification for the waveguides
+        **kwargs: Additional keyword arguments passed to gdsfactory mmi1x2
+
+    Note:
+        Default values for all parameters are defined in ltoi300._builders.mmis.build_mmi1x2_oband
+    """
+    return build_mmi1x2_oband(**kwargs)
 
 
 @gf.cell
-def mmi2x2_oband() -> gf.Component:
-    r"""Returns a standard 2x2 MMI optimized for 50% splitting on a 300/120 stack in the O-band (at 1310 nm)."""
+def mmi2x2_oband(**kwargs) -> gf.Component:
+    r"""Returns a standard 2x2 MMI optimized for 50% splitting on a 300/120 stack in the O-band (at 1310 nm).
 
-    return build_mmi2x2_oband()
+    Use with default parameters for standard designs: `mmi = mmi2x2_oband()`. Parameters can be overridden at the user's risk.
+
+    Args:
+        width_mmi: Width of the MMI region in micrometers
+        length_mmi: Length of the MMI region in micrometers
+        width_taper: Width of the taper at the MMI interface in micrometers
+        length_taper: Length of the input/output tapers in micrometers
+        port_separation: Center-to-center separation between output ports in micrometers
+        cross_section: Cross-section specification for the waveguides
+        **kwargs: Additional keyword arguments passed to gdsfactory mmi2x2
+
+    Note:
+        Default values for all parameters are defined in ltoi300._builders.mmis.build_mmi2x2_oband
+    """
+    return build_mmi2x2_oband(**kwargs)
 
 
 ################
@@ -227,17 +255,45 @@ def straight_arbitrary(
 
 
 @gf.cell
-def mmi1x2_cband() -> gf.Component:
-    """1x2 MMI optimized for low insertion loss on a 300/120 stack in the C-band (at 1550 nm)."""
+def mmi1x2_cband(**kwargs) -> gf.Component:
+    r"""Returns a standard 1x2 MMI optimized for low insertion loss on a 300/120 stack in the C-band (at 1550 nm).
 
-    return build_mmi1x2_cband()
+    Use with default parameters for standard designs: `mmi = mmi1x2_cband()`. Parameters can be overridden at the user's risk.
+
+    Args:
+        width_mmi: Width of the MMI region in micrometers
+        length_mmi: Length of the MMI region in micrometers
+        width_taper: Width of the taper at the MMI interface in micrometers
+        length_taper: Length of the input/output tapers in micrometers
+        port_separation: Center-to-center separation between output ports in micrometers
+        cross_section: Cross-section specification for the waveguides
+        **kwargs: Additional keyword arguments passed to gdsfactory mmi1x2
+
+    Note:
+        Default values for all parameters are defined in ltoi300._builders.mmis.build_mmi1x2_cband
+    """
+    return build_mmi1x2_cband(**kwargs)
 
 
 @gf.cell
-def mmi2x2_cband() -> gf.Component:
-    """1x2 MMI optimized for 50% splitting on a 300/120 stack in the C-band (at 1550 nm)."""
+def mmi2x2_cband(**kwargs) -> gf.Component:
+    r"""Returns a standard 2x2 MMI optimized for 50% splitting on a 300/120 stack in the C-band (at 1550 nm).
 
-    return build_mmi2x2_cband()
+    Use with default parameters for standard designs: `mmi = mmi2x2_cband()`. Parameters can be overridden at the user's risk.
+
+    Args:
+        width_mmi: Width of the MMI region in micrometers
+        length_mmi: Length of the MMI region in micrometers
+        width_taper: Width of the taper at the MMI interface in micrometers
+        length_taper: Length of the input/output tapers in micrometers
+        port_separation: Center-to-center separation between output ports in micrometers
+        cross_section: Cross-section specification for the waveguides
+        **kwargs: Additional keyword arguments passed to gdsfactory mmi2x2
+
+    Note:
+        Default values for all parameters are defined in ltoi300._builders.mmis.build_mmi2x2_cband
+    """
+    return build_mmi2x2_cband(**kwargs)
 
 
 ###############
