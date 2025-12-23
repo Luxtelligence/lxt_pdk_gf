@@ -8,7 +8,7 @@ from _utils.bends import (
     L_turn_bend,
     S_bend_vert,
 )
-from _utils.thermal_phase_shifters_gsg_pads import add_gsg_heater, add_heater
+from _utils.thermal_phase_shifters_gsg_pads import add_heater
 from ltoi300._builders.mmis import (
     build_mmi1x2_cband,
     build_mmi1x2_oband,
@@ -1320,7 +1320,6 @@ def mzm_unbalanced_LT(
     opening_layer: Layer = (40, 0),  # Layer for etching openings
     add_M2andOpenings: bool = False,  # Enable M2 metal and opening features
     resistor_length: float = 190.0 / 2,  # effective resistor length
-    gsg_heater: bool = True,
     **kwargs,
 ) -> gf.Component:
     """Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
@@ -1410,7 +1409,7 @@ def mzm_unbalanced_LT(
     )
 
     # Add heater for phase tuning
-    if with_heater and not gsg_heater:
+    if with_heater:
         ht_ref = mzm << add_heater(
             heater_on_both_branches=heater_on_both_branches,
             heater_offset=heater_offset,
@@ -1420,19 +1419,6 @@ def mzm_unbalanced_LT(
             bias_tuning_section_length=bias_tuning_section_length,
             length_imbalance=length_imbalance,
             interferometer=interferometer,
-        )
-    if with_heater and gsg_heater:
-        heater_pad_size = (40.0, 40.0)
-        ht_ref = mzm << add_gsg_heater(
-            heater_on_both_branches=heater_on_both_branches,
-            heater_offset=heater_offset,
-            heater_width=heater_width,
-            heater_pad_size=heater_pad_size,
-            ht_layer=ht_layer,
-            bias_tuning_section_length=bias_tuning_section_length,
-            length_imbalance=length_imbalance,
-            interferometer=interferometer,
-            m2_layer=m2_layer,
         )
     # Transmission line subcell
 
@@ -1512,7 +1498,7 @@ def mzm_unbalanced_LT(
             ]
         )
 
-    if with_heater and not gsg_heater:
+    if with_heater:
         exposed_ports += [
             ("e3", ht_ref.ports["e1"]),
             (
@@ -1520,7 +1506,7 @@ def mzm_unbalanced_LT(
                 ht_ref.ports["e2"],
             ),
         ]
-    if with_heater and heater_on_both_branches and not gsg_heater:
+    if with_heater and heater_on_both_branches:
         exposed_ports += [
             ("e5", ht_ref.ports["e3"]),
             (
@@ -1528,13 +1514,7 @@ def mzm_unbalanced_LT(
                 ht_ref.ports["e4"],
             ),
         ]
-    if with_heater and heater_on_both_branches and gsg_heater:
-        exposed_ports += [
-            ("gsg_e1", ht_ref.ports["gsg_e1"]),
-            ("gsg_e2", ht_ref.ports["gsg_e2"]),
-            ("gsg_e3", ht_ref.ports["gsg_e3"]),
-            ("gsg_e4", ht_ref.ports["gsg_e4"]),
-        ]
+
     [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
 
     return mzm
