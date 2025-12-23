@@ -8,7 +8,7 @@ from _utils.bends import (
     L_turn_bend,
     S_bend_vert,
 )
-from _utils.thermal_phase_shifters_gsg_pads import add_heater
+from _utils.thermal_phase_shifters import add_heater
 from ltoi300._builders.mmis import (
     build_mmi1x2_cband,
     build_mmi1x2_oband,
