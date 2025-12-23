@@ -912,11 +912,11 @@ def trail_cpw_LT(
         strght_ter_left.ports["e2"].dcenter, strght.ports["e2"].dcenter
     )
     bp1 = cpw << bp
-    bp1.connect("e2", strght.ports["e1"], allow_width_mismatch=True)
+    bp1.connect("e2", strght.ports["e2"], allow_width_mismatch=True)
     if not terminated:
         bp2 = cpw << bp
         bp2.dmirror()
-        bp2.connect("e2", strght.ports["e2"], allow_width_mismatch=True)
+        bp2.connect("e2", strght.ports["e1"], allow_width_mismatch=True)
         cpw.add_port(
             name="bp2",
             port=bp2.ports["e1"],
@@ -929,7 +929,7 @@ def trail_cpw_LT(
         )
         bp2.connect(
             "e1",
-            strght.ports["e2"],
+            strght.ports["e1"],
             allow_width_mismatch=True,
             allow_layer_mismatch=True,
         )
