@@ -490,7 +490,7 @@ def CPW_pad_curved(
     following the optical waveguides. The probe pad maintains a
     fixed gap/central conductor ratio across its length, to achieve a good
     impedance matching"""
-    length_tapered = length_tapered
+
     xs_cpw = gf.get_cross_section(cross_section)
 
     # Extract the CPW cross sectional parameters
@@ -1335,19 +1335,23 @@ def mzm_unbalanced_LT(
     mzm = gf.Component()
 
     # Interferometer subcell
-    if "mmi2x2_oband" in kwargs["splitter"]:
-        splitter = build_mmi2x2_oband()
-    if "mmi2x2_cband" in kwargs["splitter"]:
-        splitter = build_mmi2x2_cband()
-    if "mmi1x2_oband" in kwargs["splitter"]:
-        splitter = build_mmi1x2_oband()
-    if "mmi1x2_cband" in kwargs["splitter"]:
-        splitter = build_mmi1x2_cband()
-    if ("oband" in kwargs["splitter"] and communication_band == "C-band") or (
-        "cband" in kwargs["splitter"] and communication_band == "O-band"
+    splitter_map = {
+        "mmi2x2_oband": build_mmi2x2_oband,
+        "mmi2x2_cband": build_mmi2x2_cband,
+        "mmi1x2_oband": build_mmi1x2_oband,
+        "mmi1x2_cband": build_mmi1x2_cband,
+    }
+    splitter_key = kwargs["splitter"]
+    if splitter_key not in splitter_map:
+        raise ValueError(f"Unknown splitter: {splitter_key}")
+
+    splitter = splitter_map[splitter_key]()
+    # Validate band consistency
+    if ("oband" in splitter_key and communication_band == "C-band") or (
+        "cband" in splitter_key and communication_band == "O-band"
     ):
         raise ValueError(
-            "Communication band and designed band of splitter should be consistent!"
+            f"Splitter band ({splitter_key}) inconsistent with communication_band ({communication_band})"
         )
 
     # splitter = gf.get_component(splitter) # TO DO use this function instead for versatility
