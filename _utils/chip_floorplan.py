@@ -1,9 +1,5 @@
 import gdsfactory as gf
 
-##################
-# Chip floorplan
-##################
-
 
 @gf.cell
 def chip_frame(

@@ -5,7 +5,7 @@ import numpy as np
 from gdsfactory.routing import route_quad
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
-from _utils.cells import chip_frame
+from _utils.chip_floorplan import chip_frame
 from _utils.spline import (
     bend_S_spline,
     bend_S_spline_varying_width,
