@@ -34,8 +34,8 @@ def heater_pads_assymm(
     routing_width: float = 30.0,
     ht_layer: Layer = LAYER.HRM,
 ) -> gf.Component:
-    padwidth, padheight = pad_size
-    if not pad_pitch:
+    padwidth, _ = pad_size
+    if pad_pitch is None:
         pad_pitch = padwidth + 20.0
 
     c = gf.Component()
@@ -92,14 +92,12 @@ def heater_straight_compact(
 
     if pad_vert_offset <= 0:
         raise ValueError(
-            "pad_vert_offset must be a positive number,"
-            + f"received {pad_vert_offset}."
+            f"pad_vert_offset must be a positive number, received {pad_vert_offset}."
         )
 
     if port_contact_width_ratio <= 0:
         raise ValueError(
-            "port_contact_width_ratio must be a positive number,"
-            + f"received {port_contact_width_ratio}."
+            f"port_contact_width_ratio must be a positive number, received {port_contact_width_ratio}."
         )
 
     c = gf.Component()
@@ -181,6 +179,7 @@ def heater_straight_compact(
 
 @gf.cell
 def add_heater(
+    interferometer: gf.Component = None,
     heater_on_both_branches: bool = False,
     heater_offset: float = 3.5,
     heater_width: float = 1.0,
@@ -188,7 +187,6 @@ def add_heater(
     ht_layer: Layer = LAYER.HRM,
     bias_tuning_section_length: float = 700.0,
     length_imbalance: float = 0.0,
-    interferometer: gf.Component = None,
 ) -> gf.Component:
     """Add heater to the modulator."""
     c = gf.Component()
@@ -209,7 +207,7 @@ def add_heater(
     else:
         if not heater_on_both_branches:
             ht_ref_1.dmirror_y()
-        if heater_on_both_branches:
+        else:
             ht_ref_2.dmirror_y()
         heater_disp_1 = (
             [0, 0.5 * heater_width + heater_offset]

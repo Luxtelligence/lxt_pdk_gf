@@ -1,10 +1,9 @@
-import numpy as np
 import gdsfactory as gf
-from lxt_lotools.ltoi300_dev.tech_dev import LAYER, xs_rwg700, xs_rwg900
-from gdsfactory.typings import CrossSectionSpec
-from gdsfactory.typings import Layer
+from gdsfactory.typings import CrossSectionSpec, Layer
 
 from _utils.bends import bend_euler_tapered
+from ltoi300.tech import LAYER, xs_rwg700
+
 
 @gf.cell
 def ring_resonator(
@@ -53,6 +52,7 @@ def ring_resonator(
     c.add_ports(coupler_ref.ports)
     c.flatten()
     return c
+
 
 @gf.cell
 def racetrack_resonator(
@@ -169,3 +169,8 @@ def racetrack_resonator(
     c.flatten()
 
     return c
+
+
+if __name__ == "__main__":
+    c = ring_resonator()
+    c.show()

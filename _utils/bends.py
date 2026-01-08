@@ -72,6 +72,7 @@ def S_bend_vert(
 
     return bend_cell
 
+
 def bend_euler_tapered(
     radius: float = 45.0,
     w0: float = 3.0,
@@ -96,7 +97,10 @@ def bend_euler_tapered(
         return y
 
     sec = gf.Section(
-        layer=cross_section().layer, width=0, width_function=width_fun, port_names=("o1", "o2")
+        layer=cross_section().layer,
+        width=0,
+        width_function=width_fun,
+        port_names=("o1", "o2"),
     )
 
     xs_tapered = gf.CrossSection(sections=(sec,))
