@@ -54,9 +54,9 @@ def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
     )
 
 
-#####################
+##########################
 # 1x2 and 2x2 O-band MMIs
-#####################
+##########################
 
 
 @gf.cell
