@@ -1488,17 +1488,17 @@ def mzm_unbalanced_LT(
     if "1x2" in kwargs["splitter"]:
         exposed_ports.extend(
             [
-                ("o1", interferometer.ports["o1"]),
-                ("o2", interferometer.ports["o2"]),
+                ("o1", interferometer.ports["o2"]),
+                ("o2", interferometer.ports["o1"]),
             ]
         )
     elif "2x2" in kwargs["splitter"]:
         exposed_ports.extend(
             [
-                ("o1", interferometer.ports["o1"]),
-                ("o2", interferometer.ports["in2"]),
-                ("o3", interferometer.ports["out2"]),
-                ("o4", interferometer.ports["o2"]),
+                ("o3", interferometer.ports["o1"]),
+                ("o4", interferometer.ports["in2"]),
+                ("o1", interferometer.ports["out2"]),
+                ("o2", interferometer.ports["o2"]),
             ]
         )
 
@@ -1520,5 +1520,5 @@ def mzm_unbalanced_LT(
         ]
 
     [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
-
+    mzm.drotate(180)
     return mzm
