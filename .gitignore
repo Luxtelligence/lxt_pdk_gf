@@ -11,6 +11,8 @@ extra/
 # C extensions
 *.so
 *.json
+# Allow JSON files in data directories (for PDK model data)
+!*/data/*.json
 ports/
 
 # Distribution / packaging

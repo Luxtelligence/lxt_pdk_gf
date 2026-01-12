@@ -1,0 +1,12 @@
+{
+ "doc": "FDTD simulation results of MMI2x2 optimized for 50% splitting at 1550 nm (C-band). Parameters of a polynomial fit around the center wavelength. TODO: Replace with actual simulation data.",
+ "center_wavelength": 1.55,
+ "pol_trans_bar_abs": [0.5],
+ "pol_trans_bar_phase": [0.0],
+ "pol_trans_cross_abs": [0.5],
+ "pol_trans_cross_phase": [0.0],
+ "pol_refl_bar_abs": [0.0],
+ "pol_refl_bar_phase": [0.0],
+ "pol_refl_cross_abs": [0.0],
+ "pol_refl_cross_phase": [0.0]
+}
