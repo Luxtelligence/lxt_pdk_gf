@@ -10,7 +10,6 @@ def ring_resonator(
     gap: float = 0.6,
     ring_radius: float = 200.0,
     ring_width: float = 1.5,
-    bus_width: float = 0.7,
     slab_width: float = 10.0,
     bus_length: float | None = None,
     cross_section: CrossSectionSpec = xs_rwg700,
@@ -20,6 +19,7 @@ def ring_resonator(
     """A ring resonator with an evanescent coupler."""
 
     xs_bus = cross_section()
+    bus_width = xs_bus.width
 
     ring = gf.components.ring(
         layer=layer_ridge,
@@ -46,7 +46,7 @@ def ring_resonator(
     coupler_ref = c << bus
     coupler_ref.drotate(90)
     coupler_ref.dcenter = [
-        ring_radius + gap + 0.5 * bus_width + 0.5 * ring_width,
+        ring_radius + gap + 0.5 * (bus_width + ring_width),
         ring_ref.dcenter[1],
     ]
     c.add_ports(coupler_ref.ports)

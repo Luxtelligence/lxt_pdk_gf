@@ -209,6 +209,26 @@ def unterminated_mzm_2x2mmi_oband(
         with_heater=with_heater,
     )
 
+################
+# Optical Resonators
+################
+from _utils.optical_resonators import ring_resonator
+from ltoi300.tech import xs_rwg700
+
+@gf.cell
+def ring_resonator_oband(
+    ring_radius: float = 200.0,
+    ring_width: float = 0.7,
+    gap: float = 0.6,
+    bus_length: float | None = None,
+) -> gf.Component:
+    """Returns a ring resonator with an evanescent coupler for O-band operation."""
+    return ring_resonator(gap=gap, 
+    ring_radius=ring_radius, 
+    ring_width=ring_width,
+    bus_length=bus_length, 
+    cross_section=xs_rwg700,
+    )
 
 ############################################
 ############# C-band cells #################
@@ -404,6 +424,25 @@ def unterminated_mzm_2x2mmi_cband(
         with_heater=with_heater,
     )
 
+################
+# Optical Resonators
+################
+from _utils.optical_resonators import ring_resonator
+from ltoi300.tech import xs_rwg900
+@gf.cell
+def ring_resonator_cband(
+    ring_radius: float = 200.0,
+    ring_width: float = 0.9,
+    gap: float = 0.6,
+    bus_length: float | None = None,
+) -> gf.Component:
+    """Returns a ring resonator with an evanescent coupler for C-band operation."""
+    return ring_resonator(gap=gap, 
+    ring_radius=ring_radius, 
+    ring_width=ring_width,
+    bus_length=bus_length, 
+    cross_section=xs_rwg900,
+    )
 
 if __name__ == "__main__":
-    terminated_mzm_1x2mmi_oband().show()
+    ring_resonator_oband().show()
