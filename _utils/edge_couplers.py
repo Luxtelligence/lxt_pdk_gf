@@ -82,14 +82,13 @@ def double_layer_ec_custom(
     npoints_lower: float = 240,
     npoints_upper: float = 120,
     slab_removal_width: float = 20.0,
-    L1_L2_offset: float = 1.5,
     input_ext: float = 0.0,
 ) -> Component:
     """
     Double layer edge coupler based on inverse tapers with arbitrary profiles.
     Start from a wire cross-section, end with a rib cross-section.
     The default values are optimised for the O-band lensed fiber with the
-    MFD=2.15 um.
+    MFD=2.15 um. Avoid renaming double_layer_ec_custom to enable backward compatibility.
     """
 
     double_taper = gf.Component()
@@ -104,7 +103,7 @@ def double_layer_ec_custom(
     s = gf.Section(
         width=0,
         width_function=lower_profile,
-        layer=lower_taper_xs().layer,
+        layer=lower_taper_xs.layer,
         port_names=("o1", "o2"),
     )
     xsl = gf.CrossSection(sections=(s,))
@@ -117,7 +116,7 @@ def double_layer_ec_custom(
     s = gf.Section(
         width=0,
         width_function=upper_profile,
-        layer=upper_taper_xs().layer,
+        layer=upper_taper_xs.layer,
         port_names=("o1", "o2"),
     )
     xsu = gf.CrossSection(sections=(s,))
@@ -129,7 +128,7 @@ def double_layer_ec_custom(
 
     s = gf.Section(
         width=lower_profile(0),
-        layer=lower_taper_xs().layer,
+        layer=lower_taper_xs.layer,
         port_names=("o1", "o2"),
     )
     xs_ext = gf.CrossSection(sections=(s,))
@@ -164,13 +163,6 @@ def double_layer_ec_custom(
             origin=bnref.dxmin,
             destination=-input_ext,
         )
-
-        sn = gf.Component()
-        r = bn.get_region(layer=slab_negative_layer)
-        r = r.sized(L1_L2_offset * 1e3)
-        sn.add_polygon(r, layer=lower_taper_xs().layer)
-        sn.dmovex(origin=sn.dxmin, destination=-input_ext - L1_L2_offset)
-        _ = double_taper << sn
 
     double_taper.flatten()
 

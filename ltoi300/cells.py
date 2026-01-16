@@ -23,6 +23,11 @@ from ltoi300._builders.straights import (
     build_straight_rwg2500,
 )
 
+from ltoi300._builders.edge_couplers import (
+    build_oband_ltoi300_edge_coupler,
+    build_cband_ltoi300_edge_coupler,
+)
+
 ############################################
 ############# O-band cells #################
 ############################################
@@ -53,6 +58,18 @@ def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
         length=length,
     )
 
+
+##########################
+# Edge couplers
+##########################
+
+@gf.cell
+def oband_ltoi300_edge_coupler(input_ext: float = 10.0, total_taper_length: float = 160.0, upper_taper_length: float = 80.0) -> gf.Component:
+    return build_oband_ltoi300_edge_coupler(input_ext=input_ext, total_taper_length=total_taper_length, upper_taper_length=upper_taper_length)
+
+@gf.cell
+def cband_ltoi300_edge_coupler(input_ext: float = 10.0, total_taper_length: float = 160.0, upper_taper_length: float = 80.0) -> gf.Component:
+    return build_cband_ltoi300_edge_coupler(input_ext=input_ext, total_taper_length=total_taper_length, upper_taper_length=upper_taper_length)
 
 ##########################
 # 1x2 and 2x2 O-band MMIs
