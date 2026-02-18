@@ -20,6 +20,24 @@
  </properties>
 
  <properties>
+  <frame-color>#ff00ff</frame-color>
+  <fill-color>#ff00ff</fill-color>
+  <frame-brightness>0</frame-brightness>
+  <fill-brightness>0</fill-brightness>
+  <dither-pattern/>
+  <line-style/>
+  <valid>true</valid>
+  <visible>true</visible>
+  <transparent>false</transparent>
+  <width>1</width>
+  <marked>false</marked>
+  <xfill>false</xfill>
+  <animation>0</animation>
+  <name>LT_RIDGE_PERIODIC</name>
+  <source>2/11@1</source>
+ </properties>
+
+ <properties>
   <frame-color>#875dd4</frame-color>
   <fill-color>#875dd4</fill-color>
   <frame-brightness>0</frame-brightness>
@@ -110,8 +128,8 @@
  </properties>
 
  <properties>
-  <frame-color>#8dc2f7</frame-color>
-  <fill-color>#8dc2f7</fill-color>
+  <frame-color>#3503fc</frame-color>
+  <fill-color>#3503fc</fill-color>
   <frame-brightness>0</frame-brightness>
   <fill-brightness>0</fill-brightness>
   <dither-pattern/>
@@ -128,11 +146,11 @@
  </properties>
 
  <properties>
-  <frame-color>#4a90e2</frame-color>
-  <fill-color>#4a90e2</fill-color>
+  <frame-color>#3503fc</frame-color>
+  <fill-color>#3503fc</fill-color>
   <frame-brightness>0</frame-brightness>
   <fill-brightness>0</fill-brightness>
-  <dither-pattern/>
+  <dither-pattern>I3</dither-pattern>
   <line-style/>
   <valid>true</valid>
   <visible>true</visible>
@@ -159,7 +177,7 @@
   <marked>false</marked>
   <xfill>false</xfill>
   <animation>0</animation>
-  <name>V2</name>
+  <name>VIA_M1_M2</name>
   <source>40/0@1</source>
  </properties>
 
@@ -177,7 +195,7 @@
   <marked>false</marked>
   <xfill>false</xfill>
   <animation>0</animation>
-  <name>V3</name>
+  <name>VIA_M1_HRL</name>
   <source>41/0@1</source>
  </properties>
 
