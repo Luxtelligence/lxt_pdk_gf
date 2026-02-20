@@ -242,9 +242,8 @@ def ring_resonator_oband(
     """Returns a ring resonator with an evanescent coupler for O-band operation."""
     return ring_resonator(gap=gap, 
     ring_radius=ring_radius, 
-    ring_width=ring_width,
     bus_length=bus_length, 
-    bus_xs=xs_rwg700,
+    bus_xs=xs_rwg700(),
     ring_xs=xs_rwg700(width = ring_width),
     )
 
@@ -458,7 +457,6 @@ def ring_resonator_cband(
     """Returns a ring resonator with an evanescent coupler for C-band operation."""
     return ring_resonator(gap=gap, 
     ring_radius=ring_radius, 
-    ring_width=ring_width,
     bus_length=bus_length, 
     bus_xs=xs_rwg900(),
     ring_xs=xs_rwg900(width = ring_width),
