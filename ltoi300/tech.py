@@ -114,6 +114,7 @@ LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp_yaml)
 
 xsection = gf.xsection
 from _utils.cross_section import ridge_wg, slab_etch_cross_section
+from gdsfactory import typings
 
 
 @xsection
@@ -166,18 +167,48 @@ def xs_rwg2500(
         slab_layer=LAYER.LT_SLAB,
     )
 
+@xsection
+def xs_rwg(
+    layer: LayerSpec = LAYER.LT_RIDGE,
+    width: float = 0.5,
+    width_function: typings.WidthFunction | None = None,
+    radius: float = 50.0,
+    slab_offset: float = 6.0,
+) -> CrossSection:
+    """Rindge waveguide cross section with arbitrary width value and function"""
+    return ridge_wg(
+        width=width,
+        layer=layer,
+        width_function=width_function,
+        radius=radius,
+        slab_offset=slab_offset,
+        slab_layer=LAYER.LT_SLAB,
+    )
 
 @xsection
 def xs_swg350(
     layer: LayerSpec = LAYER.LT_SLAB,
     width: float = 0.35,
 ) -> CrossSection:
-    """Narrow strip waveguide cross section"""
+    """Narrow strip waveguide in slab layer"""
     return slab_etch_cross_section(
         width=width,
         layer=layer,
     )
 
+
+@xsection
+def xs_swg(
+    layer: LayerSpec = LAYER.LT_SLAB,
+    width: float = 0.35,
+    width_function: typings.WidthFunction | None = None,
+) -> CrossSection:
+    """Slab etched strip waveguide cross section with arbitrary width value and function"""
+    return slab_etch_cross_section(
+        width=width,
+        layer=layer,
+        width_function=width_function,
+    )
 
 @xsection
 def xs_uni_cpw(

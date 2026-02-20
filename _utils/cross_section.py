@@ -5,10 +5,30 @@ from typing import Any
 nm = 1e-3
 Sections = tuple[Section, ...]
 
+
+def get_slab_extension(xs: CrossSection) -> float:
+    """Return how far the slab section extends beyond the ridge on each side.
+
+    Because the slab width is defined as ``ridge_width + 2 * slab_offset``,
+    the extension equals ``slab_offset`` at every point along the path —
+    even when a width_function is used — so it can be read directly from the
+    nominal section widths.  Returns 0.0 for strip (ridge-only) cross-sections.
+    """
+    ridge_section = next(
+        (s for s in xs.sections if "ridge" in s.name.lower()), xs.sections[0]
+    )
+    slab_section = next(
+        (s for s in xs.sections if "slab" in s.name.lower()), None
+    )
+    if slab_section is None:
+        return 0.0
+    return (slab_section.width - ridge_section.width) / 2
+
 def slab_etch_cross_section(
     width: float = 0.5,
     offset: float = 0,
     layer: typings.LayerSpec = "SLAB",
+    width_function: typings.WidthFunction | None = None,
     sections: Sections | None = None,
     port_names: typings.IOPorts = ("o1", "o2"),
     port_types: typings.IOPorts = ("optical", "optical"),
@@ -54,6 +74,7 @@ def slab_etch_cross_section(
     s = [
         Section(
             width=width,
+            width_function=width_function,
             offset=offset,
             layer=layer,
             port_names=port_names,
@@ -73,6 +94,7 @@ def slab_etch_cross_section(
 
 def partial_etch_cross_section(
     width: float = 0.5,
+    width_function: typings.WidthFunction | None = None,
     offset: float = 0,
     layer: typings.LayerSpec = "RIDGE",
     sections: Sections | None = None,
@@ -150,6 +172,7 @@ def partial_etch_cross_section(
     s = [
         Section(
             width=width,
+            width_function=width_function,
             offset=offset,
             layer=layer,
             port_names=port_names,
@@ -159,9 +182,15 @@ def partial_etch_cross_section(
     ] + section_list
 
     #### Add slab section
+
+    if width_function is not None:
+        width_function_slab = lambda t: width_function(t) + 2 * slab_offset
+    else:
+        width_function_slab = None
     s += [
         Section(
             width=width + 2 * slab_offset,
+            width_function=width_function_slab,
             layer=slab_layer,
             simplify=slab_simplify,
             offset=0,
