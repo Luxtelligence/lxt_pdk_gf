@@ -36,12 +36,12 @@ def get_pdk() -> Pdk:
     )
 
 
-def activate_pdk() -> None:
+def activate_pdk() -> Pdk:
     pdk = get_pdk()
     pdk.activate()
+    return pdk
 
-
-PDK = get_pdk()
+PDK = activate_pdk()
 
 __all__ = [
     "LAYER",
@@ -51,4 +51,5 @@ __all__ = [
     "cells",
     "config",
     "tech",
+    "PDK",
 ]
