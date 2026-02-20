@@ -17,13 +17,13 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  "gdsfactory~=9.3",
+  "gdsfactory~=9.34",
   "gplugins[sax]>=1.4,<2"
 ]
-description = "Luxtelligence lnoi400 pdk"
+description = "Luxtelligence gdsfactory PDK"
 keywords = ["python"]
 license = {file = "LICENSE"}
-name = "lnoi400"
+name = "lxt_pdk"
 readme = "README.md"
 requires-python = "~=3.12.0"
 version = "1.2.0"
