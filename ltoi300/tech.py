@@ -113,6 +113,7 @@ LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp_yaml)
 ############################
 
 xsection = gf.xsection
+from _utils.cross_section import ridge_wg, slab_etch_cross_section
 
 
 @xsection
@@ -120,15 +121,15 @@ def xs_rwg700(
     layer: LayerSpec = LAYER.LT_RIDGE,
     width: float = 0.7,
     radius: float = 60.0,
-    cladding_offset: float = 6.0,
+    slab_offset: float = 6.0,
 ) -> CrossSection:
     """Default routing rib waveguide cross section for O-band"""
-    return gf.cross_section.rib(
+    return ridge_wg(
         width=width,
         layer=layer,
         radius=radius,
-        cladding_offsets=(cladding_offset,),
-        cladding_layers=(LAYER.LT_SLAB,),
+        slab_offset=slab_offset,
+        slab_layer=LAYER.LT_SLAB,
     )
 
 
@@ -137,15 +138,15 @@ def xs_rwg900(
     layer: LayerSpec = LAYER.LT_RIDGE,
     width: float = 0.9,
     radius: float = 50.0,
-    cladding_offset: float = 6.0,
+    slab_offset: float = 6.0,
 ) -> CrossSection:
     """Default routing rib waveguide cross section for C-band"""
-    return gf.cross_section.rib(
+    return ridge_wg(
         width=width,
         layer=layer,
         radius=radius,
-        cladding_offsets=(cladding_offset,),
-        cladding_layers=(LAYER.LT_SLAB,),
+        slab_offset=slab_offset,
+        slab_layer=LAYER.LT_SLAB,
     )
 
 
@@ -154,15 +155,15 @@ def xs_rwg2500(
     layer: LayerSpec = LAYER.LT_RIDGE,
     width: float = 2.5,
     radius: float = 50.0,
-    cladding_offset: float = 6.0,
+    slab_offset: float = 6.0,
 ) -> CrossSection:
     """Default low-loss multimode rib waveguide cross section for O-band and C-band"""
-    return gf.cross_section.rib(
+    return ridge_wg(
         width=width,
         layer=layer,
         radius=radius,
-        cladding_offsets=(cladding_offset,),
-        cladding_layers=(LAYER.LT_SLAB,),
+        slab_offset=slab_offset,
+        slab_layer=LAYER.LT_SLAB,
     )
 
 
@@ -172,7 +173,7 @@ def xs_swg350(
     width: float = 0.35,
 ) -> CrossSection:
     """Narrow strip waveguide cross section"""
-    return gf.cross_section.strip(
+    return slab_etch_cross_section(
         width=width,
         layer=layer,
     )
