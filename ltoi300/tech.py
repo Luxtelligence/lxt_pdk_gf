@@ -1,4 +1,5 @@
 import gdsfactory as gf
+from gdsfactory import typings
 from gdsfactory.cross_section import (
     CrossSection,
 )
@@ -10,6 +11,7 @@ from gdsfactory.technology import (
 )
 from gdsfactory.typings import Layer, LayerSpec
 
+from _utils.cross_section import ridge_wg, slab_etch_cross_section
 from ltoi300.config import PATH
 
 nm = 1e-3
@@ -113,8 +115,6 @@ LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp_yaml)
 ############################
 
 xsection = gf.xsection
-from _utils.cross_section import ridge_wg, slab_etch_cross_section
-from gdsfactory import typings
 
 
 @xsection
@@ -167,6 +167,7 @@ def xs_rwg2500(
         slab_layer=LAYER.LT_SLAB,
     )
 
+
 @xsection
 def xs_rwg(
     layer: LayerSpec = LAYER.LT_RIDGE,
@@ -184,6 +185,7 @@ def xs_rwg(
         slab_offset=slab_offset,
         slab_layer=LAYER.LT_SLAB,
     )
+
 
 @xsection
 def xs_swg350(
@@ -209,6 +211,7 @@ def xs_swg(
         layer=layer,
         width_function=width_function,
     )
+
 
 @xsection
 def xs_uni_cpw(

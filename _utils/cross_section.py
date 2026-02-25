@@ -1,6 +1,7 @@
-from gdsfactory import typings
-from gdsfactory.cross_section import Section, CrossSection, xsection
 from typing import Any
+
+from gdsfactory import typings
+from gdsfactory.cross_section import CrossSection, Section, xsection
 
 nm = 1e-3
 Sections = tuple[Section, ...]
@@ -17,12 +18,11 @@ def get_slab_extension(xs: CrossSection) -> float:
     ridge_section = next(
         (s for s in xs.sections if "ridge" in s.name.lower()), xs.sections[0]
     )
-    slab_section = next(
-        (s for s in xs.sections if "slab" in s.name.lower()), None
-    )
+    slab_section = next((s for s in xs.sections if "slab" in s.name.lower()), None)
     if slab_section is None:
         return 0.0
     return (slab_section.width - ridge_section.width) / 2
+
 
 def slab_etch_cross_section(
     width: float = 0.5,
@@ -184,7 +184,10 @@ def partial_etch_cross_section(
     #### Add slab section
 
     if width_function is not None:
-        width_function_slab = lambda t: width_function(t) + 2 * slab_offset
+
+        def width_function_slab(t):
+            return width_function(t) + 2 * slab_offset
+
     else:
         width_function_slab = None
     s += [
@@ -204,6 +207,7 @@ def partial_etch_cross_section(
         bbox_layers=bbox_layers,
         bbox_offsets=bbox_offsets,
     )
+
 
 @xsection
 def ridge_wg(

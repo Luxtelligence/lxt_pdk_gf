@@ -1,10 +1,9 @@
-from typing import Callable
+from collections.abc import Callable
 from functools import partial
-import gdsfactory as gf
-from gdsfactory import Component, CrossSection
-from gdsfactory.typings import CrossSectionSpec
-import numpy as np
 
+import gdsfactory as gf
+import numpy as np
+from gdsfactory import Component, CrossSection
 from gdsfactory.typings import Layer
 
 
@@ -27,7 +26,7 @@ def _lin_lin_exp(
     if not all(0 <= i < 1 for i in (xp_0, xp_1, xp_2)):
         raise ValueError("All the provided x-coordinates must be between 0 and 1.")
 
-    # Piecewise profile definintion
+    # Piecewise profile definition
 
     y = np.zeros_like(x)
     if xp_1 > 0:
@@ -68,15 +67,16 @@ def _exp_growth(
     y = yp_0 + (yp_1 - yp_0) * (a + b * np.exp(exp_rate * (x - 1)))
     return y
 
+
 @gf.cell
 def double_layer_ec_custom(
     lower_taper_xs: CrossSection,
     upper_taper_xs: CrossSection,
     slab_negative_layer: Layer,
     lower_profile: Callable = _lin_lin_exp,
-    lower_profile_args: dict = {},
+    lower_profile_args: dict | None = None,
     upper_profile: Callable = _exp_growth,
-    upper_profile_args: dict = {},
+    upper_profile_args: dict | None = None,
     total_taper_length: float = 160.0,
     upper_taper_length: float = 80.0,
     npoints_lower: float = 240,

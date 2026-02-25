@@ -1,5 +1,5 @@
 import gdsfactory as gf
-from gdsfactory.typings import CrossSectionSpec, Layer
+from gdsfactory.typings import CrossSectionSpec
 
 from _utils.bends import bend_euler_tapered
 from _utils.cross_section import get_slab_extension
@@ -14,7 +14,7 @@ def ring(
     """A ring with a given radius and cross-section."""
 
     c = gf.Component()
-    
+
     for section in cross_section.sections:
         if "ridge" in section.name.lower():
             ridge_width = section.width
@@ -23,22 +23,23 @@ def ring(
             slab_width = section.width
             slab_layer = section.layer
 
-    ridge = c << gf.components.ring(
-        radius = radius,
-        width = ridge_width,
-        layer = ridge_layer,
-        angle_resolution = angle_resolution,
+    c << gf.components.ring(
+        radius=radius,
+        width=ridge_width,
+        layer=ridge_layer,
+        angle_resolution=angle_resolution,
     )
 
-    slab = c << gf.components.ring(
-        radius = radius,
-        width = slab_width,
-        layer = slab_layer,
-        angle_resolution = angle_resolution,
+    c << gf.components.ring(
+        radius=radius,
+        width=slab_width,
+        layer=slab_layer,
+        angle_resolution=angle_resolution,
     )
 
     c.flatten()
     return c
+
 
 @gf.cell
 def ring_resonator(
@@ -51,9 +52,9 @@ def ring_resonator(
     """A ring resonator with an evanescent coupler."""
 
     ring_resonator = ring(
-        cross_section = ring_xs,
-        radius = ring_radius,
-        angle_resolution = 0.15,
+        cross_section=ring_xs,
+        radius=ring_radius,
+        angle_resolution=0.15,
     )
 
     bus = gf.components.straight(
@@ -88,8 +89,8 @@ def racetrack_resonator(
 
     if not bus_length:
         bus_length = rt_height
-    
-    xs_racetrack_fixed = xs_racetrack(width = rt_width)
+
+    xs_racetrack_fixed = xs_racetrack(width=rt_width)
     print(xs_racetrack_fixed.width)
     print(xs_bus.width)
 
@@ -149,16 +150,17 @@ def racetrack_resonator(
 
 
 if __name__ == "__main__":
-    from ltoi300.tech import xs_rwg900, xs_swg350, xs_rwg
+    from ltoi300.tech import xs_rwg, xs_rwg900
+
     xs_bus = xs_rwg900()
     xs_racetrack = xs_rwg
     c = racetrack_resonator(
-        gap = 0.6, 
-        rt_straight_length = 200.0, 
-        rt_height = 100.0, 
-        rt_width = 2.0, 
-        bus_length = 100.0, 
-        xs_bus = xs_bus, 
-        xs_racetrack = xs_racetrack,
+        gap=0.6,
+        rt_straight_length=200.0,
+        rt_height=100.0,
+        rt_width=2.0,
+        bus_length=100.0,
+        xs_bus=xs_bus,
+        xs_racetrack=xs_racetrack,
     )
     c.show()
