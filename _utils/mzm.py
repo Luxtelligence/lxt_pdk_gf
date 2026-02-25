@@ -1097,7 +1097,7 @@ def eo_phase_shifter_LT(
 
 @gf.cell
 def _mzm_interferometer_LT(
-    splitter: ComponentSpec = build_mmi1x2_cband(),
+    splitter: ComponentSpec | None = None,
     taper_length: float = 100.0,
     rib_core_width_modulator: float = 2.5,
     modulation_length: float = 7500.0,
@@ -1110,6 +1110,8 @@ def _mzm_interferometer_LT(
     lbend_combiner_reff: float = 80.0,
     communication_band: str = "O-band",
 ) -> gf.Component:
+    if splitter is None:
+        splitter = build_mmi1x2_cband()
     interferometer = gf.Component()
 
     sbend_large = S_bend_vert(

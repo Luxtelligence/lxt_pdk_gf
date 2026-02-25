@@ -95,8 +95,8 @@ def double_layer_ec_custom(
 
     # Pass the kwargs to the profile definitions
 
-    lower_profile = partial(lower_profile, **lower_profile_args)
-    upper_profile = partial(upper_profile, **upper_profile_args)
+    lower_profile = partial(lower_profile, **(lower_profile_args or {}))
+    upper_profile = partial(upper_profile, **(upper_profile_args or {}))
 
     # Lower taper
 
