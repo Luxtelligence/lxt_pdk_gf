@@ -24,14 +24,14 @@ from ltoi300.tech import LAYER
 
 # %%
 chip_layout = chip_frame()
-chip_layout
+# chip_layout
 
 # %% [markdown]
 # ### Get the O-band ring resonator and edge couplers
 
 # %%
 ring_resonator_oband = gf.get_component("ring_resonator_oband_single_mode")
-ring_resonator_oband
+# ring_resonator_oband
 
 # %%
 x_in = chip_layout.dxmin + 100.0
@@ -67,7 +67,7 @@ ecs_oband = {
 
 # %%
 ring_resonator_cband = gf.get_component("ring_resonator_cband_single_mode")
-ring_resonator_cband
+# ring_resonator_cband
 
 # %%
 x_in = chip_layout.dxmin + 650.0
@@ -181,14 +181,14 @@ def ring_pass_circuit(
 
 # %%
 circuit_oband = ring_pass_circuit(communication_band="oband")
-circuit_oband
+# circuit_oband
 
 # %% [markdown]
 # ### Assemble the C-band circuit
 
 # %%
 circuit_cband = ring_pass_circuit(communication_band="cband")
-circuit_cband
+# circuit_cband
 
 # %% [markdown]
 # ### Get the O-band terminated EO modulator and edge couplers
@@ -197,7 +197,7 @@ circuit_cband
 modulator_oband = gf.get_component(
     "terminated_mzm_1x2mmi_oband", modulation_length=6800.0, length_imbalance=120.0
 )
-modulator_oband
+# modulator_oband
 
 # %%
 x_in = chip_layout.dxmin + 800.0
@@ -234,7 +234,7 @@ ecs_oband_modulator = {
 modulator_cband = gf.get_component(
     "terminated_mzm_1x2mmi_cband", modulation_length=6800.0, length_imbalance=120.0
 )
-modulator_cband
+# modulator_cband
 
 # %%
 x_in = chip_layout.dxmin + 750.0
@@ -346,13 +346,13 @@ def modulator_circuit(
 modulator_circuit_oband = modulator_circuit(
     "oband", modulator_x_pos=-4000.0, modulator_y_pos=2000.0
 )
-modulator_circuit_oband
+# modulator_circuit_oband
 
 # %%
 modulator_circuit_cband = modulator_circuit(
     "cband", modulator_x_pos=-4100.0, modulator_y_pos=1000.0
 )
-modulator_circuit_cband
+# modulator_circuit_cband
 
 # %% [markdown]
 # ### Wirebonding pads
@@ -397,7 +397,7 @@ def bondpad_array(
 
 
 bp_array = bondpad_array()
-bp_array
+# bp_array
 
 # %% [markdown]
 # Assemble on the die outline

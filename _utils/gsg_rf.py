@@ -658,28 +658,9 @@ def double_layer_termination(
     termination_layer: LayerSpec,
     m2_layer: LayerSpec,
     m2_pad_length: float = 10.0,
-    termination_params: dict[str, Any] = {
-        "effective_length": 95.0,
-        "resistor_width": 1.5,
-        "hr_layer_offset": 0.0,
-        "hr_pad_length": 5.0,
-    },
-    via_m1_m2_params: dict[str, Any] = {
-        "type": "array",
-        "layer_openings": (40, 0),
-        "opening_offset": 2.5,
-        "opening_size": 12.0,
-        "opening_separation": 12.0,
-        "width": 45.0,
-    },
-    via_m2_hr_params: dict[str, Any] = {
-        "type": "solid",
-        "layer_openings": (41, 0),
-        "opening_offset": 2.5,
-        "opening_size": 12.0,
-        "opening_separation": 12.0,
-        "width": 20.0,
-    },
+    termination_params: dict[str, Any] | None = None,
+    via_m1_m2_params: dict[str, Any] | None = None,
+    via_m2_hr_params: dict[str, Any] | None = None,
 ) -> gf.Component:
     """Double-layer termination for CPW lines. Creates transition from CPW to M2 layer and then to high-resistivity layer resistor wire.
 
@@ -689,6 +670,31 @@ def double_layer_termination(
         m2_layer: M2 layer of the termination wire
         effective_length: Effective length of the termination wire corresponding to a single termination resistor equivalent circuit.
     """
+    if termination_params is None:
+        termination_params = {
+            "effective_length": 95.0,
+            "resistor_width": 1.5,
+            "hr_layer_offset": 0.0,
+            "hr_pad_length": 5.0,
+        }
+    if via_m1_m2_params is None:
+        via_m1_m2_params = {
+            "type": "array",
+            "layer_openings": (40, 0),
+            "opening_offset": 2.5,
+            "opening_size": 12.0,
+            "opening_separation": 12.0,
+            "width": 45.0,
+        }
+    if via_m2_hr_params is None:
+        via_m2_hr_params = {
+            "type": "solid",
+            "layer_openings": (41, 0),
+            "opening_offset": 2.5,
+            "opening_size": 12.0,
+            "opening_separation": 12.0,
+            "width": 20.0,
+        }
 
     c = gf.Component()
 
@@ -1022,13 +1028,15 @@ def cpw_pad(
 def straight_cpw(
     cpw_xs: CrossSectionSpec,
     modulation_length: float = 1000.0,
-    optical_waveguides: dict[str, Any] = {
-        "terminal_xs": None,
-        "modulation_xs": None,
-        "taper_length": 100.0,
-    },
+    optical_waveguides: dict[str, Any] | None = None,
 ) -> gf.Component:
     """A straight CPW transmission line"""
+    if optical_waveguides is None:
+        optical_waveguides = {
+            "terminal_xs": None,
+            "modulation_xs": None,
+            "taper_length": 100.0,
+        }
 
     cpw = gf.Component()
     strght = cpw << gf.components.straight(
@@ -1091,21 +1099,25 @@ def straight_cpw(
 def trail_cpw(
     cpw_xs: CrossSectionSpec,
     modulation_length: float = 3000.0,
-    trail_params: dict[str, float] = {
-        "th": 1.5,
-        "tl": 44.7,
-        "tw": 7.0,
-        "tt": 1.5,
-        "tc": 5.0,
-    },
+    trail_params: dict[str, float] | None = None,
     rounding_radius: float = 0.5,
-    optical_waveguides: dict[str, Any] = {
-        "terminal_xs": None,
-        "modulation_xs": None,
-        "taper_length": 100.0,
-    },
+    optical_waveguides: dict[str, Any] | None = None,
 ) -> gf.Component:
     """A CPW transmission line with periodic T-rails on all electrodes"""
+    if trail_params is None:
+        trail_params = {
+            "th": 1.5,
+            "tl": 44.7,
+            "tw": 7.0,
+            "tt": 1.5,
+            "tc": 5.0,
+        }
+    if optical_waveguides is None:
+        optical_waveguides = {
+            "terminal_xs": None,
+            "modulation_xs": None,
+            "taper_length": 100.0,
+        }
 
     th = trail_params["th"]
     tl = trail_params["tl"]

@@ -244,46 +244,57 @@ def base_mzm(
     cpw_xs: CrossSectionSpec,
     modulation_length: float,
     mmi_cell: gf.Component,
-    cpw_params: dict[str, Any] = {
-        "type": "trail",
-        "rf_gap": 6.0,
-        "rf_ground_planes_width": 50.0,
-        "rf_central_conductor_width": 21.0,
-    },
-    trail_params: dict[str, Any] = {
-        "th": 1.5,
-        "tl": 44.7,
-        "tw": 7.0,
-        "tt": 1.5,
-        "tc": 5.0,
-    },
-    cpw_pad_params: dict[str, Any] = {
-        "single_side": False,
-        "pitch": 100.0,
-        "length_straight": 25.0,
-        "length_tapered": 190.0,
-        "ground_pad_width": 150.0,
-    },
-    optical_waveguide_params: dict[str, Any] = {
-        "taper_length": 100.0,
-        "modulation_width": 2.0,
-        "terminal_width": None,
-        "roc": 60.0,
-        "imbalance_length": 100.0,
-        "heater_section_length": 100.0,
-        "mmi_connection_length": 10.0,
-        "cpw_connection_length": 50.0,
-    },
-    m2_bonding_pad_params: dict[str, Any] | None = {
-        "layer_m2": (22, 0),
-        "layer_openings": (40, 0),
-        "m1_opening_offset": 2.5,
-        "opening_size": 12.0,
-        "opening_separation": 12.0,
-        "tl_opening_host_width": 45.0,
-        "m2_pad_length": 80.0,
-    },
+    cpw_params: dict[str, Any] | None = None,
+    trail_params: dict[str, Any] | None = None,
+    cpw_pad_params: dict[str, Any] | None = None,
+    optical_waveguide_params: dict[str, Any] | None = None,
+    m2_bonding_pad_params: dict[str, Any] | None = None,
 ) -> gf.Component:
+    if cpw_params is None:
+        cpw_params = {
+            "type": "trail",
+            "rf_gap": 6.0,
+            "rf_ground_planes_width": 50.0,
+            "rf_central_conductor_width": 21.0,
+        }
+    if trail_params is None:
+        trail_params = {
+            "th": 1.5,
+            "tl": 44.7,
+            "tw": 7.0,
+            "tt": 1.5,
+            "tc": 5.0,
+        }
+    if cpw_pad_params is None:
+        cpw_pad_params = {
+            "single_side": False,
+            "pitch": 100.0,
+            "length_straight": 25.0,
+            "length_tapered": 190.0,
+            "ground_pad_width": 150.0,
+        }
+    if optical_waveguide_params is None:
+        optical_waveguide_params = {
+            "taper_length": 100.0,
+            "modulation_width": 2.0,
+            "terminal_width": None,
+            "roc": 60.0,
+            "imbalance_length": 100.0,
+            "heater_section_length": 100.0,
+            "mmi_connection_length": 10.0,
+            "cpw_connection_length": 50.0,
+        }
+    if m2_bonding_pad_params is None:
+        m2_bonding_pad_params = {
+            "layer_m2": (22, 0),
+            "layer_openings": (40, 0),
+            "m1_opening_offset": 2.5,
+            "opening_size": 12.0,
+            "opening_separation": 12.0,
+            "tl_opening_host_width": 45.0,
+            "m2_pad_length": 80.0,
+        }
+
     MZM = gf.Component()
 
     terminal_xs = (
