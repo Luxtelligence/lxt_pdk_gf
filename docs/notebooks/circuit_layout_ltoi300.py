@@ -135,8 +135,8 @@ def ring_pass_circuit(
 
     route_bundle(
         c,
-        ports1=ring_ref.ports["o2"],
-        ports2=ecs["in"].ports["o2"],
+        ports1=[ring_ref.ports["o2"]],
+        ports2=[ecs["in"].ports["o2"]],
         start_straight_length=5.0,
         end_straight_length=5.0,
         cross_section="xs_rwg700" if communication_band == "oband" else "xs_rwg900",
@@ -148,8 +148,8 @@ def ring_pass_circuit(
     )
     route_bundle(
         c,
-        ports1=ring_ref.ports["o1"],
-        ports2=ecs["out"].ports["o2"],
+        ports1=[ring_ref.ports["o1"]],
+        ports2=[ecs["out"].ports["o2"]],
         start_straight_length=5.0,
         end_straight_length=5.0,
         cross_section="xs_rwg700" if communication_band == "oband" else "xs_rwg900",
@@ -303,8 +303,8 @@ def modulator_circuit(
 
     route_bundle(
         c,
-        ports1=mod_ref.ports["o1"],
-        ports2=ecs["in"].ports["o2"],
+        ports1=[mod_ref.ports["o1"]],
+        ports2=[ecs["in"].ports["o2"]],
         start_straight_length=5.0,
         end_straight_length=5.0,
         cross_section="xs_rwg700" if communication_band == "oband" else "xs_rwg900",
@@ -317,8 +317,8 @@ def modulator_circuit(
 
     route_bundle(
         c,
-        ports1=mod_ref.ports["o2"],
-        ports2=ecs["out"].ports["o2"],
+        ports1=[mod_ref.ports["o2"]],
+        ports2=[ecs["out"].ports["o2"]],
         start_straight_length=5.0,
         end_straight_length=5.0,
         cross_section="xs_rwg700" if communication_band == "oband" else "xs_rwg900",
