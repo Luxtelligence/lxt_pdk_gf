@@ -1,12 +1,13 @@
-import gdsfactory as gf
-from gdsfactory.typings import CrossSectionSpec
-from gdsfactory.cross_section import CrossSection
 from typing import Any
-from _utils.bends import (
-    bend_S_spline, L_turn_bend
-)
-from _utils.gsg_rf import straight_cpw, trail_cpw, cpw_pad, get_pad_xs
+
+import gdsfactory as gf
+from gdsfactory.cross_section import CrossSection
+from gdsfactory.typings import CrossSectionSpec
+
+from _utils.bends import L_turn_bend, bend_S_spline
 from _utils.cross_section import get_cpw_from_xs
+from _utils.gsg_rf import cpw_pad, get_pad_xs, straight_cpw, trail_cpw
+
 
 @gf.cell
 def optical_combiner_direct(
@@ -29,11 +30,11 @@ def optical_combiner_direct(
         imbalance_length: Length of the imbalance section.
         heater_section_length: Length of the heater section.
         mmi_connection_length: Length of the MMI connection section.
-        cpw_conenction_length: Length of the CPW connection section.
+        cpw_connection_length: Length of the CPW connection section.
         sbend_ratio: Ratio of the SBEND length to the Y-axis length.
         roc: Radius of the L-turn bends.
     Returns:
-        combiner: Optical combiner cell with ports o1 and o2 for the up and down arms at the MMI 
+        combiner: Optical combiner cell with ports o1 and o2 for the up and down arms at the MMI
         (port o2 does not exist for 1x2 MMI), and ports o3 and o4 for the CPW connection.
         If heater_section_length > 0.0, ports ht1_1 and ht1_2 for the up arm and ports ht2_1 and ht2_2 for the down arm are added.
         If imbalance_length = 0.0, the CPW connection is directly connected to the SBEND ports.
@@ -62,7 +63,7 @@ def optical_combiner_direct(
         )
         up_port = mmi.ports["o2"]
         down_port = mmi.ports["o3"]
-    
+
     mmi_connection = gf.components.straight(
         length=mmi_connection_length,
         cross_section=optical_xs,
@@ -72,7 +73,7 @@ def optical_combiner_direct(
     mmi_connection_up.connect("o1", up_port)
     mmi_connection_down.connect("o1", down_port)
 
-    # Calculate vertical offset to the CPW conenction
+    # Calculate vertical offset to the CPW connection
     signal_width, _, gap, _ = get_cpw_from_xs(cpw_xs)
 
     if "2x2" in mmi_cell_name:
@@ -80,10 +81,12 @@ def optical_combiner_direct(
     elif "1x2" in mmi_cell_name:
         mmi_dy = abs(mmi.ports["o2"].dcenter[1] - mmi.ports["o3"].dcenter[1])
     else:
-        raise ValueError(f"Invalid MMI cell name: {mmi_cell_name}. Valid names are '2x2' and '1x2'.")
+        raise ValueError(
+            f"Invalid MMI cell name: {mmi_cell_name}. Valid names are '2x2' and '1x2'."
+        )
 
-    y = signal_width/2 + gap/2 - mmi_dy/2
-    x = sbend_ratio*y
+    y = signal_width / 2 + gap / 2 - mmi_dy / 2
+    x = sbend_ratio * y
 
     sbend = bend_S_spline(
         size=(x, y),
@@ -98,7 +101,6 @@ def optical_combiner_direct(
     sbend_down.connect("o1", mmi_connection_down.ports["o2"])
     # If the imbalance length is 0, the CPW connection is directly connected to the SBEND ports
     if imbalance_length == 0.0:
-
         heater_segment = gf.components.straight(
             length=heater_section_length,
             cross_section=optical_xs,
@@ -157,7 +159,7 @@ def optical_combiner_direct(
         )
 
         imbalance_segment = gf.components.straight(
-            length=imbalance_length/2,
+            length=imbalance_length / 2,
             cross_section=optical_xs,
         )
 
@@ -185,7 +187,6 @@ def optical_combiner_direct(
         arm_up_right = combiner << arm_up
         arm_up_right.dmirror_x()
         arm_up_right.connect("o2", heater_segment_up.ports["o2"])
-
 
         arm_down = gf.components.component_sequence(
             sequence="!LL",
@@ -233,7 +234,7 @@ def optical_combiner_direct(
         )
 
     combiner.flatten()
-    
+
     return combiner
 
 
@@ -284,38 +285,58 @@ def base_mzm(
     },
 ) -> gf.Component:
     MZM = gf.Component()
-    
-    terminal_xs = gf.get_cross_section(optical_xs, width = optical_waveguide_params["terminal_width"]) if optical_waveguide_params["terminal_width"] is not None else gf.get_cross_section(optical_xs)
+
+    terminal_xs = (
+        gf.get_cross_section(
+            optical_xs, width=optical_waveguide_params["terminal_width"]
+        )
+        if optical_waveguide_params["terminal_width"] is not None
+        else gf.get_cross_section(optical_xs)
+    )
     # Define optical waveguides for the modulation region
     optical_waveguides = {
         "terminal_xs": terminal_xs,
-        "modulation_xs": gf.get_cross_section(optical_xs, width = optical_waveguide_params["modulation_width"]),
+        "modulation_xs": gf.get_cross_section(
+            optical_xs, width=optical_waveguide_params["modulation_width"]
+        ),
         "taper_length": optical_waveguide_params["taper_length"],
     }
 
     # Define CPW transmission line
-    _cpw_xs = gf.get_cross_section(cpw_xs, 
+    _cpw_xs = gf.get_cross_section(
+        cpw_xs,
         central_conductor_width=cpw_params["rf_central_conductor_width"],
         gap=cpw_params["rf_gap"],
         ground_planes_width=cpw_params["rf_ground_planes_width"],
     )
 
     if cpw_params["type"] == "straight":
-        cpw = straight_cpw(cpw_xs=_cpw_xs, modulation_length=modulation_length, optical_waveguides=optical_waveguides)
+        cpw = straight_cpw(
+            cpw_xs=_cpw_xs,
+            modulation_length=modulation_length,
+            optical_waveguides=optical_waveguides,
+        )
     elif cpw_params["type"] == "trail":
-        cpw = trail_cpw(cpw_xs=_cpw_xs, modulation_length=modulation_length, trail_params=trail_params, optical_waveguides=optical_waveguides)
+        cpw = trail_cpw(
+            cpw_xs=_cpw_xs,
+            modulation_length=modulation_length,
+            trail_params=trail_params,
+            optical_waveguides=optical_waveguides,
+        )
     else:
-        raise ValueError(f"Invalid CPW type: {cpw_params['type']}. Valid types are 'straight' and 'trail'.")
+        raise ValueError(
+            f"Invalid CPW type: {cpw_params['type']}. Valid types are 'straight' and 'trail'."
+        )
 
     # Define CPW pad
     pad = cpw_pad(
-        cpw_xs=_cpw_xs, 
-        optical_waveguide_xs=optical_waveguides["terminal_xs"], 
-        pitch = cpw_pad_params["pitch"],
-        length_straight = cpw_pad_params["length_straight"],
-        length_tapered = cpw_pad_params["length_tapered"],
-        ground_pad_width = cpw_pad_params["ground_pad_width"],
-        m2_bonding_pads_params = m2_bonding_pad_params,
+        cpw_xs=_cpw_xs,
+        optical_waveguide_xs=optical_waveguides["terminal_xs"],
+        pitch=cpw_pad_params["pitch"],
+        length_straight=cpw_pad_params["length_straight"],
+        length_tapered=cpw_pad_params["length_tapered"],
+        ground_pad_width=cpw_pad_params["ground_pad_width"],
+        m2_bonding_pads_params=m2_bonding_pad_params,
     )
     pad_xs = get_pad_xs(
         cpw_xs=_cpw_xs,
@@ -394,7 +415,7 @@ def base_mzm(
         combiner1_ref = MZM << combiner1
         combiner1_ref.connect("o3", pad1_ref.ports["o1"])
         combiner2_ref = MZM << combiner2
-        combiner2_ref.connect("o3", pad2_ref.ports["o1"])   
+        combiner2_ref.connect("o3", pad2_ref.ports["o1"])
 
         MZM.add_port(
             name="e1",
@@ -404,7 +425,6 @@ def base_mzm(
             name="e2",
             port=pad2_ref.ports["e1"],
         )
-
 
     MZM.add_port(
         name="o1",
@@ -446,13 +466,14 @@ def base_mzm(
             name="ht2_2",
             port=combiner1_ref.ports["ht2_2"],
         )
-             
+
     return MZM
 
 
 if __name__ == "__main__":
-    from ltoi300.tech import xs_uni_cpw, xs_rwg700
-    from ltoi300.cells import mmi2x2_oband, mmi1x2_oband
+    from ltoi300.cells import mmi2x2_oband
+    from ltoi300.tech import xs_rwg700, xs_uni_cpw
+
     mmi = mmi2x2_oband()
     mzm = base_mzm(
         optical_xs=xs_rwg700,

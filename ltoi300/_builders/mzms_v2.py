@@ -1,9 +1,11 @@
 from typing import Any
+
 import gdsfactory as gf
+
+from _utils.gsg_rf import double_layer_termination
 from _utils.mzm_v2 import base_mzm
 from _utils.thermal_phase_shifters import heater_straight_compact
-from _utils.gsg_rf import double_layer_termination
-from ltoi300.tech import xs_ht_wire, xs_uni_cpw, xs_rwg700, xs_rwg900, LAYER
+from ltoi300.tech import LAYER, xs_ht_wire, xs_rwg700, xs_rwg900, xs_uni_cpw
 
 ###############################################
 #### Default parameters - band-independent ####
@@ -26,7 +28,7 @@ DEFAULT_OPTICAL_WG_PARAMS: dict[str, Any] = {
     "mmi_connection_length": 10.0,
     "cpw_connection_length": 75.0,
 }
-DEFAULT_HEATER_PARAMS: dict[str, Any] = {    
+DEFAULT_HEATER_PARAMS: dict[str, Any] = {
     "length": 1000.0,
     "width": 0.9,
     "routing_width": 6.0,
@@ -48,7 +50,7 @@ DEFAULT_TERMINATION_PARAMS: dict[str, Any] = {
     "hr_pad_length": 5.0,
 }
 DEFAULT_TRANSITION_M1_M2_PARAMS: dict[str, Any] = {
-    "type": "array", # or "solid"
+    "type": "array",  # or "solid"
     "layer_openings": LAYER.V2,
     "opening_offset": 2.5,
     "opening_size": 12.0,
@@ -72,7 +74,7 @@ DEFAULT_CPW_PARAMS_OBAND: dict[str, Any] = {
     "type": "trail",
     "rf_gap": 6.0,
     "rf_ground_planes_width": 50.0,
-    "rf_central_conductor_width": 22.0, # For Trails central conductor shrinks by th+tt at the modulation region.
+    "rf_central_conductor_width": 22.0,  # For Trails central conductor shrinks by th+tt at the modulation region.
 }
 DEFAULT_TRAIL_PARAMS_OBAND: dict[str, Any] = {
     "tl": 53.0,
@@ -81,6 +83,7 @@ DEFAULT_TRAIL_PARAMS_OBAND: dict[str, Any] = {
     "tt": 1.5,
     "tc": 5.0,
 }
+
 
 def build_unterminated_mzm_oband(
     mmi_cell: gf.Component,
@@ -100,22 +103,29 @@ def build_unterminated_mzm_oband(
         raise ValueError(f"Do not override fixed keys in O-band wrapper: {sorted(bad)}")
 
     _m2_bonding_params = _build_m2_bonding_params(
-    m2_bonding_pad_params=m2_bonding_pad_params,
-    transition_m1_m2_params=transition_m1_m2_params,
+        m2_bonding_pad_params=m2_bonding_pad_params,
+        transition_m1_m2_params=transition_m1_m2_params,
     )
 
     c = gf.Component()
 
     _heater_params = _merge(DEFAULT_HEATER_PARAMS, heater_params)
     if _heater_params["length"] > 0.0:
-        _optical_waveguide_params = _merge(DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params)
+        _optical_waveguide_params = _merge(
+            DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
+        )
 
-        if _optical_waveguide_params["heater_section_length"] < _heater_params["length"]:
-            _optical_waveguide_params["heater_section_length"] = _heater_params["length"]
+        if (
+            _optical_waveguide_params["heater_section_length"]
+            < _heater_params["length"]
+        ):
+            _optical_waveguide_params["heater_section_length"] = _heater_params[
+                "length"
+            ]
 
     mzm_ref = c << base_mzm(
-        optical_xs=xs_rwg700,      # fixed by wrapper
-        cpw_xs=xs_uni_cpw,         # fixed by wrapper
+        optical_xs=xs_rwg700,  # fixed by wrapper
+        cpw_xs=xs_uni_cpw,  # fixed by wrapper
         modulation_length=modulation_length,
         mmi_cell=mmi_cell,
         cpw_params=_merge(DEFAULT_CPW_PARAMS_OBAND, cpw_params),
@@ -138,19 +148,21 @@ def build_unterminated_mzm_oband(
         )
         heater_ref_1 = c << heater
         heater_ref_1.dmove(
-            origin=heater_ref_1.ports["ht_start"].dcenter, 
-            destination=mzm_ref.ports["ht1_1"].dcenter+(0,_heater_params["offset"])
+            origin=heater_ref_1.ports["ht_start"].dcenter,
+            destination=mzm_ref.ports["ht1_1"].dcenter + (0, _heater_params["offset"]),
         )
         if _heater_params["both_arms"]:
             heater_ref_2 = c << heater
             heater_ref_2.dmirror_y()
             heater_ref_2.dmove(
-                origin=heater_ref_2.ports["ht_start"].dcenter, 
-                destination=mzm_ref.ports["ht2_1"].dcenter+(0,-_heater_params["offset"])
+                origin=heater_ref_2.ports["ht_start"].dcenter,
+                destination=mzm_ref.ports["ht2_1"].dcenter
+                + (0, -_heater_params["offset"]),
             )
 
     c.add_ports(mzm_ref.ports)
     return c
+
 
 def build_terminated_mzm_oband(
     mmi_cell: gf.Component,
@@ -171,14 +183,18 @@ def build_terminated_mzm_oband(
     _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
     _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
     _cpw_pad_params["single_side"] = True
-    _transition_m1_m2_params = _merge(DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params)
-    _transition_m2_hr_params = _merge(DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params)
+    _transition_m1_m2_params = _merge(
+        DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
+    )
+    _transition_m2_hr_params = _merge(
+        DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
+    )
 
     cpw_xs = xs_uni_cpw(
-        central_conductor_width=_cpw_params["rf_central_conductor_width"], 
-        gap=_cpw_params["rf_gap"], 
-        ground_planes_width=_cpw_params["rf_ground_planes_width"]
-        )
+        central_conductor_width=_cpw_params["rf_central_conductor_width"],
+        gap=_cpw_params["rf_gap"],
+        ground_planes_width=_cpw_params["rf_ground_planes_width"],
+    )
     termination = double_layer_termination(
         cpw_xs=cpw_xs,
         termination_layer=LAYER.HRM,
@@ -196,12 +212,13 @@ def build_terminated_mzm_oband(
         cpw_pad_params=_cpw_pad_params,
         optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
-        transition_m1_m2_params=transition_m1_m2_params
+        transition_m1_m2_params=transition_m1_m2_params,
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
     c.add_ports(mzm_ref.ports)
     return c
+
 
 ############################################
 ########### C-band builders ################
@@ -211,7 +228,7 @@ DEFAULT_CPW_PARAMS_CBAND: dict[str, Any] = {
     "type": "trail",
     "rf_gap": 5.5,
     "rf_ground_planes_width": 50.0,
-    "rf_central_conductor_width": 16.0, # For Trails central conductor shrinks by th+tt at the modulation region.
+    "rf_central_conductor_width": 16.0,  # For Trails central conductor shrinks by th+tt at the modulation region.
 }
 
 DEFAULT_TRAIL_PARAMS_CBAND: dict[str, Any] = {
@@ -241,22 +258,29 @@ def build_unterminated_mzm_cband(
         raise ValueError(f"Do not override fixed keys in C-band wrapper: {sorted(bad)}")
 
     _m2_bonding_params = _build_m2_bonding_params(
-    m2_bonding_pad_params=m2_bonding_pad_params,
-    transition_m1_m2_params=transition_m1_m2_params,
+        m2_bonding_pad_params=m2_bonding_pad_params,
+        transition_m1_m2_params=transition_m1_m2_params,
     )
 
     c = gf.Component()
 
     _heater_params = _merge(DEFAULT_HEATER_PARAMS, heater_params)
     if _heater_params["length"] > 0.0:
-        _optical_waveguide_params = _merge(DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params)
+        _optical_waveguide_params = _merge(
+            DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
+        )
 
-        if _optical_waveguide_params["heater_section_length"] < _heater_params["length"]:
-            _optical_waveguide_params["heater_section_length"] = _heater_params["length"]
+        if (
+            _optical_waveguide_params["heater_section_length"]
+            < _heater_params["length"]
+        ):
+            _optical_waveguide_params["heater_section_length"] = _heater_params[
+                "length"
+            ]
 
     mzm_ref = c << base_mzm(
-        optical_xs=xs_rwg900,      # fixed by wrapper
-        cpw_xs=xs_uni_cpw,         # fixed by wrapper
+        optical_xs=xs_rwg900,  # fixed by wrapper
+        cpw_xs=xs_uni_cpw,  # fixed by wrapper
         modulation_length=modulation_length,
         mmi_cell=mmi_cell,
         cpw_params=_merge(DEFAULT_CPW_PARAMS_CBAND, cpw_params),
@@ -279,19 +303,21 @@ def build_unterminated_mzm_cband(
         )
         heater_ref_1 = c << heater
         heater_ref_1.dmove(
-            origin=heater_ref_1.ports["ht_start"].dcenter, 
-            destination=mzm_ref.ports["ht1_1"].dcenter+(0,_heater_params["offset"])
+            origin=heater_ref_1.ports["ht_start"].dcenter,
+            destination=mzm_ref.ports["ht1_1"].dcenter + (0, _heater_params["offset"]),
         )
         if _heater_params["both_arms"]:
             heater_ref_2 = c << heater
             heater_ref_2.dmirror_y()
             heater_ref_2.dmove(
-                origin=heater_ref_2.ports["ht_start"].dcenter, 
-                destination=mzm_ref.ports["ht2_1"].dcenter+(0,-_heater_params["offset"])
+                origin=heater_ref_2.ports["ht_start"].dcenter,
+                destination=mzm_ref.ports["ht2_1"].dcenter
+                + (0, -_heater_params["offset"]),
             )
 
     c.add_ports(mzm_ref.ports)
     return c
+
 
 def build_terminated_mzm_cband(
     mmi_cell: gf.Component,
@@ -312,14 +338,18 @@ def build_terminated_mzm_cband(
     _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
     _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
     _cpw_pad_params["single_side"] = True
-    _transition_m1_m2_params = _merge(DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params)
-    _transition_m2_hr_params = _merge(DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params)
+    _transition_m1_m2_params = _merge(
+        DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
+    )
+    _transition_m2_hr_params = _merge(
+        DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
+    )
 
     cpw_xs = xs_uni_cpw(
-        central_conductor_width=_cpw_params["rf_central_conductor_width"], 
-        gap=_cpw_params["rf_gap"], 
-        ground_planes_width=_cpw_params["rf_ground_planes_width"]
-        )
+        central_conductor_width=_cpw_params["rf_central_conductor_width"],
+        gap=_cpw_params["rf_gap"],
+        ground_planes_width=_cpw_params["rf_ground_planes_width"],
+    )
     termination = double_layer_termination(
         cpw_xs=cpw_xs,
         termination_layer=LAYER.HRM,
@@ -337,16 +367,18 @@ def build_terminated_mzm_cband(
         cpw_pad_params=_cpw_pad_params,
         optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
-        transition_m1_m2_params=transition_m1_m2_params
+        transition_m1_m2_params=transition_m1_m2_params,
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
     c.add_ports(mzm_ref.ports)
     return c
 
+
 ############################################
 ########### Helper functions ###############
 ############################################
+
 
 def _build_m2_bonding_params(
     m2_bonding_pad_params: dict[str, Any] | None,
@@ -365,13 +397,18 @@ def _build_m2_bonding_params(
         "m2_pad_length": pad["m2_pad_length"],
     }
 
-def _merge(defaults: dict[str, Any], overrides: dict[str, Any] | None) -> dict[str, Any]:
+
+def _merge(
+    defaults: dict[str, Any], overrides: dict[str, Any] | None
+) -> dict[str, Any]:
     merged = defaults.copy()
     if overrides:
         merged.update(overrides)
     return merged
 
+
 if __name__ == "__main__":
     from ltoi300.cells import mmi1x2_cband
+
     mzm = build_terminated_mzm_cband(mmi_cell=mmi1x2_cband())
     mzm.show()

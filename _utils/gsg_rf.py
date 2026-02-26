@@ -1,9 +1,8 @@
-from typing import Any, Tuple
+import warnings
+from typing import Any
 
 import gdsfactory as gf
 import numpy as np
-import warnings
-from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 from gdsfactory.cross_section import (
     CrossSection,
 )
@@ -41,7 +40,7 @@ def _pad_metal_polygon_points(
     length_tapered: float,
     pad_xs: CrossSection,
     cpw_xs: CrossSection,
-) -> Tuple[Tuple[float, float], ...]:
+) -> tuple[tuple[float, float], ...]:
     """Create 6-point polygon outlining the full CPW metal region (both grounds + center).
     Points trace outer boundary: pad end -> straight end -> cpw end, then mirror by x-axis.
     """
@@ -776,6 +775,7 @@ def double_layer_termination(
 
     return c
 
+
 def get_pad_xs(
     cpw_xs: CrossSection,
     pitch: float,
@@ -896,17 +896,17 @@ def gsg_pad_curved(
     c << pad_final
     c.add_port(
         name="e2",
-        cross_section = cpw_xs,
-        orientation = 0.0,
-        center = (length_straight + length_tapered, 0.0),
-        port_type = "electrical",
+        cross_section=cpw_xs,
+        orientation=0.0,
+        center=(length_straight + length_tapered, 0.0),
+        port_type="electrical",
     )
     c.add_port(
         name="e1",
-        cross_section = pad_xs,
-        orientation = 180.0,
-        center = (0.0, 0.0),
-        port_type = "electrical",
+        cross_section=pad_xs,
+        orientation=180.0,
+        center=(0.0, 0.0),
+        port_type="electrical",
     )
 
     return c, pad_xs, path_upper, path_lower

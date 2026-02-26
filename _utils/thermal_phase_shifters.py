@@ -1,8 +1,7 @@
 import gdsfactory as gf
 import numpy as np
-from gdsfactory.routing import route_quad
-from gdsfactory.typings import Layer, CrossSectionSpec
 from gdsfactory.cross_section import CrossSection
+from gdsfactory.routing import route_quad
 
 
 @gf.cell
@@ -222,10 +221,11 @@ def add_heater(
 
 if __name__ == "__main__":
     from ltoi300.tech import xs_ht_wire
+
     heater_xs = xs_ht_wire(width=0.9)
     routing_xs = xs_ht_wire(width=10.0)
     c = heater_straight_compact(
-        heater_xs = heater_xs,
-        routing_xs = routing_xs,
+        heater_xs=heater_xs,
+        routing_xs=routing_xs,
     )
     c.show()

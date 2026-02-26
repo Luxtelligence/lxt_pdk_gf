@@ -9,14 +9,14 @@ from ltoi300._builders.edge_couplers import (
 from ltoi300._builders.mmis import (
     build_mmi1x2_cband,
     build_mmi1x2_oband,
-    build_mmi2x2_cband, 
+    build_mmi2x2_cband,
     build_mmi2x2_oband,
 )
 from ltoi300._builders.mzms_v2 import (
     build_terminated_mzm_cband,
     build_terminated_mzm_oband,
-    build_unterminated_mzm_oband,
     build_unterminated_mzm_cband,
+    build_unterminated_mzm_oband,
 )
 from ltoi300._builders.straights import (
     build_straight_rwg700,
@@ -186,7 +186,7 @@ def unterminated_mzm_1x2mmi_oband(
     }
     optical_waveguide_params = {
         "length_imbalance": length_imbalance,
-    }   
+    }
     heater_params = {
         "length": bias_tuning_section_length,
     }
@@ -464,7 +464,7 @@ def terminated_mzm_2x2mmi_cband(
     optical_waveguide_params = {
         "length_imbalance": length_imbalance,
     }
-    heater_params = {   
+    heater_params = {
         "length": bias_tuning_section_length,
     }
     return build_terminated_mzm_cband(
