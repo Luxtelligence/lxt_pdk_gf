@@ -1,8 +1,8 @@
 # https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 
 [build-system]
-build-backend = "flit_core.buildapi"
-requires = ["flit_core >=3.2,<4"]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=80", "wheel"]
 
 [lint.pydocstyle]
 convention = "google"
