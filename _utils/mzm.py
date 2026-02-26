@@ -1426,6 +1426,49 @@ def mzm_unbalanced_LT(
             length_imbalance=length_imbalance,
             interferometer=interferometer,
         )
+
+        # Draw V3 (pad shrunk by 5 µm) and M2 (full pad size) rectangles
+        # centred at each heater pad location, and add M2 ports.
+        pad_w, pad_h = heater_pad_size
+        v3_w, v3_h = pad_w - 5.0, pad_h - 5.0
+        pad_ports = ["e1", "e2"]
+        if heater_on_both_branches:
+            pad_ports += ["e3", "e4"]
+        for idx, port_name in enumerate(pad_ports, start=1):
+            if port_name not in ht_ref.ports:
+                continue
+            port = ht_ref.ports[port_name]
+            cx, cy = port.dcenter  # port is at pad centre
+            # V3 rectangle (heater_pad_size − 5 µm each side)
+            mzm.add_polygon(
+                [
+                    (cx - v3_w / 2, cy - v3_h / 2),
+                    (cx + v3_w / 2, cy - v3_h / 2),
+                    (cx + v3_w / 2, cy + v3_h / 2),
+                    (cx - v3_w / 2, cy + v3_h / 2),
+                ],
+                layer=LAYER.V3,
+            )
+            # M2 rectangle (full heater_pad_size)
+            mzm.add_polygon(
+                [
+                    (cx - pad_w / 2, cy - pad_h / 2),
+                    (cx + pad_w / 2, cy - pad_h / 2),
+                    (cx + pad_w / 2, cy + pad_h / 2),
+                    (cx - pad_w / 2, cy + pad_h / 2),
+                ],
+                layer=LAYER.M2,
+            )
+            # Electrical port on M2 at pad centre, named e3/e4… (or e2/e3… when terminated)
+            ht_port_offset = 1 if terminated else 2
+            mzm.add_port(
+                name=f"e{idx + ht_port_offset}",
+                center=(cx, cy),
+                width=pad_w,
+                orientation=90.0 if port_name in ("e1", "e2") else 270.0,
+                port_type="electrical",
+                layer=LAYER.M2,
+            )
     # Transmission line subcell
 
     xs_cpw = gf.partial(
@@ -1503,23 +1546,6 @@ def mzm_unbalanced_LT(
                 ("o2", interferometer.ports["o2"]),
             ]
         )
-
-    if with_heater:
-        exposed_ports += [
-            ("e3", ht_ref.ports["e1"]),
-            (
-                "e4",
-                ht_ref.ports["e2"],
-            ),
-        ]
-    if with_heater and heater_on_both_branches:
-        exposed_ports += [
-            ("e5", ht_ref.ports["e3"]),
-            (
-                "e6",
-                ht_ref.ports["e4"],
-            ),
-        ]
 
     [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
     mzm.drotate(180)
