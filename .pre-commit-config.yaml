@@ -50,11 +50,12 @@ repos:
         args: [--extensions, "j2,yml,yaml", --ignore, jinja-statements-delimiter, jinja-statements-indentation, --]
         exclude: .github/.*
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.4.1
     hooks:
       - id: codespell
         additional_dependencies:
           - tomli
+        args: [--ignore-words-list, "rin"]
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1

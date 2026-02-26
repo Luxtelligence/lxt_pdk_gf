@@ -1,14 +1,15 @@
-from functools import partial
+from typing import Any
+
 import gdsfactory as gf
 import numpy as np
-from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 from gdsfactory.cross_section import (
     CrossSection,
 )
-from typing import Tuple, Callable, Any
-from gdsfactory.typings import Layer, LayerSpec
+from gdsfactory.typings import CrossSectionSpec, LayerSpec
+
 from _utils.cell_info import copy_info
 from _utils.cross_section import get_cpw_from_xs, xs_cpw_single_layer
+
 
 def _cpw_aspect_ratio(width: float, gap: float) -> float:
     """Aspect ratio AR = width / (width + 2*gap) for impedance matching."""
@@ -38,7 +39,7 @@ def _pad_metal_polygon_points(
     length_tapered: float,
     pad_xs: CrossSection,
     cpw_xs: CrossSection,
-) -> list[Tuple[float, float]]:
+) -> list[tuple[float, float]]:
     """Create 6-point polygon outlining the full CPW metal region (both grounds + center).
     Points trace outer boundary: pad end -> straight end -> cpw end, then mirror by x-axis.
     """
@@ -61,10 +62,9 @@ def _pad_metal_polygon_points(
     return points
 
 
-
 def _spline_bend_points(
-    start: Tuple[float, float],
-    end: Tuple[float, float],
+    start: tuple[float, float],
+    end: tuple[float, float],
     npoints: int,
 ) -> np.ndarray:
     """Smooth S-bend using Hermite-like interpolation (t^2)*(3-2*t)."""
@@ -79,7 +79,7 @@ def bonding_pads_exclusion_path(
     length_straight: float,
     pad_xs: CrossSection,
     cpw_xs: CrossSection,
-) -> Tuple[gf.Path, gf.Path, gf.Section, gf.Section]:
+) -> tuple[gf.Path, gf.Path, gf.Section, gf.Section]:
     """Parametric S-bend paths and width functions for CPW bonding pad slots.
 
     Returns:
@@ -92,7 +92,7 @@ def bonding_pads_exclusion_path(
 
     pad_width, _, pad_gap, pad_layer = get_cpw_from_xs(pad_xs)
     cpw_width, _, cpw_gap, tl_layer = get_cpw_from_xs(cpw_xs)
-    
+
     # Round to grid: ensure all parameters are grid-aligned
     # Use 0.004 µm (4 DBU) to ensure division by 2 stays grid-aligned
     grid_size = 0.004  # µm
@@ -108,10 +108,12 @@ def bonding_pads_exclusion_path(
     npoints = int(np.round(2.5 * length_tapered))
 
     # Upper path: straight (0, y_start) -> (length_straight, y_start), then S-bend to (length_straight+length_tapered, y_end)
-    straight_upper = np.array([
-        [0.0, y_start_upper],
-        [length_straight, y_start_upper],
-    ])
+    straight_upper = np.array(
+        [
+            [0.0, y_start_upper],
+            [length_straight, y_start_upper],
+        ]
+    )
     bend_upper = _spline_bend_points(
         (length_straight, y_start_upper),
         (length_straight + length_tapered, y_end_upper),
@@ -128,8 +130,10 @@ def bonding_pads_exclusion_path(
 
     # Calculate total path length and segment boundaries
     total_length = length_straight + length_tapered
-    t_straight_end = length_straight / total_length  # t value where straight section ends
-    
+    t_straight_end = (
+        length_straight / total_length
+    )  # t value where straight section ends
+
     def gap_width_upper(t):
         """Width function for upper gap extrusion: gap(y) = 2*|y|*AR/(AR+1)"""
         if np.isscalar(t):
@@ -137,38 +141,42 @@ def bonding_pads_exclusion_path(
             scalar_input = True
         else:
             scalar_input = False
-            
+
         # Map t to y-coordinates along the path
         y_coords = np.zeros_like(t)
-        
+
         # For straight section (t < t_straight_end): y = y_start_upper
         mask_straight = t <= t_straight_end
         y_coords[mask_straight] = y_start_upper
-        
+
         # For bend section (t >= t_straight_end): interpolate along the bend
         mask_bend = t > t_straight_end
         if np.any(mask_bend):
             # Map t to normalized bend parameter (0 to 1 within bend)
             t_bend_norm = (t[mask_bend] - t_straight_end) / (1.0 - t_straight_end)
             # Hermite-like interpolation for y-coordinate
-            y_coords[mask_bend] = y_start_upper + (y_end_upper - y_start_upper) * (t_bend_norm**2) * (3 - 2 * t_bend_norm)
-        
+            y_coords[mask_bend] = y_start_upper + (y_end_upper - y_start_upper) * (
+                t_bend_norm**2
+            ) * (3 - 2 * t_bend_norm)
+
         # Calculate gap width: gap(y) = 2*|y|*(1-AR)/(AR+1)
-        gap_widths = 2 * np.abs(y_coords) * (1-AR) / (AR + 1)
-        
+        gap_widths = 2 * np.abs(y_coords) * (1 - AR) / (AR + 1)
+
         # Round to grid: widths must be multiples of 0.002 µm (2 DBU)
         # Use integer arithmetic to avoid floating-point precision issues
         grid_size = 0.002  # µm
-        gap_widths_dbu = np.round(gap_widths / grid_size)  # Convert to DBU units (integer)
+        gap_widths_dbu = np.round(
+            gap_widths / grid_size
+        )  # Convert to DBU units (integer)
         gap_widths = gap_widths_dbu * grid_size  # Convert back to µm
-        
+
         return gap_widths[0] if scalar_input else gap_widths
-    
+
     def gap_width_lower(t):
         """Width function for lower gap extrusion: same as upper (uses |y|)"""
         # Since we use |y|, the lower path has the same gap width profile
         return gap_width_upper(t)
-    
+
     # Create sections with parametric width functions
     section_gap_upper = gf.Section(
         layer=tl_layer,
@@ -176,7 +184,7 @@ def bonding_pads_exclusion_path(
         width_function=gap_width_upper,
         port_names=("o1", "o2"),
     )
-    
+
     section_gap_lower = gf.Section(
         layer=tl_layer,
         width=0,
@@ -270,9 +278,7 @@ def via_array(
             + (num_openings_vertical - 1) * separation
         )
         start_x = conductor_center_x - total_columns_width / 2 + opening_size / 2
-        start_y = (
-            conductor_center_y - total_openings_height / 2 + opening_size / 2
-        )
+        start_y = conductor_center_y - total_openings_height / 2 + opening_size / 2
 
         for col in range(num_columns):
             x_position = start_x + col * (opening_size + separation)
@@ -289,7 +295,7 @@ def via_array(
     # Port at central conductor center (host region), on CPW signal layer.
     c.add_port(
         name="e1",
-        center=(conductor_center_x-width/2, signal_center_y),
+        center=(conductor_center_x - width / 2, signal_center_y),
         width=signal_width,
         orientation=180.0,
         port_type="electrical",
@@ -297,7 +303,7 @@ def via_array(
     )
     c.add_port(
         name="e2",
-        center=(conductor_center_x+width/2, signal_center_y),
+        center=(conductor_center_x + width / 2, signal_center_y),
         width=signal_width,
         orientation=0.0,
         port_type="electrical",
@@ -423,10 +429,10 @@ def m2_bonding_pads(
     m2_pad_length: float = 80.0,
 ) -> gf.Component:
     """Create M2 metal layer bonding pads with openings for electroplating.
-    
+
     Creates three M2 rectangles (central conductor + 2 ground planes) with
     via openings matching the CPW pad cross-section parameters.
-    
+
     Args:
         pad_xs_params: Tuple of (central_width, ground_width, gap) defining pad geometry
         layer_M2: Layer for M2 metal
@@ -436,21 +442,20 @@ def m2_bonding_pads(
         opening_separation: Separation between openings (µm)
         tl_opening_host_width: Width of the transmission line extension hosting openings (µm)
         m2_pad_length: Length of M2 pad along x-axis (µm)
-        
+
     Returns:
         Component with M2 pads and openings centered at origin
     """
 
-
     pad_width, pad_ground_width, pad_gap, tl_layer = get_cpw_from_xs(pad_xs)
-    
+
     # Round to grid: widths must be multiples of 0.004 µm (4 DBU) for symmetrical cross-sections
     # This ensures that division by 2 (used in position calculations) stays grid-aligned
     grid_size = 0.004  # µm
     pad_width = round(pad_width / grid_size) * grid_size
     pad_ground_width = round(pad_ground_width / grid_size) * grid_size
     pad_gap = round(pad_gap / grid_size) * grid_size
-    
+
     c = gf.Component()
 
     m2_pad_xs = xs_cpw_single_layer(
@@ -460,8 +465,10 @@ def m2_bonding_pads(
         layer=layer_m2,
     )
 
-    m2_pad_ref = c << gf.components.straight(length=m2_pad_length, cross_section=m2_pad_xs)
-    
+    m2_pad_ref = c << gf.components.straight(
+        length=m2_pad_length, cross_section=m2_pad_xs
+    )
+
     tl_pad_xs = xs_cpw_single_layer(
         central_conductor_width=pad_width,
         ground_planes_width=pad_ground_width,
@@ -479,15 +486,12 @@ def m2_bonding_pads(
     )
 
     m2_pad_ref.connect("e2", via_ref.ports["e2"])
-    
+
     # Add port at the right edge for connection to CPW pad
     c.add_port(name="e1", port=m2_pad_ref.ports["e1"])
 
     # Add port at the right edge for connection to CPW pad
-    c.add_port(
-        name="e2",
-        port = via_ref.ports["e1"]
-    )
+    c.add_port(name="e2", port=via_ref.ports["e1"])
 
     # Add port at the right edge for connection to CPW pad
     c.add_port(
@@ -498,14 +502,15 @@ def m2_bonding_pads(
         port_type="electrical",
         layer=layer_m2,
     )
-    
+
     return c
+
 
 @gf.cell
 def termination_wire(
     cpw_xs: CrossSection,
     termination_layer: LayerSpec,
-    effective_length: float =48.5,
+    effective_length: float = 48.5,
     resistor_width: float = 1.5,
     hr_layer_offset: float = 2.5,
     pad_length: float = 20.0,
@@ -518,23 +523,22 @@ def termination_wire(
         effective_length: Effective length of the termination wire corresponding to a single termination resistor equivalent circuit.
         resistor_width: Width of the resistor
         hr_layer_offset: Offset of the high-resistivity layer pads
-        pad_length: Length of the high-resistivity layer pad for wire conenction
+        pad_length: Length of the high-resistivity layer pad for wire connection
     """
 
     signal_width, ground_width, gap_width, signal_layer = get_cpw_from_xs(cpw_xs)
 
     y = signal_width + gap_width
 
-    x = (2*effective_length - y) / 3
+    x = (2 * effective_length - y) / 3
 
     if x < 10.0:
         x = 10.0
-        y = 2*effective_length - 3*x
+        y = 2 * effective_length - 3 * x
 
-    if y < signal_width/2 + gap_width + hr_layer_offset:
+    if y < signal_width / 2 + gap_width + hr_layer_offset:
         raise ValueError("length is too short to fit the termination wire")
 
-    
     wire = gf.Component()
     straight_section_shape = [
         (0, resistor_width / 2),
@@ -544,12 +548,12 @@ def termination_wire(
     ]
 
     return_section_shape = [
-        (0, y+resistor_width/2),
-        (x+resistor_width/2, y+resistor_width/2),
-        (x+resistor_width/2, 0),
-        (x-resistor_width/2, 0),
-        (x-resistor_width/2, y-resistor_width/2),
-        (0, y-resistor_width/2),
+        (0, y + resistor_width / 2),
+        (x + resistor_width / 2, y + resistor_width / 2),
+        (x + resistor_width / 2, 0),
+        (x - resistor_width / 2, 0),
+        (x - resistor_width / 2, y - resistor_width / 2),
+        (0, y - resistor_width / 2),
     ]
 
     return_shape_mirror = [(x, -y) for x, y in return_section_shape]
@@ -559,14 +563,14 @@ def termination_wire(
     wire.add_polygon(return_shape_mirror, layer=termination_layer)
 
     pad_xs = xs_cpw_single_layer(
-        central_conductor_width=signal_width-hr_layer_offset*2,
-        ground_planes_width=ground_width-hr_layer_offset*2,
-        gap=gap_width+hr_layer_offset*2,
+        central_conductor_width=signal_width - hr_layer_offset * 2,
+        ground_planes_width=ground_width - hr_layer_offset * 2,
+        gap=gap_width + hr_layer_offset * 2,
         layer=termination_layer,
     )
 
     pad_ref = wire << gf.components.straight(length=pad_length, cross_section=pad_xs)
-    pad_ref.dmove(origin = pad_ref.ports["e2"].center, destination = (0,0))
+    pad_ref.dmove(origin=pad_ref.ports["e2"].center, destination=(0, 0))
 
     wire.flatten()
 
@@ -581,10 +585,10 @@ def termination_wire(
 
     c.add_port(
         name="e1",
-        center = (-pad_length/2, 0.0),
-        cross_section = pad_xs,
-        orientation = 180.0,
-        port_type = "electrical",
+        center=(-pad_length / 2, 0.0),
+        cross_section=pad_xs,
+        orientation=180.0,
+        port_type="electrical",
     )
 
     c.add_port(
@@ -597,6 +601,7 @@ def termination_wire(
     )
 
     return c
+
 
 @gf.cell
 def double_layer_termination(
@@ -663,7 +668,9 @@ def double_layer_termination(
         layer=m2_layer,
     )
 
-    m2_pad_ref = c << gf.components.straight(length=m2_pad_length, cross_section=m2_pad_xs)
+    m2_pad_ref = c << gf.components.straight(
+        length=m2_pad_length, cross_section=m2_pad_xs
+    )
 
     if via_m1_m2_params["type"] == "array":
         via_m1_m2 = c << via_array(
@@ -688,14 +695,14 @@ def double_layer_termination(
 
     if via_m2_hr_params["type"] == "array":
         via_m2_hr = c << via_array(
-        cpw_xs=termination_xs,
-        layer_openings=via_m2_hr_params["layer_openings"],
-        layer_m2=m2_layer,
-        opening_offset=via_m2_hr_params["opening_offset"],
-        opening_size=via_m2_hr_params["opening_size"],
-        separation=via_m2_hr_params["opening_separation"],
-        width=via_m2_hr_params["width"],
-    )
+            cpw_xs=termination_xs,
+            layer_openings=via_m2_hr_params["layer_openings"],
+            layer_m2=m2_layer,
+            opening_offset=via_m2_hr_params["opening_offset"],
+            opening_size=via_m2_hr_params["opening_size"],
+            separation=via_m2_hr_params["opening_separation"],
+            width=via_m2_hr_params["width"],
+        )
     elif via_m2_hr_params["type"] == "solid":
         via_m2_hr = c << via_solid(
             cpw_xs=termination_xs,
@@ -712,18 +719,13 @@ def double_layer_termination(
     via_m2_hr.connect("e2", m2_pad_ref.ports["e2"])
     wire.connect("e1", via_m2_hr.ports["e1"])
 
-    c.add_port(
-        name="e1",
-        port = via_m1_m2.ports["e1"]
-    )
-    c.add_port(
-        name = "term",
-        port = wire.ports["term"]
-    )
+    c.add_port(name="e1", port=via_m1_m2.ports["e1"])
+    c.add_port(name="term", port=wire.ports["term"])
 
     c.flatten()
 
     return c
+
 
 def gsg_pad_curved(
     cpw_xs: CrossSection,
@@ -740,13 +742,13 @@ def gsg_pad_curved(
 
     pad_width = pitch * 2 * aspect_ratio / (1 + aspect_ratio)
     pad_gap = pitch * (1 - aspect_ratio) / (1 + aspect_ratio)
-    
+
     # Round to grid: widths must be multiples of 0.004 µm (4 DBU) for symmetrical cross-sections
     # This ensures that division by 2 (used in path calculations) stays grid-aligned
     grid_size = 0.004  # µm (must be even multiple of DBU for division by 2)
     pad_width = round(pad_width / grid_size) * grid_size
     pad_gap = round(pad_gap / grid_size) * grid_size
-    
+
     # Also round CPW parameters to ensure grid alignment
     end_width = round(end_width / grid_size) * grid_size
     end_gap = round(end_gap / grid_size) * grid_size
@@ -760,7 +762,12 @@ def gsg_pad_curved(
     )
 
     # New parametric approach: polygon + path cut + waveguide extrude + gap extrusions
-    path_upper, path_lower, section_gap_upper, section_gap_lower = bonding_pads_exclusion_path(
+    (
+        path_upper,
+        path_lower,
+        section_gap_upper,
+        section_gap_lower,
+    ) = bonding_pads_exclusion_path(
         length_tapered=length_tapered,
         length_straight=length_straight,
         pad_xs=pad_xs,
@@ -778,10 +785,10 @@ def gsg_pad_curved(
     # 2. Create parametric gap extrusions along the paths
     xs_gap_upper = gf.CrossSection(sections=(section_gap_upper,))
     xs_gap_lower = gf.CrossSection(sections=(section_gap_lower,))
-    
+
     gap_extrusion_upper = path_upper.extrude(cross_section=xs_gap_upper)
     gap_extrusion_lower = path_lower.extrude(cross_section=xs_gap_lower)
-    
+
     # 3. Perform boolean subtraction: pad_base - gap_extrusions
     # First subtract upper gap extrusion
     pad_with_upper_cut = gf.boolean(
@@ -790,7 +797,7 @@ def gsg_pad_curved(
         operation="not",
         layer=tl_layer,
     )
-    
+
     # Then subtract lower gap extrusion from the result
     pad_final = gf.boolean(
         A=pad_with_upper_cut,
@@ -820,6 +827,7 @@ def gsg_pad_curved(
 
     return c, pad_xs, path_upper, path_lower
 
+
 @gf.cell
 def cpw_pad(
     cpw_xs: CrossSectionSpec,
@@ -834,7 +842,7 @@ def cpw_pad(
     following the optical waveguides. The probe pad maintains a
     fixed gap/central conductor ratio across its length, to achieve a good
     impedance matching.
-    
+
     Args:
         cpw_xs: terminal CPW cross-section to connect to the pad. Should contain "signal" and "ground" sections.
         pitch: probe pitch - distance between optical waveguide entries.
@@ -848,7 +856,6 @@ def cpw_pad(
     """
 
     pad = gf.Component()
-
 
     tl_pad, pad_xs, path_upper, path_lower = gsg_pad_curved(
         cpw_xs=cpw_xs,
@@ -865,23 +872,11 @@ def cpw_pad(
         wg_lower = path_lower.extrude(optical_waveguide_xs)
         pad << wg_upper
         pad << wg_lower
-        pad.add_port(
-            name="o1",
-            port = wg_upper.ports["o1"]
-        )
-        pad.add_port(
-            name="o2",
-            port = wg_upper.ports["o2"]
-        )
-        pad.add_port(
-            name="o3",
-            port = wg_lower.ports["o2"]
-        )
-        pad.add_port(
-            name="o4",
-            port = wg_lower.ports["o1"]
-        )
-        
+        pad.add_port(name="o1", port=wg_upper.ports["o1"])
+        pad.add_port(name="o2", port=wg_upper.ports["o2"])
+        pad.add_port(name="o3", port=wg_lower.ports["o2"])
+        pad.add_port(name="o4", port=wg_lower.ports["o1"])
+
     if m2_bonding_pads_params is not None:
         required_keys = ("layer_m2", "layer_openings")
         missing_keys = [k for k in required_keys if k not in m2_bonding_pads_params]
@@ -924,23 +919,17 @@ def cpw_pad(
         M2_bonding_pads_ref.connect("e2", p1.ports["e1"])
         pad.add_port(
             name="e1",
-            port = M2_bonding_pads_ref.ports["e1"],
+            port=M2_bonding_pads_ref.ports["e1"],
         )
         pad.add_port(
             name="e3",
-            port = p1.ports["e1"],
+            port=p1.ports["e1"],
         )
     else:
         # Add ports for electrical connections
-        pad.add_port(
-            name="e1",
-            port = p1.ports["e1"]
-        )
+        pad.add_port(name="e1", port=p1.ports["e1"])
 
-    pad.add_port(
-        name="e2",
-        port = p1.ports["e2"]
-    )
+    pad.add_port(name="e2", port=p1.ports["e2"])
 
     return pad
 
@@ -958,7 +947,9 @@ def straight_cpw(
     """A straight CPW transmission line"""
 
     cpw = gf.Component()
-    strght = cpw << gf.components.straight(length=modulation_length, cross_section=cpw_xs)
+    strght = cpw << gf.components.straight(
+        length=modulation_length, cross_section=cpw_xs
+    )
     for s in cpw_xs.sections:
         if s.name == "signal":
             signal_width = s.width
@@ -971,13 +962,16 @@ def straight_cpw(
     cpw.add_port(name="e2", port=strght.ports["e2"])
 
     # Add optical waveguides if provided
-    if optical_waveguides is not None and optical_waveguides.get("terminal_xs") is not None:
+    if (
+        optical_waveguides is not None
+        and optical_waveguides.get("terminal_xs") is not None
+    ):
         terminal_xs = optical_waveguides.get("terminal_xs")
         modulation_xs = optical_waveguides.get("modulation_xs")
         taper_length = optical_waveguides.get("taper_length")
         has_modulation_tapers = modulation_xs is not None and taper_length > 0
 
-        y_offset1 = strght.ports["e1"].dcenter[1] + signal_width / 2 + gap_width/ 2
+        y_offset1 = strght.ports["e1"].dcenter[1] + signal_width / 2 + gap_width / 2
         y_offset2 = strght.ports["e2"].dcenter[1] - signal_width / 2 - gap_width / 2
         x_start = strght.ports["e1"].dcenter[0]
 
@@ -1008,11 +1002,18 @@ def straight_cpw(
     cpw.info["rf_gap"] = gap_width
     return cpw
 
+
 @gf.cell()
 def trail_cpw(
     cpw_xs: CrossSectionSpec,
     modulation_length: float = 3000.0,
-    trail_params: dict[str, float] = {"th": 1.5, "tl": 44.7, "tw": 7.0, "tt": 1.5, "tc": 5.0},
+    trail_params: dict[str, float] = {
+        "th": 1.5,
+        "tl": 44.7,
+        "tw": 7.0,
+        "tt": 1.5,
+        "tc": 5.0,
+    },
     rounding_radius: float = 0.5,
     optical_waveguides: dict[str, Any] = {
         "terminal_xs": None,
@@ -1035,7 +1036,7 @@ def trail_cpw(
             ground_planes_width = s.width
             offset = s.offset
     gap_width = offset - 0.5 * (signal_width + ground_planes_width)
-    
+
     signal_width_corrected = signal_width - 2 * th - 2 * tt
     ground_planes_width_corrected = ground_planes_width - th - tt
 
@@ -1054,7 +1055,9 @@ def trail_cpw(
 
     cpw = gf.Component()
 
-    strght = cpw << gf.components.straight(length=modulation_length, cross_section=xs_cpw_trail)
+    strght = cpw << gf.components.straight(
+        length=modulation_length, cross_section=xs_cpw_trail
+    )
     dl_tr = 0.5 * (
         modulation_length - num_cells * tl - (num_cells - 1) * tc
     )  # t-rail shift to place symmetrically w/r to bond pads
@@ -1132,22 +1135,37 @@ def trail_cpw(
     [ref.dmovex(dl_tr) for ref in (inc_t1, inc_t2, inc_t3, inc_t4)]
     # [ref.dmovey(300*dl_tr) for ref in (inc_t1, inc_t2, inc_t3, inc_t4)]
 
-    str_left = cpw << gf.components.straight(length=tl/2+dl_tr, cross_section=cpw_xs)
+    str_left = cpw << gf.components.straight(
+        length=tl / 2 + dl_tr, cross_section=cpw_xs
+    )
     str_left.dmove(str_left.ports["e1"].dcenter, strght.ports["e1"].dcenter)
-    str_right = cpw << gf.components.straight(length=tl/2+dl_tr, cross_section=cpw_xs)
+    str_right = cpw << gf.components.straight(
+        length=tl / 2 + dl_tr, cross_section=cpw_xs
+    )
     str_right.dmove(str_right.ports["e2"].dcenter, strght.ports["e2"].dcenter)
     cpw.add_port(name="e1", port=str_left.ports["e1"])
     cpw.add_port(name="e2", port=str_right.ports["e2"])
 
     # Here we expect waveguide_dict with keys "terminal_xs", "modulation_xs", and "taper_length"
-    if optical_waveguides is not None and optical_waveguides.get("terminal_xs") is not None:
+    if (
+        optical_waveguides is not None
+        and optical_waveguides.get("terminal_xs") is not None
+    ):
         terminal_xs = optical_waveguides.get("terminal_xs")
         modulation_xs = optical_waveguides.get("modulation_xs")
         taper_length = optical_waveguides.get("taper_length")
         has_modulation_tapers = modulation_xs is not None and taper_length > 0
 
-        y_offset1 = str_left.ports["e1"].dcenter[1] + signal_width_corrected / 2 + gap_width_corrected / 2
-        y_offset2 = str_right.ports["e1"].dcenter[1] - signal_width_corrected / 2 - gap_width_corrected / 2
+        y_offset1 = (
+            str_left.ports["e1"].dcenter[1]
+            + signal_width_corrected / 2
+            + gap_width_corrected / 2
+        )
+        y_offset2 = (
+            str_right.ports["e1"].dcenter[1]
+            - signal_width_corrected / 2
+            - gap_width_corrected / 2
+        )
         x_start = str_left.ports["e1"].dcenter[0]
 
         wg_cell = modulation_waveguide(
@@ -1189,6 +1207,7 @@ def trail_cpw(
 
     return cpw
 
+
 @gf.cell()
 def modulation_waveguide(
     modulation_xs: CrossSection,
@@ -1202,7 +1221,6 @@ def modulation_waveguide(
     wg = gf.Component()
 
     if modulation_xs is not None and terminal_xs is not None and taper_length > 0:
-
         xs_spec = _to_xs_spec(modulation_xs)
         # Taper-in (terminal_xs -> modulation_xs)
         taper_in = gf.components.taper(
@@ -1214,13 +1232,15 @@ def modulation_waveguide(
         taper_in_ref = wg << taper_in
 
         # Modulation straight
-        straight = gf.components.straight(length=modulation_length-2*taper_length, cross_section=modulation_xs)
+        straight = gf.components.straight(
+            length=modulation_length - 2 * taper_length, cross_section=modulation_xs
+        )
         straight_ref = wg << straight
         straight_ref.connect("o1", taper_in_ref.ports["o2"])
 
         # Taper-out (modulation_xs -> terminal_xs)
         taper_out = gf.components.taper(
-            length=taper_length,    
+            length=taper_length,
             width1=modulation_xs.width,
             width2=terminal_xs.width,
             cross_section=xs_spec,
@@ -1233,7 +1253,9 @@ def modulation_waveguide(
         wg.add_port(name="o2", port=taper_out_ref.ports["o2"])
     else:
         # Simple straight with terminal_xs
-        straight = gf.components.straight(length=modulation_length, cross_section=terminal_xs)
+        straight = gf.components.straight(
+            length=modulation_length, cross_section=terminal_xs
+        )
         straight_ref = wg << straight
         wg.add_port(name="o1", port=straight_ref.ports["o1"])
         wg.add_port(name="o2", port=straight_ref.ports["o2"])
@@ -1242,12 +1264,15 @@ def modulation_waveguide(
     wg.info["modulation_length"] = modulation_length
     wg.info["taper_length"] = taper_length
     wg.info["terminal_width"] = terminal_xs.width
-    wg.info["modulation_width"] = modulation_xs.width if modulation_xs is not None else terminal_xs.width
+    wg.info["modulation_width"] = (
+        modulation_xs.width if modulation_xs is not None else terminal_xs.width
+    )
     return wg
 
 
 if __name__ == "__main__":
-    from ltoi300.tech import xs_uni_cpw, xs_rwg700, xs_rwg2500
+    from ltoi300.tech import xs_rwg700, xs_rwg2500, xs_uni_cpw
+
     c = gf.Component()
     cpw_xs = xs_uni_cpw(central_conductor_width=21, gap=6, ground_planes_width=50.0)
     optical_waveguides = {
@@ -1255,21 +1280,33 @@ if __name__ == "__main__":
         "modulation_xs": xs_rwg2500(),
         "taper_length": 100.0,
     }
-    cpw = straight_cpw(cpw_xs=cpw_xs, modulation_length=2000.0, optical_waveguides=optical_waveguides)
+    cpw = straight_cpw(
+        cpw_xs=cpw_xs, modulation_length=2000.0, optical_waveguides=optical_waveguides
+    )
     print(cpw.info)
     cpw_ref = c << cpw
-    pad = cpw_pad(cpw_xs=cpw_xs, optical_waveguide_xs=xs_rwg700(), m2_bonding_pads_params = {
-        "layer_m2": (22, 0),
-        "layer_openings": (40, 0),
-    })
+    pad = cpw_pad(
+        cpw_xs=cpw_xs,
+        optical_waveguide_xs=xs_rwg700(),
+        m2_bonding_pads_params={
+            "layer_m2": (22, 0),
+            "layer_openings": (40, 0),
+        },
+    )
     pad_ref = c << pad
     pad_ref.connect("e2", cpw.ports["e1"])
 
-
     pad_width = pad_ref.ports["e1"].width
-    pad_xs = xs_cpw_single_layer(central_conductor_width=pad_width, ground_planes_width=50, gap=pad_width/cpw_xs.width*6.0, layer=(20, 0))
+    pad_xs = xs_cpw_single_layer(
+        central_conductor_width=pad_width,
+        ground_planes_width=50,
+        gap=pad_width / cpw_xs.width * 6.0,
+        layer=(20, 0),
+    )
 
-    termination3 = c << double_layer_termination(cpw_xs=cpw_xs, termination_layer=(23, 0), m2_layer=(22, 0))
+    termination3 = c << double_layer_termination(
+        cpw_xs=cpw_xs, termination_layer=(23, 0), m2_layer=(22, 0)
+    )
     termination3.connect("e1", cpw_ref.ports["e2"])
 
     c.show()
