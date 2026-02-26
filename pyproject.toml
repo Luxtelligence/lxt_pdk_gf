@@ -91,9 +91,6 @@ lint.select = [
 [tool.setuptools.package-data]
 mypkg = ["*.csv", "*.yaml"]
 
-[tool.setuptools]
-editable-mode = "compat"
-
 [tool.setuptools.packages]
 find = {exclude = ["_utils", "_utils.*"]}
 

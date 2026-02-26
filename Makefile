@@ -3,7 +3,7 @@ install:
 	pre-commit install
 
 dev:
-	pip install -e .[dev,docs]
+	pip install -e .[dev,docs] --config-settings editable_mode=compat
 
 test:
 	pytest -s
