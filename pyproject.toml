@@ -92,7 +92,7 @@ lint.select = [
 mypkg = ["*.csv", "*.yaml"]
 
 [tool.setuptools.packages]
-find = {}
+find = {exclude = ["_utils", "_utils.*"]}
 
 [tool.tbump]
 
