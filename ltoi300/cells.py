@@ -180,7 +180,6 @@ def unterminated_mzm_1x2mmi_oband(
     """Returns a unterminated MZM with 1x2 MMI splitter with effective index matching
     for O-band operation."""
 
-    mmi_cell = mmi1x2_oband()
     cpw_pad_params = {
         "pitch": gsg_pitch,
     }
