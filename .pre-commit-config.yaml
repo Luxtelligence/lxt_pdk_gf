@@ -55,7 +55,6 @@ repos:
       - id: codespell
         additional_dependencies:
           - tomli
-        args: [--ignore-words-list, "rin"]
 
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
