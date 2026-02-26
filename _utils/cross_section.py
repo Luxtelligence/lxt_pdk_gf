@@ -1,5 +1,6 @@
 from functools import partial
-from typing import Any, Tuple
+from typing import Any
+
 import gdsfactory as gf
 from gdsfactory import typings
 from gdsfactory.cross_section import CrossSection, Section, xsection
@@ -8,9 +9,8 @@ from gdsfactory.typings import LayerSpec
 nm = 1e-3
 Sections = tuple[Section, ...]
 
-def _copy_cross_section_with_overrides(
-    xs: CrossSection, **kwargs: Any
-) -> CrossSection:
+
+def _copy_cross_section_with_overrides(xs: CrossSection, **kwargs: Any) -> CrossSection:
     """Return a copy of xs with kwargs-compatible overrides."""
     return xs.copy(**kwargs)
 
@@ -19,6 +19,7 @@ def _to_xs_spec(xs):
     if isinstance(xs, CrossSection):
         return partial(_copy_cross_section_with_overrides, xs=xs)
     return xs
+
 
 def get_slab_extension(xs: CrossSection) -> float:
     """Return how far the slab section extends beyond the ridge on each side.
@@ -246,9 +247,9 @@ def ridge_wg(
     )
 
 
-def get_cpw_from_xs(xs: CrossSection) -> Tuple[float, float, float, LayerSpec]:
+def get_cpw_from_xs(xs: CrossSection) -> tuple[float, float, float, LayerSpec]:
     """Return the central conductor width, ground planes width, and gap from a CPW cross-section.
-    
+
     Args:
         xs: CPW cross-section.
 
@@ -261,7 +262,7 @@ def get_cpw_from_xs(xs: CrossSection) -> Tuple[float, float, float, LayerSpec]:
     layer = xs.layer
     for s in xs.sections:
         if s.name == "signal":
-            signal= s.width
+            signal = s.width
         elif s.name == "ground_top":
             ground = s.width
             offset = s.offset
@@ -274,7 +275,6 @@ def xs_cpw_single_layer(
     ground_planes_width: float,
     gap: float,
     layer: LayerSpec,
-
 ) -> CrossSection:
     """Generate cross-section of a uniform coplanar waveguide."""
 

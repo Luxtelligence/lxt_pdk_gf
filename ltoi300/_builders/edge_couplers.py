@@ -1,6 +1,7 @@
-from _utils.edge_couplers import double_layer_ec_custom
 import gdsfactory as gf
-from ltoi300.tech import xs_rwg700, xs_swg350, xs_rwg900, LAYER
+
+from _utils.edge_couplers import double_layer_ec_custom
+from ltoi300.tech import LAYER, xs_rwg700, xs_rwg900, xs_swg350
 
 
 def build_oband_ltoi300_edge_coupler(
@@ -16,6 +17,7 @@ def build_oband_ltoi300_edge_coupler(
         upper_taper_length=upper_taper_length,
         input_ext=input_ext,
     )
+
 
 def build_cband_ltoi300_edge_coupler(
     input_ext: float = 10.0,

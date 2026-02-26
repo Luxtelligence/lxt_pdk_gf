@@ -12,7 +12,6 @@ import ltoi300
 from _utils.models import (
     _1in_2out_symmetric_poly_model,
     _2in_2out_symmetric_poly_model,
-    _2port_poly_model,
 )
 
 nm = 1e-3
@@ -172,7 +171,7 @@ def _eo_phase_shifter(
     V_dc: float = 0.0,
 ) -> sax.SDict:
     """General electro-optic phase shifter model.
-    
+
     Args:
         wl: wavelength in um.
         wl_0: center wavelength in um.
@@ -261,7 +260,7 @@ def eo_phase_shifter_oband(
     **kwargs,
 ) -> sax.SDict:
     """Electro-optic phase shifter for O-band operation.
-    
+
     Args:
         wl: wavelength in um.
         length: phase shifter length in um.
@@ -272,7 +271,7 @@ def eo_phase_shifter_oband(
     # TODO: Update with actual O-band V_pi default value
     if np.isnan(V_pi):
         V_pi = 2 * 3.3e4 * wl / length / 1.31  # Placeholder - update with actual value
-    
+
     return _eo_phase_shifter(
         wl=wl,
         wl_0=1.31,
@@ -292,7 +291,7 @@ def to_phase_shifter_oband(
     **kwargs,
 ) -> sax.SDict:
     """Thermal phase shifter for O-band operation.
-    
+
     Args:
         wl: wavelength in um.
         heater_length: in um.
@@ -303,8 +302,10 @@ def to_phase_shifter_oband(
     """
     # TODO: Update with actual O-band P_pi default value
     if np.isnan(P_pi):
-        P_pi = 0.075 * heater_width * wl / 1.31  # Placeholder - update with actual value
-    
+        P_pi = (
+            0.075 * heater_width * wl / 1.31
+        )  # Placeholder - update with actual value
+
     return _to_phase_shifter(
         wl=wl,
         wl_0=1.31,
@@ -329,7 +330,7 @@ def eo_phase_shifter_cband(
     **kwargs,
 ) -> sax.SDict:
     """Electro-optic phase shifter for C-band operation.
-    
+
     Args:
         wl: wavelength in um.
         length: phase shifter length in um.
@@ -340,7 +341,7 @@ def eo_phase_shifter_cband(
     # TODO: Update with actual C-band V_pi default value
     if np.isnan(V_pi):
         V_pi = 2 * 3.3e4 * wl / length / 1.55  # Placeholder - update with actual value
-    
+
     return _eo_phase_shifter(
         wl=wl,
         wl_0=1.55,
@@ -360,7 +361,7 @@ def to_phase_shifter_cband(
     **kwargs,
 ) -> sax.SDict:
     """Thermal phase shifter for C-band operation.
-    
+
     Args:
         wl: wavelength in um.
         heater_length: in um.
@@ -371,8 +372,10 @@ def to_phase_shifter_cband(
     """
     # TODO: Update with actual C-band P_pi default value
     if np.isnan(P_pi):
-        P_pi = 0.075 * heater_width * wl / 1.55  # Placeholder - update with actual value
-    
+        P_pi = (
+            0.075 * heater_width * wl / 1.55
+        )  # Placeholder - update with actual value
+
     return _to_phase_shifter(
         wl=wl,
         wl_0=1.55,

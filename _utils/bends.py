@@ -1,9 +1,9 @@
 import gdsfactory as gf
 import numpy as np
-from gdsfactory.typings import CrossSectionSpec
 from gdsfactory.cross_section import (
     CrossSection,
 )
+from gdsfactory.typings import CrossSectionSpec
 
 from _utils.spline import (
     bend_S_spline,
