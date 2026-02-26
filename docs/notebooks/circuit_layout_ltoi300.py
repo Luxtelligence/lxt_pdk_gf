@@ -355,6 +355,50 @@ modulator_circuit_cband = modulator_circuit(
 modulator_circuit_cband
 
 # %% [markdown]
+# ### Wirebonding pads
+
+# %%
+@gf.cell
+def bondpad_array(
+    pad_size: tuple = (170, 170),
+    pitch: float = 300,
+    N: int = 14,
+    contact_window_offset: float = -10.0,
+    chip_frame: gf.Component = chip_layout,
+    dx: float = 5400.0,
+    dy: float = 4805.0,
+):
+    c = gf.Component()
+
+    for lay, offs in zip((LAYER.M2, LAYER.V3), (0.0, contact_window_offset)):
+        pad = gf.components.pad(
+            size=(pad_size[0] + 2 * offs, pad_size[1] + 2 * offs),
+            layer=lay,
+        )
+        bp = c << gf.components.pad_array(
+            pad=pad,
+            columns=N,
+            column_pitch=pitch,
+            layer=lay,
+            auto_rename_ports=True,
+            centered_ports=True,
+            port_orientation=-90.0,
+        )
+
+        bp.dmove(
+            origin=(bp.dxmin, bp.dymin),
+            destination=(chip_frame.dxmin + dx - offs, chip_frame.dymin + dy - offs),
+        )
+
+    c.add_ports(bp.ports)
+
+    return c
+
+
+bp_array = bondpad_array()
+bp_array
+
+# %% [markdown]
 # Assemble on the die outline
 
 
@@ -369,6 +413,7 @@ def die_assembled(
     c << circuit_cband
     c << modulator_circuit_oband
     c << modulator_circuit_cband
+    c << bp_array
 
     c.add_ports(circuit_oband.ports, prefix="oband")
     c.add_ports(circuit_cband.ports, prefix="cband")
