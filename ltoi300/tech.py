@@ -216,7 +216,7 @@ def xs_swg(
 @xsection
 def xs_uni_cpw(
     central_conductor_width: float = 15.0,
-    ground_planes_width: float = 250.0,
+    ground_planes_width: float = 50.0,
     gap: float = 5.0,
 ) -> CrossSection:
     """Generate cross-section of a uniform coplanar waveguide."""

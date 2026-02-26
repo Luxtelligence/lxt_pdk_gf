@@ -1,11 +1,24 @@
-from typing import Any
-
+from functools import partial
+from typing import Any, Tuple
+import gdsfactory as gf
 from gdsfactory import typings
 from gdsfactory.cross_section import CrossSection, Section, xsection
+from gdsfactory.typings import LayerSpec
 
 nm = 1e-3
 Sections = tuple[Section, ...]
 
+def _copy_cross_section_with_overrides(
+    xs: CrossSection, **kwargs: Any
+) -> CrossSection:
+    """Return a copy of xs with kwargs-compatible overrides."""
+    return xs.copy(**kwargs)
+
+
+def _to_xs_spec(xs):
+    if isinstance(xs, CrossSection):
+        return partial(_copy_cross_section_with_overrides, xs=xs)
+    return xs
 
 def get_slab_extension(xs: CrossSection) -> float:
     """Return how far the slab section extends beyond the ridge on each side.
@@ -231,3 +244,75 @@ def ridge_wg(
         slab_simplify=slab_simplify,
         **kwargs,
     )
+
+
+def get_cpw_from_xs(xs: CrossSection) -> Tuple[float, float, float, LayerSpec]:
+    """Return the central conductor width, ground planes width, and gap from a CPW cross-section.
+    
+    Args:
+        xs: CPW cross-section.
+
+    Returns:
+        signal: central conductor width.
+        ground: ground planes width.
+        gap: gap between the central conductor and the ground planes.
+        layer: layer of the CPW cross-section.
+    """
+    layer = xs.layer
+    for s in xs.sections:
+        if s.name == "signal":
+            signal= s.width
+        elif s.name == "ground_top":
+            ground = s.width
+            offset = s.offset
+    gap = offset - 0.5 * (signal + ground)
+    return signal, ground, gap, layer
+
+
+def xs_cpw_single_layer(
+    central_conductor_width: float,
+    ground_planes_width: float,
+    gap: float,
+    layer: LayerSpec,
+
+) -> CrossSection:
+    """Generate cross-section of a uniform coplanar waveguide."""
+
+    nm = 1e-3
+
+    offset = 0.5 * (central_conductor_width + ground_planes_width) + gap
+
+    g1 = Section(
+        width=ground_planes_width,
+        offset=-offset,
+        layer=layer,
+        simplify=50 * nm,
+        name="ground_bottom",
+    )
+
+    g2 = Section(
+        width=ground_planes_width,
+        offset=offset,
+        layer=layer,
+        simplify=50 * nm,
+        name="ground_top",
+    )
+
+    s = Section(
+        width=central_conductor_width,
+        offset=0.0,
+        layer=layer,
+        simplify=50 * nm,
+        name="signal",
+    )
+
+    xs_cpw = gf.cross_section.cross_section(
+        width=central_conductor_width,
+        offset=0.0,
+        layer=layer,
+        sections=(g1, s, g2),
+        port_names=gf.cross_section.port_names_electrical,
+        port_types=gf.cross_section.port_types_electrical,
+    )
+
+    return xs_cpw
