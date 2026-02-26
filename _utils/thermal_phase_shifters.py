@@ -1,38 +1,17 @@
 import gdsfactory as gf
 import numpy as np
 from gdsfactory.routing import route_quad
-from gdsfactory.typings import Layer
-
-from ltoi300.tech import LAYER, xs_ht_wire
-
-
-@gf.cell
-def heater_resistor(
-    path: gf.path.Path | None = None,
-    width: float = 0.9,
-    offset: float = 0.0,
-    ht_layer: Layer = LAYER.HRM,
-    length: float = 150.0,
-) -> gf.Component:
-    """A resistive wire used as a low-frequency phase shifter, exploiting
-    the thermo-optical effect."""
-
-    if not path:
-        path = gf.path.straight(length=length)
-
-    xs = gf.get_cross_section(xs_ht_wire, width=width, offset=offset, ht_layer=ht_layer)
-    c = path.extrude(xs)
-
-    return c
+from gdsfactory.typings import Layer, CrossSectionSpec
+from gdsfactory.cross_section import CrossSection
 
 
 @gf.cell
 def heater_pads_assymm(
+    heater_xs: CrossSection,
+    routing_xs: CrossSection,
     pad_size: tuple[float, float] = (150.0, 150.0),
     heater_length: float = 700.0,
     pad_pitch: float | None = None,
-    routing_width: float = 30.0,
-    ht_layer: Layer = LAYER.HRM,
 ) -> gf.Component:
     padwidth, _ = pad_size
     if pad_pitch is None:
@@ -46,7 +25,7 @@ def heater_pads_assymm(
         row_pitch=pad_pitch,
         columns=2,
         port_orientation=-90.0,
-        layer=ht_layer,
+        layer=routing_xs.layer,
     )
     length = heater_length - padwidth - pad_pitch
     bps = c << bondpads
@@ -54,11 +33,14 @@ def heater_pads_assymm(
     def routing():
         c = gf.Component()
         path = gf.path.straight(length=length)
-        xs = gf.get_cross_section(xs_ht_wire, width=routing_width, ht_layer=ht_layer)
-        c = path.extrude(xs)
+        c = path.extrude(routing_xs)
         return c
 
-    route = routing()
+    try:
+        route = routing()
+    except Exception as e:
+        print(f"Error routing thermal phase shifter: {e}")
+        return None
     route.ports["e2"].dcenter = (
         route.ports["e2"].dcenter[0] - route.ports["e2"].dwidth / 2,
         route.ports["e2"].dcenter[1],
@@ -76,15 +58,13 @@ def heater_pads_assymm(
 
 @gf.cell
 def heater_straight_compact(
+    heater_xs: CrossSection,
+    routing_xs: CrossSection,
     length: float = 700.0,
-    width: float = 0.9,
-    offset: float = 0.0,
     port_contact_width_ratio: float = 3.0,
     pad_size: tuple[float, float] = (150.0, 150.0),
     pad_pitch: float | None = None,
     pad_vert_offset: float = 10.0,
-    routing_width: float = 30.0,
-    ht_layer: Layer = LAYER.HRM,
 ) -> gf.Component:
     """A straight resistive wire used as a low-frequency phase shifter,
     exploiting the thermo-optical effect. The heater is terminated by wide pads
@@ -105,24 +85,23 @@ def heater_straight_compact(
         pad_size=pad_size,
         heater_length=length,
         pad_pitch=pad_pitch,
-        routing_width=routing_width,
-        ht_layer=ht_layer,
+        heater_xs=heater_xs,
+        routing_xs=routing_xs,
     )
     bps = c << bondpads
+    bondpads.ports["e12"].orientation = 270.0
 
-    ht = heater_resistor(
-        path=gf.path.straight(length),
-        width=width,
-        offset=offset,
-        ht_layer=ht_layer,
-    )
+    path = gf.path.straight(length=length)
+    ht = path.extrude(heater_xs)
+
+    width = heater_xs.width
 
     # Place the ports along the edge of the wire
     for p in ht.ports:
         if p.orientation == 0.0:
-            p.dcenter = (p.dcenter[0] - 0.5 * p.dwidth, p.dcenter[1] + 0.5 * width)
+            p.dcenter = (p.dcenter[0] - 0.5 * p.dwidth, p.dcenter[1])
         if p.orientation == 180.0:
-            p.dcenter = (p.dcenter[0] + 0.5 * p.dwidth, p.dcenter[1] + 0.5 * width)
+            p.dcenter = (p.dcenter[0] + 0.5 * p.dwidth, p.dcenter[1])
         p.orientation = 90.0
 
     ht_ref = c << ht
@@ -135,7 +114,7 @@ def heater_straight_compact(
     ht.ports["e2"].dx -= 0.5 * (port_contact_width - width)
     routing_params = {
         "width2": port_contact_width,
-        "layer": ht_layer,
+        "layer": routing_xs.layer,
     }
 
     # Connect pads and heater wire
@@ -179,12 +158,13 @@ def heater_straight_compact(
 
 @gf.cell
 def add_heater(
+    heater_xs: CrossSection,
+    routing_xs: CrossSection,
     interferometer: gf.Component = None,
     heater_on_both_branches: bool = False,
     heater_offset: float = 3.5,
     heater_width: float = 1.0,
     heater_pad_size: tuple[float, float] = (75.0, 75.0),
-    ht_layer: Layer = LAYER.HRM,
     bias_tuning_section_length: float = 700.0,
     length_imbalance: float = 0.0,
 ) -> gf.Component:
@@ -192,10 +172,9 @@ def add_heater(
     c = gf.Component()
     ht_cell = heater_straight_compact(
         length=bias_tuning_section_length,
-        width=heater_width,
-        offset=heater_offset,
+        heater_xs=heater_xs,
+        routing_xs=routing_xs,
         pad_size=heater_pad_size,
-        ht_layer=ht_layer,
     )
     ht_ref_1 = c << ht_cell
 
@@ -239,3 +218,14 @@ def add_heater(
     c.add_port(name="e4", port=ht_ref_2.ports["e2"])
 
     return c
+
+
+if __name__ == "__main__":
+    from ltoi300.tech import xs_ht_wire
+    heater_xs = xs_ht_wire(width=0.9)
+    routing_xs = xs_ht_wire(width=10.0)
+    c = heater_straight_compact(
+        heater_xs = heater_xs,
+        routing_xs = routing_xs,
+    )
+    c.show()

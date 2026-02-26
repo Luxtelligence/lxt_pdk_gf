@@ -1111,7 +1111,9 @@ def _mzm_interferometer_LT(
     communication_band: str = "O-band",
 ) -> gf.Component:
     if splitter is None:
+        from ltoi300._builders.mzms import build_mmi1x2_cband
         splitter = build_mmi1x2_cband()
+
     interferometer = gf.Component()
 
     sbend_large = S_bend_vert(
@@ -1550,3 +1552,7 @@ def mzm_unbalanced_LT(
     [mzm.add_port(name=name, port=port) for name, port in exposed_ports]
     mzm.drotate(180)
     return mzm
+
+if __name__ == "__main__":
+    mzm = CPW_termination_wire()
+    mzm.show()

@@ -1,7 +1,9 @@
-from typing import Any
+from typing import Any, Tuple
 
 import gdsfactory as gf
 import numpy as np
+import warnings
+from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 from gdsfactory.cross_section import (
     CrossSection,
 )
@@ -39,7 +41,7 @@ def _pad_metal_polygon_points(
     length_tapered: float,
     pad_xs: CrossSection,
     cpw_xs: CrossSection,
-) -> list[tuple[float, float]]:
+) -> Tuple[Tuple[float, float], ...]:
     """Create 6-point polygon outlining the full CPW metal region (both grounds + center).
     Points trace outer boundary: pad end -> straight end -> cpw end, then mirror by x-axis.
     """
@@ -237,10 +239,10 @@ def via_array(
 
     c = gf.Component()
 
-    for conductor_width, conductor_center_y in (
-        (signal_width, signal_center_y),
-        (ground_width, ground_upper_center_y),
-        (ground_width, ground_lower_center_y),
+    for conductor_name, conductor_width, conductor_center_y in (
+        ("signal", signal_width, signal_center_y),
+        ("ground_upper", ground_width, ground_upper_center_y),
+        ("ground_lower", ground_width, ground_lower_center_y),
     ):
         host_rect = gf.components.rectangle(
             size=(width, conductor_width),
@@ -259,15 +261,51 @@ def via_array(
         trgt_ref.dmove(trgt_ref.dcenter, (conductor_center_x, conductor_center_y))
 
         available_height = conductor_width - 2 * opening_offset
+        available_width = width - 2 * opening_offset
         num_openings_vertical = int(
             (available_height + separation) / (opening_size + separation)
         )
-        if num_openings_vertical <= 0:
+        if num_openings_vertical < 1:
+            if available_width > 0 and available_height > 0:
+                opening_rect = gf.components.rectangle(
+                    size=(available_width, available_height),
+                    layer=layer_openings,
+                    centered=True,
+                )
+                opening_ref = c << opening_rect
+                opening_ref.dmove(
+                    opening_ref.dcenter, (conductor_center_x, conductor_center_y)
+                )
+                warnings.warn(
+                    (
+                        f"via_array: '{conductor_name}' conductor cannot fit via rows "
+                        f"(num_rows={num_openings_vertical}); using single solid opening."
+                    ),
+                    stacklevel=2,
+                )
             continue
 
-        available_width = width - 2 * opening_offset
         num_columns = int((available_width + separation) / (opening_size + separation))
-        if num_columns <= 0:
+        if num_columns < 1:
+            opening_width = available_width
+            opening_height = available_height
+            if opening_width > 0 and opening_height > 0:
+                opening_rect = gf.components.rectangle(
+                    size=(opening_width, opening_height),
+                    layer=layer_openings,
+                    centered=True,
+                )
+                opening_ref = c << opening_rect
+                opening_ref.dmove(
+                    opening_ref.dcenter, (conductor_center_x, conductor_center_y)
+                )
+                warnings.warn(
+                    (
+                        f"via_array: '{conductor_name}' conductor cannot fit via columns "
+                        f"(num_columns={num_columns}); using single solid opening."
+                    ),
+                    stacklevel=2,
+                )
             continue
 
         total_columns_width = (
@@ -292,8 +330,19 @@ def via_array(
                 opening_ref = c << opening_rect
                 opening_ref.dmove(opening_ref.dcenter, (x_position, y_position))
 
+    # Round only via openings; keep host/pad metals rectangular.
+    c_rounded = gf.Component()
+    rinner = 1000  # circle radius of inner corners (dbu)
+    router = 1000  # circle radius of outer corners (dbu)
+    n = 300  # number of points per full circle
+    for layer, polygons in c.get_polygons().items():
+        for polygon in polygons:
+            if layer == layer_openings:
+                polygon = polygon.round_corners(rinner, router, n)
+            c_rounded.add_polygon(polygon, layer=layer)
+
     # Port at central conductor center (host region), on CPW signal layer.
-    c.add_port(
+    c_rounded.add_port(
         name="e1",
         center=(conductor_center_x - width / 2, signal_center_y),
         width=signal_width,
@@ -301,7 +350,7 @@ def via_array(
         port_type="electrical",
         layer=signal_layer,
     )
-    c.add_port(
+    c_rounded.add_port(
         name="e2",
         center=(conductor_center_x + width / 2, signal_center_y),
         width=signal_width,
@@ -310,7 +359,7 @@ def via_array(
         layer=layer_m2,
     )
 
-    return c
+    return c_rounded
 
 
 @gf.cell
@@ -393,8 +442,9 @@ def via_solid(
     c_rounded = gf.Component()
     for layer, polygons in c.get_polygons().items():
         for polygon in polygons:
-            rounded_polygon = polygon.round_corners(rinner, router, n)
-            c_rounded.add_polygon(rounded_polygon, layer=layer)
+            if layer == layer_openings:
+                polygon = polygon.round_corners(rinner, router, n)
+            c_rounded.add_polygon(polygon, layer=layer)
 
     # Match via_array external port convention.
     c_rounded.add_port(
@@ -726,18 +776,22 @@ def double_layer_termination(
 
     return c
 
-
-def gsg_pad_curved(
+def get_pad_xs(
     cpw_xs: CrossSection,
     pitch: float,
-    length_tapered: float,
-    length_straight: float,
     ground_pad_width: float,
-) -> gf.Component:
-    """Curved pad for CPW lines"""
+) -> CrossSection:
+    """Compute the pad-side CPW cross-section from the terminal CPW cross-section.
 
-    end_width, ground_planes_width, end_gap, tl_layer = get_cpw_from_xs(cpw_xs)
+    The pad maintains a fixed gap/conductor aspect ratio to achieve impedance
+    matching, scaled to the given probe pitch.
 
+    Args:
+        cpw_xs: terminal CPW cross-section.
+        pitch: probe pitch (distance between optical waveguide entries).
+        ground_pad_width: width of the ground pad.
+    """
+    end_width, _, end_gap, tl_layer = get_cpw_from_xs(cpw_xs)
     aspect_ratio = end_width / (end_width + 2 * end_gap)
 
     pad_width = pitch * 2 * aspect_ratio / (1 + aspect_ratio)
@@ -746,20 +800,52 @@ def gsg_pad_curved(
     # Round to grid: widths must be multiples of 0.004 µm (4 DBU) for symmetrical cross-sections
     # This ensures that division by 2 (used in path calculations) stays grid-aligned
     grid_size = 0.004  # µm (must be even multiple of DBU for division by 2)
+
+    grid_size = 0.004
     pad_width = round(pad_width / grid_size) * grid_size
     pad_gap = round(pad_gap / grid_size) * grid_size
 
-    # Also round CPW parameters to ensure grid alignment
-    end_width = round(end_width / grid_size) * grid_size
-    end_gap = round(end_gap / grid_size) * grid_size
-    ground_planes_width = round(ground_planes_width / grid_size) * grid_size
-
-    pad_xs = xs_cpw_single_layer(
+    return xs_cpw_single_layer(
         central_conductor_width=pad_width,
         ground_planes_width=ground_pad_width,
         gap=pad_gap,
         layer=tl_layer,
     )
+
+
+def gsg_pad_curved(
+    cpw_xs: CrossSection,
+    pitch: float,
+    length_tapered: float,
+    length_straight: float,
+    ground_pad_width: float,
+) -> gf.Component:
+    """Curved pad for CPW lines with curved electrodes following the optical waveguides.
+    Helpful for on-slab metalization to avoid additional optical loss.
+    The pad maintains a fixed gap/conductor aspect ratio to achieve impedance
+    matching, scaled to the given probe pitch.
+
+    Args:
+        cpw_xs: CPW cross-section of the line to be terminated
+        pitch: probe pitch (distance between optical waveguide entries).
+        length_tapered: length of the tapered section of the pad. This will also define optical waveguide curvature depending on the pitch and CPW cross-section.
+        length_straight: length of the wide straight section of the pad.
+        ground_pad_width: width of the ground pad.
+    Returns:
+        pad: gf.Component of the pad.
+        pad_xs: gf.CrossSection of the pad.
+        path_upper: gf.Path of the upper path.
+        path_lower: gf.Path of the lower path.
+    """
+
+    end_width, ground_planes_width, end_gap, tl_layer = get_cpw_from_xs(cpw_xs)
+
+    grid_size = 0.004
+    end_width = round(end_width / grid_size) * grid_size
+    end_gap = round(end_gap / grid_size) * grid_size
+    ground_planes_width = round(ground_planes_width / grid_size) * grid_size
+
+    pad_xs = get_pad_xs(cpw_xs=cpw_xs, pitch=pitch, ground_pad_width=ground_pad_width)
 
     # New parametric approach: polygon + path cut + waveguide extrude + gap extrusions
     (
@@ -810,19 +896,17 @@ def gsg_pad_curved(
     c << pad_final
     c.add_port(
         name="e2",
-        center=(length_straight + length_tapered, 0.0),
-        width=end_width,
-        orientation=0.0,
-        port_type="electrical",
-        layer=tl_layer,
+        cross_section = cpw_xs,
+        orientation = 0.0,
+        center = (length_straight + length_tapered, 0.0),
+        port_type = "electrical",
     )
     c.add_port(
         name="e1",
-        center=(0.0, 0.0),
-        width=pad_width,
-        orientation=180.0,
-        port_type="electrical",
-        layer=tl_layer,
+        cross_section = pad_xs,
+        orientation = 180.0,
+        center = (0.0, 0.0),
+        port_type = "electrical",
     )
 
     return c, pad_xs, path_upper, path_lower
