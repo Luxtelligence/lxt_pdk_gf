@@ -42,10 +42,10 @@ def _straight(
         return __straight(
             wl=wl,
             length=length,
-            loss_dB_cm=0.2,  # TODO: Update with actual measured/simulated loss
+            loss_dB_cm=0.5,
             wl0=1.31,  # O-band center wavelength
-            neff=1.8,  # TODO: Update with actual neff
-            ng=2.22,  # TODO: Update with actual ng
+            neff=1.75,
+            ng=2.2,  # TODO: Update with actual ng
         )
 
     if cross_section == "xs_rwg900":
@@ -53,10 +53,10 @@ def _straight(
         return __straight(
             wl=wl,
             length=length,
-            loss_dB_cm=0.2,  # TODO: Update with actual measured/simulated loss
+            loss_dB_cm=0.5,
             wl0=1.55,  # C-band center wavelength
-            neff=1.8,  # TODO: Update with actual neff
-            ng=2.22,  # TODO: Update with actual ng
+            neff=1.7,
+            ng=2.1,
         )
 
     if cross_section == "xs_rwg2500":
@@ -64,10 +64,10 @@ def _straight(
         return __straight(
             wl=wl,
             length=length,
-            loss_dB_cm=0.2,  # TODO: Update with actual measured/simulated loss
+            loss_dB_cm=0.2,
             wl0=1.31,  # O-band center wavelength
-            neff=1.8,  # TODO: Update with actual neff
-            ng=2.22,  # TODO: Update with actual ng
+            neff=1.75,
+            ng=2.1,
         )
 
     else:
@@ -86,11 +86,10 @@ straight_rwg2500_oband = partial(_straight, cross_section="xs_rwg2500")
 # MMIs - O-band
 ################
 
-# TODO: Add JSON data files to ltoi300/data/ directory
 mmi1x2_oband = partial(
     _1in_2out_symmetric_poly_model,
     module=ltoi300,
-    data_tag="mmi_1x2_oband",
+    data_tag="mmi1x2_oband",
     trans_abs_key="pol_trans_abs",
     trans_phase_key="pol_trans_phase",
     rin_abs_key="pol_refl_in_abs",
@@ -104,7 +103,7 @@ mmi1x2_oband = partial(
 mmi2x2_oband = partial(
     _2in_2out_symmetric_poly_model,
     module=ltoi300,
-    data_tag="mmi_2x2_oband",
+    data_tag="mmi2x2_oband",
     trans_bar_abs_key="pol_trans_bar_abs",
     trans_bar_phase_key="pol_trans_bar_phase",
     trans_cross_abs_key="pol_trans_cross_abs",
@@ -120,11 +119,10 @@ mmi2x2_oband = partial(
 # MMIs - C-band
 ################
 
-# TODO: Add JSON data files to ltoi300/data/ directory
 mmi1x2_cband = partial(
     _1in_2out_symmetric_poly_model,
     module=ltoi300,
-    data_tag="mmi_1x2_cband",
+    data_tag="mmi1x2_cband",
     trans_abs_key="pol_trans_abs",
     trans_phase_key="pol_trans_phase",
     rin_abs_key="pol_refl_in_abs",
@@ -138,7 +136,7 @@ mmi1x2_cband = partial(
 mmi2x2_cband = partial(
     _2in_2out_symmetric_poly_model,
     module=ltoi300,
-    data_tag="mmi_2x2_cband",
+    data_tag="mmi2x2_cband",
     trans_bar_abs_key="pol_trans_bar_abs",
     trans_bar_phase_key="pol_trans_bar_phase",
     trans_cross_abs_key="pol_trans_cross_abs",
@@ -164,9 +162,9 @@ def _eo_phase_shifter(
     wl: Float = 1.55,
     wl_0: float = 1.55,
     length: float = 5000.0,
-    neff_0: float = 1.85,  # TODO: Update with actual neff
-    ng_0: float = 2.21,  # TODO: Update with actual ng
-    loss: float = 2e-5,  # TODO: Update with actual loss
+    neff_0: float = 1.75,
+    ng_0: float = 2.1,
+    loss: float = 2e-5,
     V_pi: float = np.nan,
     V_dc: float = 0.0,
 ) -> sax.SDict:
@@ -184,7 +182,7 @@ def _eo_phase_shifter(
     """
     # Default V_pi
     if np.isnan(V_pi):
-        V_pi = 2 * 3.3e4 * wl / length / wl_0  # TODO: Update with actual V_pi
+        V_pi = 2 * 2.8e4 * wl / length / wl_0
     v = V_dc / V_pi
 
     # Effective index at the operation frequency
@@ -932,4 +930,73 @@ def unterminated_mzm_2x2mmi_cband(
 
 
 if __name__ == "__main__":
-    pass
+    import matplotlib.pyplot as plt
+
+    # --- configuration --------------------------------------------------
+    MODELS = {
+        "mmi2x2_oband": (mmi2x2_oband, 1.26, 1.36),  # (callable, wl_min, wl_max) in µm
+        "mmi2x2_cband": (mmi2x2_cband, 1.50, 1.60),
+    }
+    N_POINTS = 60
+    # --------------------------------------------------------------------
+
+    for idx, (model_name, (model_fn, wl_min, wl_max)) in enumerate(MODELS.items()):
+        wl = np.linspace(wl_min, wl_max, N_POINTS)
+
+        # Evaluate at every wavelength point; collect results into arrays
+        s_arrays: dict[tuple[str, str], list[complex]] = {}
+        for w in wl:
+            sdict = model_fn(wl=w)
+            for key, val in sdict.items():
+                s_arrays.setdefault(key, []).append(complex(val))
+
+        port_pairs = sorted(s_arrays.keys())
+        port_pairs = [(p_in, p_out) for p_in, p_out in port_pairs if p_in <= p_out]
+        n_pairs = len(port_pairs)
+
+        fig, axes = plt.subplots(
+            2,
+            n_pairs,
+            figsize=(3 * n_pairs, 6),
+            sharex=True,
+        )
+        fig.suptitle(model_name, fontsize=13, fontweight="bold")
+
+        # Ensure axes is always 2-D even when n_pairs == 1
+        if n_pairs == 1:
+            axes = axes.reshape(2, 1)
+
+        for col, (p_in, p_out) in enumerate(port_pairs):
+            s = np.array(s_arrays[(p_in, p_out)])
+            intensity_dB = 20 * np.log10(np.abs(s) + 1e-30)
+            phase_deg = np.degrees(np.unwrap(np.angle(s)))
+
+            label = f"S({p_out},{p_in})"
+
+            ax_top = axes[0, col]
+            ax_top.plot(wl * 1e3, intensity_dB)  # wl in nm on x-axis
+            ax_top.set_title(label, fontsize=10)
+            ax_top.set_ylabel("Intensity (dB)")
+            ax_top.grid(True, linestyle="--", alpha=0.5)
+
+            ax_bot = axes[1, col]
+            ax_bot.plot(wl * 1e3, phase_deg)
+            ax_bot.set_xlabel("Wavelength (nm)")
+            ax_bot.set_ylabel("Phase (°)")
+            ax_bot.grid(True, linestyle="--", alpha=0.5)
+
+        fig.tight_layout()
+
+        # Offset each window so they don't overlap
+        offset = idx * 60
+        try:
+            # TkAgg backend
+            fig.canvas.manager.window.wm_geometry(f"+{50 + offset}+{50 + offset}")
+        except AttributeError:
+            try:
+                # Qt backend
+                fig.canvas.manager.window.move(50 + offset, 50 + offset)
+            except AttributeError:
+                pass  # Non-interactive backend; positioning not supported
+
+    plt.show()
