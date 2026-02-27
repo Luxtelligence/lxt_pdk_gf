@@ -175,6 +175,7 @@ def build_terminated_mzm_oband(
     transition_m1_m2_params: dict[str, Any] | None = None,
     transition_m2_hr_params: dict[str, Any] | None = None,
     termination_params: dict[str, Any] | None = None,
+    heater_params: dict[str, Any] | None = None,
 ):
     """Create a routed terminated MZM for wafer-scale testing with edge couplers."""
     c = gf.Component()
@@ -213,6 +214,7 @@ def build_terminated_mzm_oband(
         optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
         transition_m1_m2_params=transition_m1_m2_params,
+        heater_params=heater_params,
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
