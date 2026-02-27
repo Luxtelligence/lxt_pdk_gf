@@ -10,13 +10,12 @@ The `lxt_pdk_gf` PDK is released open-source to allow users to easily evaluate a
 
 Python 3.12 is required. We recommend [VSCode](https://code.visualstudio.com/) or [Google Antigravity](https://antigravity.google/) as IDEs.
 
-If you do not have Python installed, you can [download Anaconda](https://www.anaconda.com/download/).Once Python is available, clone the repository and install the package in editable mode:
+If you do not have Python installed, you can [download Anaconda](https://www.anaconda.com/download/). Once Python is available, clone the repository and install the package in editable mode:
 
 ```
 git clone https://github.com/Luxtelligence/lxt_pdk_gf.git
 cd lxt_pdk_gf
-pip install -e . pre-commit
-pre-commit install
+pip install -e .
 python install_tech.py
 ```
 
