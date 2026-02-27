@@ -550,4 +550,4 @@ def ring_resonator_cband_multimode(
 
 
 if __name__ == "__main__":
-    ring_resonator_cband_single_mode().show()
+    terminated_mzm_1x2mmi_oband().show()
