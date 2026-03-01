@@ -13,6 +13,7 @@ parts:
     chapters:
       - file: cells_lnoi400
       - file: cells_ltoi300
-      - file: notebooks/circuit_layout.ipynb
+      - file: notebooks/circuit_layout_lnoi400.ipynb
+      - file: notebooks/circuit_layout_ltoi300.ipynb
       - file: notebooks/models.ipynb
       - file: changelog
