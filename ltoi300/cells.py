@@ -1,27 +1,45 @@
 import gdsfactory as gf
 from gdsfactory.typings import CrossSectionSpec
 
-from _utils.optical_resonators import ring_resonator
+from _utils.optical_resonators import ring_resonator as _ring_resonator
 from ltoi300._builders.edge_couplers import (
-    build_cband_ltoi300_edge_coupler,
-    build_oband_ltoi300_edge_coupler,
+    build_cband_ltoi300_edge_coupler as _build_cband_ltoi300_edge_coupler,
+)
+from ltoi300._builders.edge_couplers import (
+    build_oband_ltoi300_edge_coupler as _build_oband_ltoi300_edge_coupler,
 )
 from ltoi300._builders.mmis import (
-    build_mmi1x2_cband,
-    build_mmi1x2_oband,
-    build_mmi2x2_cband,
-    build_mmi2x2_oband,
+    build_mmi1x2_cband as _build_mmi1x2_cband,
+)
+from ltoi300._builders.mmis import (
+    build_mmi1x2_oband as _build_mmi1x2_oband,
+)
+from ltoi300._builders.mmis import (
+    build_mmi2x2_cband as _build_mmi2x2_cband,
+)
+from ltoi300._builders.mmis import (
+    build_mmi2x2_oband as _build_mmi2x2_oband,
 )
 from ltoi300._builders.mzms_v2 import (
-    build_terminated_mzm_cband,
-    build_terminated_mzm_oband,
-    build_unterminated_mzm_cband,
-    build_unterminated_mzm_oband,
+    build_terminated_mzm_cband as _build_terminated_mzm_cband,
+)
+from ltoi300._builders.mzms_v2 import (
+    build_terminated_mzm_oband as _build_terminated_mzm_oband,
+)
+from ltoi300._builders.mzms_v2 import (
+    build_unterminated_mzm_cband as _build_unterminated_mzm_cband,
+)
+from ltoi300._builders.mzms_v2 import (
+    build_unterminated_mzm_oband as _build_unterminated_mzm_oband,
 )
 from ltoi300._builders.straights import (
-    build_straight_rwg700,
-    build_straight_rwg900,
-    build_straight_rwg2500,
+    build_straight_rwg700 as _build_straight_rwg700,
+)
+from ltoi300._builders.straights import (
+    build_straight_rwg900 as _build_straight_rwg900,
+)
+from ltoi300._builders.straights import (
+    build_straight_rwg2500 as _build_straight_rwg2500,
 )
 from ltoi300.tech import xs_rwg700, xs_rwg900
 
@@ -40,7 +58,7 @@ def straight_rwg700_oband(length: float = 10.0) -> gf.Component:
     Args:
         length: straight length (um).
     """
-    return build_straight_rwg700(
+    return _build_straight_rwg700(
         length=length,
     )
 
@@ -51,7 +69,7 @@ def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
     Args:
         length: straight length (um).
     """
-    return build_straight_rwg2500(
+    return _build_straight_rwg2500(
         length=length,
     )
 
@@ -68,13 +86,13 @@ def edge_coupler_oband(
     upper_taper_length: float = 80.0,
 ) -> gf.Component:
     """Returns an O-band edge coupler for LTOI300.
-    
+
     Args:
         input_ext: extension length at the taper tip.
         total_taper_length: total length of the taper.
         upper_taper_length: length of the ridge section taper.
-     """
-    return build_oband_ltoi300_edge_coupler(
+    """
+    return _build_oband_ltoi300_edge_coupler(
         input_ext=input_ext,
         total_taper_length=total_taper_length,
         upper_taper_length=upper_taper_length,
@@ -88,13 +106,13 @@ def edge_coupler_cband(
     upper_taper_length: float = 80.0,
 ) -> gf.Component:
     """Returns a C-band edge coupler for LTOI300.
-    
+
     Args:
         input_ext: extension length at the taper tip.
         total_taper_length: total length of the taper.
         upper_taper_length: length of the ridge section taper.
-     """
-    return build_cband_ltoi300_edge_coupler(
+    """
+    return _build_cband_ltoi300_edge_coupler(
         input_ext=input_ext,
         total_taper_length=total_taper_length,
         upper_taper_length=upper_taper_length,
@@ -124,7 +142,7 @@ def mmi1x2_oband(**kwargs) -> gf.Component:
     Note:
         Default values for all parameters are defined in ltoi300._builders.mmis.build_mmi1x2_oband
     """
-    return build_mmi1x2_oband(**kwargs)
+    return _build_mmi1x2_oband(**kwargs)
 
 
 @gf.cell
@@ -145,7 +163,7 @@ def mmi2x2_oband(**kwargs) -> gf.Component:
     Note:
         Default values for all parameters are defined in ltoi300._builders.mmis.build_mmi2x2_oband
     """
-    return build_mmi2x2_oband(**kwargs)
+    return _build_mmi2x2_oband(**kwargs)
 
 
 ################
@@ -164,7 +182,7 @@ def terminated_mzm_1x2mmi_oband(
 ):
     """Returns a terminated MZM with 1x2 MMI splitter with effective index matching
     for O-band operation.
-    
+
     Args:
         modulation_length: length of the EO modulation section.
         rf_gap: gap between the RF ground planes and the RF central conductor.
@@ -172,9 +190,9 @@ def terminated_mzm_1x2mmi_oband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-     """
+    """
 
-    mmi_cell = mmi1x2_oband()
+    mmi_cell = mmi1x2_oband()  # noqa: use public cell
     cpw_pad_params = {
         "pitch": gsg_pitch,
     }
@@ -190,7 +208,7 @@ def terminated_mzm_1x2mmi_oband(
         "length": bias_tuning_section_length,
     }
 
-    return build_terminated_mzm_oband(
+    return _build_terminated_mzm_oband(
         mmi_cell=mmi_cell,
         modulation_length=modulation_length,
         cpw_params=cpw_params,
@@ -219,7 +237,7 @@ def unterminated_mzm_1x2mmi_oband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-     """
+    """
 
     cpw_params = {
         "rf_gap": rf_gap,
@@ -234,7 +252,7 @@ def unterminated_mzm_1x2mmi_oband(
     heater_params = {
         "length": bias_tuning_section_length,
     }
-    return build_unterminated_mzm_oband(
+    return _build_unterminated_mzm_oband(
         mmi_cell=mmi1x2_oband(),
         modulation_length=modulation_length,
         cpw_params=cpw_params,
@@ -255,7 +273,7 @@ def terminated_mzm_2x2mmi_oband(
 ) -> gf.Component:
     """Returns a terminated MZM with 2x2 MMI splitter with effective index matching
     for O-band operation.
-    
+
     Args:
         modulation_length: length of the EO modulation section.
         rf_gap: gap between the RF ground planes and the RF central conductor.
@@ -263,7 +281,7 @@ def terminated_mzm_2x2mmi_oband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-     """
+    """
 
     cpw_params = {
         "rf_gap": rf_gap,
@@ -278,7 +296,7 @@ def terminated_mzm_2x2mmi_oband(
     heater_params = {
         "length": bias_tuning_section_length,
     }
-    return build_terminated_mzm_oband(
+    return _build_terminated_mzm_oband(
         mmi_cell=mmi2x2_oband(),
         modulation_length=modulation_length,
         cpw_params=cpw_params,
@@ -299,7 +317,7 @@ def unterminated_mzm_2x2mmi_oband(
 ) -> gf.Component:
     """Returns an unterminated MZM with 2x2 MMI splitter with effective index matching
     for O-band operation.
-    
+
     Args:
         modulation_length: length of the EO modulation section.
         rf_gap: gap between the RF ground planes and the RF central conductor.
@@ -307,7 +325,7 @@ def unterminated_mzm_2x2mmi_oband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-     """
+    """
 
     cpw_params = {
         "rf_gap": rf_gap,
@@ -323,7 +341,7 @@ def unterminated_mzm_2x2mmi_oband(
         "length": bias_tuning_section_length,
     }
 
-    return build_unterminated_mzm_oband(
+    return _build_unterminated_mzm_oband(
         mmi_cell=mmi2x2_oband(),
         modulation_length=modulation_length,
         cpw_params=cpw_params,
@@ -344,7 +362,7 @@ def ring_resonator_oband_single_mode(
     The gap is set to 1.05 um to ensure critical coupling.
     Note: the critical coupling condition is loss-specific and
     a different gap may be required for other loss conditions."""
-    return ring_resonator(
+    return _ring_resonator(
         gap=gap,
         ring_radius=ring_radius,
         bus_length=bus_length,
@@ -364,7 +382,7 @@ def ring_resonator_oband_multimode(
     The gap is set to 0.75 um to ensure critical coupling.
     Note: the critical coupling condition is loss-specific and
     a different gap may be required for other loss conditions."""
-    return ring_resonator(
+    return _ring_resonator(
         gap=gap,
         ring_radius=ring_radius,
         bus_length=bus_length,
@@ -386,7 +404,7 @@ def ring_resonator_oband_multimode(
 @gf.cell
 def straight_rwg900_cband(length: float = 10.0) -> gf.Component:
     """Standard straight single-mode waveguide for C-band propagation."""
-    return build_straight_rwg900(
+    return _build_straight_rwg900(
         length=length,
     )
 
@@ -435,7 +453,7 @@ def mmi1x2_cband(**kwargs) -> gf.Component:
     Note:
         Default values for all parameters are defined in ltoi300._builders.mmis.build_mmi1x2_cband
     """
-    return build_mmi1x2_cband(**kwargs)
+    return _build_mmi1x2_cband(**kwargs)
 
 
 @gf.cell
@@ -456,7 +474,7 @@ def mmi2x2_cband(**kwargs) -> gf.Component:
     Note:
         Default values for all parameters are defined in ltoi300._builders.mmis.build_mmi2x2_cband
     """
-    return build_mmi2x2_cband(**kwargs)
+    return _build_mmi2x2_cband(**kwargs)
 
 
 ###############
@@ -475,7 +493,7 @@ def terminated_mzm_1x2mmi_cband(
 ):
     """Returns a terminated MZM with 1x2 MMI splitter with effective index matching
     for C-band operation.
-    
+
     Args:
         modulation_length: length of the EO modulation section.
         rf_gap: gap between the RF ground planes and the RF central conductor.
@@ -483,7 +501,7 @@ def terminated_mzm_1x2mmi_cband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-     """
+    """
 
     cpw_pad_params = {
         "pitch": gsg_pitch,
@@ -498,7 +516,7 @@ def terminated_mzm_1x2mmi_cband(
     heater_params = {
         "length": bias_tuning_section_length,
     }
-    return build_terminated_mzm_cband(
+    return _build_terminated_mzm_cband(
         mmi_cell=mmi1x2_cband(),
         modulation_length=modulation_length,
         cpw_params=cpw_params,
@@ -519,7 +537,7 @@ def unterminated_mzm_1x2mmi_cband(
 ):
     """Returns a unterminated MZM with 1x2 MMI splitter with effective index matching
     for C-band operation.
-    
+
     Args:
         modulation_length: length of the EO modulation section.
         rf_gap: gap between the RF ground planes and the RF central conductor.
@@ -527,7 +545,7 @@ def unterminated_mzm_1x2mmi_cband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-     """
+    """
 
     cpw_pad_params = {
         "pitch": gsg_pitch,
@@ -542,7 +560,7 @@ def unterminated_mzm_1x2mmi_cband(
     heater_params = {
         "length": bias_tuning_section_length,
     }
-    return build_unterminated_mzm_cband(
+    return _build_unterminated_mzm_cband(
         mmi_cell=mmi1x2_cband(),
         modulation_length=modulation_length,
         cpw_params=cpw_params,
@@ -563,7 +581,7 @@ def terminated_mzm_2x2mmi_cband(
 ) -> gf.Component:
     """Returns a terminated MZM with 2x2 MMI splitter with effective index matching
     for C-band operation.
-    
+
     Args:
         modulation_length: length of the EO modulation section.
         rf_gap: gap between the RF ground planes and the RF central conductor.
@@ -571,7 +589,7 @@ def terminated_mzm_2x2mmi_cband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-     """
+    """
 
     cpw_pad_params = {
         "pitch": gsg_pitch,
@@ -586,7 +604,7 @@ def terminated_mzm_2x2mmi_cband(
     heater_params = {
         "length": bias_tuning_section_length,
     }
-    return build_terminated_mzm_cband(
+    return _build_terminated_mzm_cband(
         mmi_cell=mmi2x2_cband(),
         modulation_length=modulation_length,
         cpw_params=cpw_params,
@@ -607,7 +625,7 @@ def unterminated_mzm_2x2mmi_cband(
 ) -> gf.Component:
     """Returns an unterminated MZM with 2x2 MMI splitter with effective index matching
     for C-band operation.
-    
+
     Args:
         modulation_length: length of the EO modulation section.
         rf_gap: gap between the RF ground planes and the RF central conductor.
@@ -615,8 +633,8 @@ def unterminated_mzm_2x2mmi_cband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-     """
-    
+    """
+
     cpw_pad_params = {
         "pitch": gsg_pitch,
     }
@@ -630,8 +648,8 @@ def unterminated_mzm_2x2mmi_cband(
     heater_params = {
         "length": bias_tuning_section_length,
     }
-    return build_unterminated_mzm_cband(
-        mmi_cell = mmi2x2_cband(),
+    return _build_unterminated_mzm_cband(
+        mmi_cell=mmi2x2_cband(),
         modulation_length=modulation_length,
         cpw_params=cpw_params,
         cpw_pad_params=cpw_pad_params,
@@ -656,7 +674,7 @@ def ring_resonator_single_mode_cband(
     The gap is set to 1.5 um to ensure critical coupling.
     Note: the critical coupling condition is loss-specific and
     a different gap may be required for other loss conditions."""
-    return ring_resonator(
+    return _ring_resonator(
         gap=gap,
         ring_radius=ring_radius,
         bus_length=bus_length,
@@ -676,7 +694,7 @@ def ring_resonator_multimode_cband(
     The gap is set to 1.2 um to ensure critical coupling.
     Note: the critical coupling condition is loss-specific and
     a different gap may be required for other loss conditions."""
-    return ring_resonator(
+    return _ring_resonator(
         gap=gap,
         ring_radius=ring_radius,
         bus_length=bus_length,
