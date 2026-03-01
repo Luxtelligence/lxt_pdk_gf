@@ -1,0 +1,9 @@
+info: {}
+name: terminated_mzm_1x2mmi_o_64dbe1b5
+settings:
+  bias_tuning_section_length: 700
+  gsg_pitch: 100
+  length_imbalance: 100
+  modulation_length: 5000
+  rf_central_conductor_width: 22
+  rf_gap: 6

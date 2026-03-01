@@ -1,0 +1,10 @@
+info:
+  length: 10
+  route_info_length: 10
+  route_info_type: xs_rwg900
+  route_info_weight: 10
+  route_info_xs_rwg900_length: 10
+  width: 0.9
+name: straight_rwg900_cband_L10
+settings:
+  length: 10
