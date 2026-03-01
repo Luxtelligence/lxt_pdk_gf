@@ -351,8 +351,13 @@ def unterminated_mzm_2x2mmi_oband(
     )
 
 
+#####################
+# Optical Resonators
+#####################
+
+
 @gf.cell
-def ring_resonator_oband_single_mode(
+def ring_resonator_single_mode_oband(
     ring_radius: float = 200.0,
     ring_width: float = 0.7,
     gap: float = 1.05,
@@ -372,7 +377,7 @@ def ring_resonator_oband_single_mode(
 
 
 @gf.cell
-def ring_resonator_oband_multimode(
+def ring_resonator_multimode_oband(
     ring_radius: float = 200.0,
     ring_width: float = 1.5,
     gap: float = 0.75,
@@ -658,9 +663,9 @@ def unterminated_mzm_2x2mmi_cband(
     )
 
 
-################
+#####################
 # Optical Resonators
-################
+#####################
 
 
 @gf.cell
