@@ -1,5 +1,4 @@
 import gdsfactory as gf
-from gdsfactory.typings import CrossSectionSpec
 
 from _utils.optical_resonators import ring_resonator as _ring_resonator
 from ltoi300._builders.edge_couplers import (
@@ -64,8 +63,8 @@ def straight_rwg700_oband(length: float = 10.0) -> gf.Component:
 
 
 @gf.cell
-def straight_rwg2500_oband(length: float = 10.0) -> gf.Component:
-    """Returns a standard straight 2500 nm-wide multi-mode waveguide for O-band propagation.
+def straight_rwg2500(length: float = 10.0) -> gf.Component:
+    """Returns a straight 2500 nm-wide multi-mode waveguide.
     Args:
         length: straight length (um).
     """
@@ -411,22 +410,6 @@ def straight_rwg900_cband(length: float = 10.0) -> gf.Component:
     """Standard straight single-mode waveguide for C-band propagation."""
     return _build_straight_rwg900(
         length=length,
-    )
-
-
-@gf.cell
-def straight_arbitrary(
-    length: float = 10.0,
-    cross_section: CrossSectionSpec = None,
-    **kwargs,
-) -> gf.Component:
-    """An arbitrary R&D straight waveguide with unknown specs.
-    Arbitrary cross-section is accepted with the minimal possible waveguide width of 250 nm."""
-
-    return gf.components.straight(
-        length=length,
-        cross_section=cross_section,
-        **kwargs,
     )
 
 
