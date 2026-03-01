@@ -1,6 +1,6 @@
 info:
   length: 60.493
-name: bend_S_spline_varying_w_310bbd98
+name: bend_S_spline_varying_width_S58_14p5_CSNone_CSNone_N201_310bbd98
 settings:
   npoints: 201
   path_method: spline_null_curvature

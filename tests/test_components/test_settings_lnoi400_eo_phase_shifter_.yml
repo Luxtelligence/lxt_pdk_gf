@@ -1,5 +1,5 @@
 info: {}
-name: eo_phase_shifter_RCWM2p_617881fc
+name: eo_phase_shifter_RCWM2p5_TL100_ML7500_RCCW10_RGPW180_RG_617881fc
 settings:
   cpw_cell: uni_cpw_straight
   draw_cpw: true

@@ -1,5 +1,5 @@
 info: {}
-name: terminated_mzm_2x2mmi_c_40dfb324
+name: terminated_mzm_2x2mmi_cband_ML5000_RG5p5_RCCW16_GP100_L_40dfb324
 settings:
   bias_tuning_section_length: 700
   gsg_pitch: 100

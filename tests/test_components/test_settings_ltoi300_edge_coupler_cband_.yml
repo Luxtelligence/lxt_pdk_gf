@@ -1,5 +1,5 @@
 info: {}
-name: edge_coupler_cband_IE10_f9d9ae5a
+name: edge_coupler_cband_IE10_TTL160_UTL80
 settings:
   input_ext: 10
   total_taper_length: 160

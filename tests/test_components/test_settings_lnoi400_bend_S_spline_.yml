@@ -1,6 +1,6 @@
 info:
   length: 105.208
-name: bend_S_spline_S100_30_C_c1f1c161
+name: bend_S_spline_S100_30_CSxs_rwg1000_N201_PMspline_clamped_path
 settings:
   cross_section: xs_rwg1000
   npoints: 201
