@@ -1,4 +1,4 @@
-name: Test pre-commit, code and docs
+name: Test pre-commit and code regressions
 
 on:
   pull_request:
