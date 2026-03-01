@@ -54,3 +54,4 @@ __all__ = [
     "tech",
     "PDK",
 ]
+__version__ = "2.0"
