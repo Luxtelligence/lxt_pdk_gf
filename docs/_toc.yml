@@ -11,7 +11,8 @@ parts:
   #         - file: notebooks/demo
   - caption: Reference
     chapters:
-      - file: cells
+      - file: cells_lnoi400
+      - file: cells_ltoi300
       - file: notebooks/circuit_layout.ipynb
       - file: notebooks/models.ipynb
       - file: changelog
