@@ -3,7 +3,7 @@ import inspect
 from lnoi400 import _cells as cells
 from lnoi400.config import PATH
 
-filepath = PATH.repo / "docs" / "cells.rst"
+filepath = PATH.repo / "docs" / "cells_lnoi400.rst"
 
 skip = {}
 

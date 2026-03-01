@@ -3,7 +3,7 @@ import inspect
 from ltoi300 import _cells as cells
 from ltoi300.config import PATH
 
-filepath = PATH.repo / "docs" / "cells.rst"
+filepath = PATH.repo / "docs" / "cells_ltoi300.rst"
 
 skip = {}
 
