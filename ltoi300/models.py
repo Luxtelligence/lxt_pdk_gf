@@ -245,9 +245,9 @@ def _to_phase_shifter(
     )
 
 
-################
+##########################
 # Phase Shifters - O-band
-################
+##########################
 
 
 def eo_phase_shifter_oband(
@@ -315,9 +315,9 @@ def to_phase_shifter_oband(
     )
 
 
-################
+##########################
 # Phase Shifters - C-band
-################
+##########################
 
 
 def eo_phase_shifter_cband(
@@ -385,9 +385,9 @@ def to_phase_shifter_cband(
     )
 
 
-################
+############################
 # MZMs - O-band with 1x2 MMI
-################
+#############################
 
 
 def terminated_mzm_1x2mmi_oband(
@@ -520,9 +520,9 @@ def unterminated_mzm_1x2mmi_oband(
     )
 
 
-################
+############################
 # MZMs - O-band with 2x2 MMI
-################
+#############################
 
 
 def terminated_mzm_2x2mmi_oband(
@@ -792,9 +792,9 @@ def unterminated_mzm_1x2mmi_cband(
     )
 
 
-################
+############################
 # MZMs - C-band with 2x2 MMI
-################
+#############################
 
 
 def terminated_mzm_2x2mmi_cband(
@@ -929,74 +929,180 @@ def unterminated_mzm_2x2mmi_cband(
     )
 
 
+########################
+# Optical resonators
+########################
+
+# TODO: add the real wavelength-dependent point coupler model
+
+
+def _test_point_coupler(
+    coupling=0.05,
+):
+    kappa = coupling**0.5
+    tau = (1 - coupling) ** 0.5
+    sdict = sax.reciprocal(
+        {
+            ("i1", "o1"): tau,
+            ("i1", "o2"): 1j * kappa,
+            ("i2", "o1"): 1j * kappa,
+            ("i2", "o2"): tau,
+        }
+    )
+    return sdict
+
+
+def ring_resonator_single_mode_cband(
+    wl: Float = 1.55,
+    ring_radius: float = 200.0,
+    loss_dB_cm: float = 0.5,
+    wl0: float = 1.55,
+    neff: float = 1.7,
+    ng: float = 2.1,
+) -> sax.SDict:
+    """Model of a single-mode ring resonator in C-band.
+
+    Args:
+        wl: wavelength in um.
+        radius: radius of the ring in um.
+        length: length of the ring in um.
+    """
+
+    circumference = 2 * np.pi * ring_radius
+
+    thru_ring, _ = sax.circuit(
+        netlist={
+            "instances": {
+                "pc": "point_coupler",
+                "ring_wg": "wg_bent",
+            },
+            "connections": {"pc,o2": "ring_wg,o1", "ring_wg,o2": "pc,i2"},
+            "ports": {
+                "o1": "pc,i1",
+                "o2": "pc,o1",
+            },
+        },
+        models={
+            "point_coupler": partial(
+                _test_point_coupler,
+            ),
+            "wg_bent": partial(
+                __straight,
+                wl=wl,
+                length=circumference,
+                loss_dB_cm=loss_dB_cm,
+                wl0=wl0,
+                neff=neff,
+                ng=ng,
+            ),
+        },
+        backend="default",
+    )
+    return thru_ring()
+
+
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    # --- configuration --------------------------------------------------
-    MODELS = {
-        "mmi2x2_oband": (mmi2x2_oband, 1.26, 1.36),  # (callable, wl_min, wl_max) in µm
-        "mmi2x2_cband": (mmi2x2_cband, 1.50, 1.60),
-    }
-    N_POINTS = 60
-    # --------------------------------------------------------------------
+    # Define a dense wavelength grid (e.g. 2000 points in the C-band)
+    wl_grid = np.linspace(1.54, 1.56, 30_000)
 
-    for idx, (model_name, (model_fn, wl_min, wl_max)) in enumerate(MODELS.items()):
-        wl = np.linspace(wl_min, wl_max, N_POINTS)
+    # Evaluate the ring resonator on the entire grid (SAX evaluates these vectorized)
+    s_dicts = ring_resonator_single_mode_cband(wl=wl_grid)
 
-        # Evaluate at every wavelength point; collect results into arrays
-        s_arrays: dict[tuple[str, str], list[complex]] = {}
-        for w in wl:
-            sdict = model_fn(wl=w)
-            for key, val in sdict.items():
-                s_arrays.setdefault(key, []).append(complex(val))
+    # Extract the Through port transmission (o1 to o2)
+    thru_transmission = s_dicts["o1", "o2"]
+    intensity_dB = 20 * np.log10(np.abs(thru_transmission) + 1e-12)
+    phase_deg = np.degrees(np.unwrap(np.angle(thru_transmission)))
 
-        port_pairs = sorted(s_arrays.keys())
-        port_pairs = [(p_in, p_out) for p_in, p_out in port_pairs if p_in <= p_out]
-        n_pairs = len(port_pairs)
+    # Plotting
+    fig, (ax_top, ax_bot) = plt.subplots(2, 1, figsize=(8, 6), sharex=True)
+    fig.suptitle(
+        "Ring Resonator Transmission (Single Mode, C-Band)",
+        fontsize=13,
+        fontweight="bold",
+    )
 
-        fig, axes = plt.subplots(
-            2,
-            n_pairs,
-            figsize=(3 * n_pairs, 6),
-            sharex=True,
-        )
-        fig.suptitle(model_name, fontsize=13, fontweight="bold")
+    ax_top.plot(wl_grid * 1e3, intensity_dB, color="blue", linewidth=1.5)
+    ax_top.set_ylabel("Transmission (dB)")
+    ax_top.grid(True, linestyle="--", alpha=0.5)
 
-        # Ensure axes is always 2-D even when n_pairs == 1
-        if n_pairs == 1:
-            axes = axes.reshape(2, 1)
+    ax_bot.plot(wl_grid * 1e3, phase_deg, color="orange", linewidth=1.5)
+    ax_bot.set_xlabel("Wavelength (nm)")
+    ax_bot.set_ylabel("Phase (°)")
+    ax_bot.grid(True, linestyle="--", alpha=0.5)
 
-        for col, (p_in, p_out) in enumerate(port_pairs):
-            s = np.array(s_arrays[(p_in, p_out)])
-            intensity_dB = 20 * np.log10(np.abs(s) + 1e-30)
-            phase_deg = np.degrees(np.unwrap(np.angle(s)))
-
-            label = f"S({p_out},{p_in})"
-
-            ax_top = axes[0, col]
-            ax_top.plot(wl * 1e3, intensity_dB)  # wl in nm on x-axis
-            ax_top.set_title(label, fontsize=10)
-            ax_top.set_ylabel("Intensity (dB)")
-            ax_top.grid(True, linestyle="--", alpha=0.5)
-
-            ax_bot = axes[1, col]
-            ax_bot.plot(wl * 1e3, phase_deg)
-            ax_bot.set_xlabel("Wavelength (nm)")
-            ax_bot.set_ylabel("Phase (°)")
-            ax_bot.grid(True, linestyle="--", alpha=0.5)
-
-        fig.tight_layout()
-
-        # Offset each window so they don't overlap
-        offset = idx * 60
-        try:
-            # TkAgg backend
-            fig.canvas.manager.window.wm_geometry(f"+{50 + offset}+{50 + offset}")
-        except AttributeError:
-            try:
-                # Qt backend
-                fig.canvas.manager.window.move(50 + offset, 50 + offset)
-            except AttributeError:
-                pass  # Non-interactive backend; positioning not supported
-
+    fig.tight_layout()
     plt.show()
+
+# if __name__ == "__main__":
+#     import matplotlib.pyplot as plt
+
+#     # --- configuration --------------------------------------------------
+#     MODELS = {
+#         "mmi2x2_oband": (mmi2x2_oband, 1.26, 1.36),  # (callable, wl_min, wl_max) in µm
+#         "mmi2x2_cband": (mmi2x2_cband, 1.50, 1.60),
+#     }
+#     N_POINTS = 60
+#     # --------------------------------------------------------------------
+
+#     for idx, (model_name, (model_fn, wl_min, wl_max)) in enumerate(MODELS.items()):
+#         wl = np.linspace(wl_min, wl_max, N_POINTS)
+
+#         # Evaluate at every wavelength point; collect results into arrays
+#         s_arrays: dict[tuple[str, str], list[complex]] = {}
+#         for w in wl:
+#             sdict = model_fn(wl=w)
+#             for key, val in sdict.items():
+#                 s_arrays.setdefault(key, []).append(complex(val))
+
+#         port_pairs = sorted(s_arrays.keys())
+#         port_pairs = [(p_in, p_out) for p_in, p_out in port_pairs if p_in <= p_out]
+#         n_pairs = len(port_pairs)
+
+#         fig, axes = plt.subplots(
+#             2,
+#             n_pairs,
+#             figsize=(3 * n_pairs, 6),
+#             sharex=True,
+#         )
+#         fig.suptitle(model_name, fontsize=13, fontweight="bold")
+
+#         # Ensure axes is always 2-D even when n_pairs == 1
+#         if n_pairs == 1:
+#             axes = axes.reshape(2, 1)
+
+#         for col, (p_in, p_out) in enumerate(port_pairs):
+#             s = np.array(s_arrays[(p_in, p_out)])
+#             intensity_dB = 20 * np.log10(np.abs(s) + 1e-30)
+#             phase_deg = np.degrees(np.unwrap(np.angle(s)))
+
+#             label = f"S({p_out},{p_in})"
+
+#             ax_top = axes[0, col]
+#             ax_top.plot(wl * 1e3, intensity_dB)  # wl in nm on x-axis
+#             ax_top.set_title(label, fontsize=10)
+#             ax_top.set_ylabel("Intensity (dB)")
+#             ax_top.grid(True, linestyle="--", alpha=0.5)
+
+#             ax_bot = axes[1, col]
+#             ax_bot.plot(wl * 1e3, phase_deg)
+#             ax_bot.set_xlabel("Wavelength (nm)")
+#             ax_bot.set_ylabel("Phase (°)")
+#             ax_bot.grid(True, linestyle="--", alpha=0.5)
+
+#         fig.tight_layout()
+
+#         # Offset each window so they don't overlap
+#         offset = idx * 60
+#         try:
+#             # TkAgg backend
+#             fig.canvas.manager.window.wm_geometry(f"+{50 + offset}+{50 + offset}")
+#         except AttributeError:
+#             try:
+#                 # Qt backend
+#                 fig.canvas.manager.window.move(50 + offset, 50 + offset)
+#             except AttributeError:
+#                 pass  # Non-interactive backend; positioning not supported
+
+#     plt.show()
