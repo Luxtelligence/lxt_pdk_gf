@@ -30,7 +30,7 @@ chip_layout = chip_frame()
 # ### Get the O-band ring resonator and edge couplers
 
 # %%
-ring_resonator_oband = gf.get_component("ring_resonator_oband_single_mode")
+ring_resonator_oband = gf.get_component("ring_resonator_single_mode_oband")
 # ring_resonator_oband
 
 # %%
@@ -41,7 +41,7 @@ out_loc = np.array(
 )
 
 ec_in = gf.Component()
-ec_oband = gf.get_component("oband_ltoi300_edge_coupler")
+ec_oband = gf.get_component("edge_coupler_oband")
 ec_ref = ec_in << ec_oband
 ec_ref.drotate(-90.0)
 ec_ref.dmove(
@@ -66,7 +66,7 @@ ecs_oband = {
 # ### Get the C-band ring resonator and edge couplers
 
 # %%
-ring_resonator_cband = gf.get_component("ring_resonator_cband_single_mode")
+ring_resonator_cband = gf.get_component("ring_resonator_single_mode_cband")
 # ring_resonator_cband
 
 # %%
@@ -77,7 +77,7 @@ out_loc = np.array(
 )
 
 ec_in = gf.Component()
-ec_cband = gf.get_component("cband_ltoi300_edge_coupler")
+ec_cband = gf.get_component("edge_coupler_cband")
 ec_ref = ec_in << ec_cband
 ec_ref.drotate(-90.0)
 ec_ref.dmove(
@@ -142,9 +142,9 @@ def ring_pass_circuit(
         cross_section="xs_rwg700" if communication_band == "oband" else "xs_rwg900",
         bend=routing_bend,
         radius=routing_roc,
-        straight="build_straight_rwg700"
+        straight="straight_rwg700_oband"
         if communication_band == "oband"
-        else "build_straight_rwg900",
+        else "straight_rwg900_cband",
     )
     route_bundle(
         c,
@@ -155,9 +155,9 @@ def ring_pass_circuit(
         cross_section="xs_rwg700" if communication_band == "oband" else "xs_rwg900",
         bend=routing_bend,
         radius=routing_roc,
-        straight="build_straight_rwg700"
+        straight="straight_rwg700_oband"
         if communication_band == "oband"
-        else "build_straight_rwg900",
+        else "straight_rwg900_cband",
     )
     text_ref = c << gf.components.text(
         f"{communication_band}" + "_ring", layer=LAYER.LABELS, size=13
@@ -206,7 +206,7 @@ in_loc = np.array([x_in, chip_layout.dymax])
 out_loc = np.array([x_out, chip_layout.dymin])
 
 ec_in = gf.Component()
-ec_oband = gf.get_component("oband_ltoi300_edge_coupler")
+ec_oband = gf.get_component("edge_coupler_oband")
 ec_ref = ec_in << ec_oband
 ec_ref.drotate(-90.0)
 ec_ref.dmove(
@@ -243,7 +243,7 @@ in_loc = np.array([x_in, chip_layout.dymax])
 out_loc = np.array([x_out, chip_layout.dymin])
 
 ec_in = gf.Component()
-ec_cband = gf.get_component("cband_ltoi300_edge_coupler")
+ec_cband = gf.get_component("edge_coupler_cband")
 ec_ref = ec_in << ec_cband
 ec_ref.drotate(-90.0)
 ec_ref.dmove(
@@ -310,9 +310,9 @@ def modulator_circuit(
         cross_section="xs_rwg700" if communication_band == "oband" else "xs_rwg900",
         bend=routing_bend,
         radius=routing_roc,
-        straight="build_straight_rwg700"
+        straight="straight_rwg700_oband"
         if communication_band == "oband"
-        else "build_straight_rwg900",
+        else "straight_rwg900_cband",
     )
 
     route_bundle(
@@ -324,9 +324,9 @@ def modulator_circuit(
         cross_section="xs_rwg700" if communication_band == "oband" else "xs_rwg900",
         bend=routing_bend,
         radius=routing_roc,
-        straight="build_straight_rwg700"
+        straight="straight_rwg700_oband"
         if communication_band == "oband"
-        else "build_straight_rwg900",
+        else "straight_rwg900_cband",
     )
     text_ref = c << gf.components.text(
         f"{communication_band}" + "_modulator", layer=LAYER.LABELS, size=13

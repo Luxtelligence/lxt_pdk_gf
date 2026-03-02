@@ -52,24 +52,26 @@ from ltoi300.tech import xs_rwg700, xs_rwg900
 
 
 @gf.cell
-def straight_rwg700_oband(length: float = 10.0) -> gf.Component:
+def straight_rwg700_oband(length: float = 10.0, **kwargs) -> gf.Component:
     """Returns a standard straight 700 nm-wide single-mode waveguide for O-band propagation.
     Args:
         length: straight length (um).
     """
     return _build_straight_rwg700(
         length=length,
+        **kwargs,
     )
 
 
 @gf.cell
-def straight_rwg2500(length: float = 10.0) -> gf.Component:
+def straight_rwg2500(length: float = 10.0, **kwargs) -> gf.Component:
     """Returns a straight 2500 nm-wide multi-mode waveguide.
     Args:
         length: straight length (um).
     """
     return _build_straight_rwg2500(
         length=length,
+        **kwargs,
     )
 
 
@@ -406,10 +408,11 @@ def ring_resonator_multimode_oband(
 
 
 @gf.cell
-def straight_rwg900_cband(length: float = 10.0) -> gf.Component:
+def straight_rwg900_cband(length: float = 10.0, **kwargs) -> gf.Component:
     """Standard straight single-mode waveguide for C-band propagation."""
     return _build_straight_rwg900(
         length=length,
+        **kwargs,
     )
 
 
