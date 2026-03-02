@@ -41,10 +41,10 @@ Design Rule Check (DRC) scripts for each process stack can be downloaded from [l
 Place the downloaded `.lydrc` file(s) in your local KLayout DRC folder:
 
 ```
-<KLayout user folder>/drc/
+<user home folder>/Klayout/drc/
 ```
 
-> **Note:** KLayout has a known issue where only the first DRC file in the `drc/` folder is accessible from the menu. It is recommended to keep **only one `.lydrc` file** in that folder at a time. If you need to switch between DRC scripts for different stacks, simply replace the file.
+> **Note:** KLayout has a known issue where only the first DRC file in the `drc/` folder is actually used. It is recommended to keep **only one `.lydrc` file** in that folder at a time. If you need to switch between DRC scripts for different stacks, simply replace the file.
 
 **Running the DRC in KLayout:**
 
