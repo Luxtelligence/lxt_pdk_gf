@@ -20,7 +20,7 @@ DEFAULT_CPW_PAD_PARAMS: dict[str, Any] = {
 }
 DEFAULT_OPTICAL_WG_PARAMS: dict[str, Any] = {
     "taper_length": 100.0,
-    "modulation_width": 2.0,
+    "modulation_width": 2.5,
     "terminal_width": None,
     "roc": 60.0,
     "imbalance_length": 100.0,
