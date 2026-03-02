@@ -18,7 +18,8 @@ classifiers = [
 ]
 dependencies = [
   "gdsfactory~=9.34",
-  "gplugins[sax]>=1.4,<2"
+  "gplugins>=1.4,<2",
+  "sax~=0.16.3"
 ]
 description = "Luxtelligence gdsfactory PDK"
 keywords = ["python"]
