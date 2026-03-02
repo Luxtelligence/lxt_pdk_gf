@@ -32,8 +32,8 @@ class LayerMapLTOI300(LayerMap):
     M1: Layer = (20, 0)
     M2: Layer = (22, 0)
     V2: Layer = (40, 0)  # M1-M2 contact layer (VIA_M1_M2)
-    V3: Layer = (41, 0)  # M2-HRL contact layer (VIA_M2_HRM)
-    HRM: Layer = (23, 0)
+    V3: Layer = (41, 0)  # M2-HRL contact layer (VIA_M2_HRL)
+    HRL: Layer = (23, 0)
     WAFER: Layer = (990, 0)
 
     # AUX
@@ -263,7 +263,7 @@ def xs_uni_cpw(
 def xs_ht_wire(
     width: float = 0.9,
     offset: float = 0.0,
-    ht_layer: Layer = LAYER.HRM,
+    ht_layer: Layer = LAYER.HRL,
 ) -> CrossSection:
     """Generate cross-section of a heater wire."""
 

@@ -198,7 +198,7 @@ def build_terminated_mzm_oband(
     )
     termination = double_layer_termination(
         cpw_xs=cpw_xs,
-        termination_layer=LAYER.HRM,
+        termination_layer=LAYER.HRL,
         m2_layer=LAYER.M2,
         m2_pad_length=_termination_params["m2_pad_length"],
         termination_params=_termination_params,
@@ -355,7 +355,7 @@ def build_terminated_mzm_cband(
     )
     termination = double_layer_termination(
         cpw_xs=cpw_xs,
-        termination_layer=LAYER.HRM,
+        termination_layer=LAYER.HRL,
         m2_layer=LAYER.M2,
         m2_pad_length=_termination_params["m2_pad_length"],
         termination_params=_termination_params,
