@@ -457,7 +457,7 @@ def base_mzm(
     else:
         MZM.add_port(
             name="o2",
-            port=combiner1_ref.ports["o1"],
+            port=combiner2_ref.ports["o1"],
         )
 
     if optical_waveguide_params["heater_section_length"] > 0.0:

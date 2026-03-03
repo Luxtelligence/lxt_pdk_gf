@@ -2,6 +2,7 @@ import gdsfactory as gf
 import numpy as np
 from gdsfactory.cross_section import CrossSection
 from gdsfactory.routing import route_quad
+from typing import Any
 
 
 @gf.cell
@@ -64,6 +65,7 @@ def heater_straight_compact(
     pad_size: tuple[float, float] = (150.0, 150.0),
     pad_pitch: float | None = None,
     pad_vert_offset: float = 10.0,
+    transition_m2_hr_params: dict[str, Any] | None = None,
 ) -> gf.Component:
     """A straight resistive wire used as a low-frequency phase shifter,
     exploiting the thermo-optical effect. The heater is terminated by wide pads
@@ -141,14 +143,93 @@ def heater_straight_compact(
         port=ht.ports["e2"],
     )
 
-    c.add_port(
-        name="e1",
-        port=bps.ports["e11"],
-    )
-    c.add_port(
-        name="e2",
-        port=bps.ports["e2"],
-    )
+    if transition_m2_hr_params is not None:
+        import warnings
+
+        if "layer_openings" not in transition_m2_hr_params:
+            warnings.warn(
+                '"layer_openings" key not found in transition_m2_hr_params. Using default value (41, 0).'
+            )
+            transition_m2_hr_params["layer_openings"] = (41, 0)
+        if "layer_m2" not in transition_m2_hr_params:
+            warnings.warn(
+                '"layer_m2" key not found in transition_m2_hr_params. Using default value (22, 0).'
+            )
+            transition_m2_hr_params["layer_m2"] = (22, 0)
+        if "opening_offset" not in transition_m2_hr_params:
+            warnings.warn(
+                '"opening_offset" key not found in transition_m2_hr_params. Using default value 2.5.'
+            )
+            transition_m2_hr_params["opening_offset"] = 2.5
+
+        layer_openings = transition_m2_hr_params["layer_openings"]
+        layer_m2 = transition_m2_hr_params["layer_m2"]
+        via_opening_offset = transition_m2_hr_params["opening_offset"]
+
+        pad_w, pad_h = pad_size
+        rinner = 1000
+        router = 1000
+        n = 300
+
+        tmp = gf.Component()
+        for port in [bps.ports["e11"], bps.ports["e2"]]:
+            pad_cx = port.dcenter[0]
+            pad_cy = port.dcenter[1]
+
+            m2_rect = gf.components.rectangle(
+                size=(pad_w, pad_h), layer=layer_m2, centered=True
+            )
+            m2_ref = tmp << m2_rect
+            m2_ref.dmove(m2_ref.dcenter, (pad_cx, pad_cy))
+
+            opening_w = pad_w - 2 * via_opening_offset
+            opening_h = pad_h - 2 * via_opening_offset
+            if opening_w > 0 and opening_h > 0:
+                opening_rect = gf.components.rectangle(
+                    size=(opening_w, opening_h),
+                    layer=layer_openings,
+                    centered=True,
+                )
+                opening_ref = tmp << opening_rect
+                opening_ref.dmove(opening_ref.dcenter, (pad_cx, pad_cy))
+
+        for layer, polygons in tmp.get_polygons().items():
+            for polygon in polygons:
+                if layer == layer_openings:
+                    polygon = polygon.round_corners(rinner, router, n)
+                c.add_polygon(polygon, layer=layer)
+
+        c.add_port(
+            name="e1",
+            center=(
+                bps.ports["e11"].dcenter[0],
+                bps.ports["e11"].dcenter[1]+pad_h/2,
+            ),
+            width=pad_w,
+            orientation=90.0,
+            port_type="electrical",
+            layer=layer_m2,
+        )
+        c.add_port(
+            name="e2",
+            center=(
+                bps.ports["e2"].dcenter[0],
+                bps.ports["e2"].dcenter[1]+pad_h/2,
+            ),
+            width=pad_w,
+            orientation=90.0,
+            port_type="electrical",
+            layer=layer_m2,
+        )
+    else: # no transition to M2/HR
+        c.add_port(
+            name="e1",
+            port=bps.ports["e11"],
+        )
+        c.add_port(
+            name="e2",
+            port=bps.ports["e2"],
+        )
 
     c.flatten()
 

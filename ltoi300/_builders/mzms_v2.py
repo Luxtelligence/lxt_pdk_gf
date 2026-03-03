@@ -52,6 +52,8 @@ DEFAULT_TERMINATION_PARAMS: dict[str, Any] = {
 DEFAULT_TRANSITION_M1_M2_PARAMS: dict[str, Any] = {
     "type": "array",  # or "solid"
     "layer_openings": LAYER.V2,
+    "layer_m1": LAYER.M1,
+    "layer_m2": LAYER.M2,
     "opening_offset": 2.5,
     "opening_size": 12.0,
     "opening_separation": 12.0,
@@ -60,6 +62,8 @@ DEFAULT_TRANSITION_M1_M2_PARAMS: dict[str, Any] = {
 DEFAULT_TRANSITION_M2_HR_PARAMS: dict[str, Any] = {
     "type": "solid",  # or "array"
     "layer_openings": LAYER.V3,
+    "layer_hr": LAYER.HRL,
+    "layer_m2": LAYER.M2,
     "opening_offset": 2.5,
     "opening_size": 12.0,
     "opening_separation": 12.0,
@@ -94,6 +98,7 @@ def build_unterminated_mzm_oband(
     optical_waveguide_params: dict[str, Any] | None = None,
     m2_bonding_pad_params: dict[str, Any] | None = None,
     transition_m1_m2_params: dict[str, Any] | None = None,
+    transition_m2_hr_params: dict[str, Any] | None = None,
     heater_params: dict[str, Any] | None = None,
     **base_mzm_kwargs: Any,
 ) -> gf.Component:
@@ -137,6 +142,9 @@ def build_unterminated_mzm_oband(
     )
 
     if _heater_params["length"] > 0.0:
+        _transition_m2_hr_params = _merge(
+            DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
+        )
         heater = heater_straight_compact(
             heater_xs=xs_ht_wire(width=_heater_params["width"]),
             routing_xs=xs_ht_wire(width=_heater_params["routing_width"]),
@@ -145,6 +153,7 @@ def build_unterminated_mzm_oband(
             pad_size=_heater_params["pad_size"],
             pad_pitch=_heater_params["pad_pitch"],
             pad_vert_offset=_heater_params["pad_vert_offset"],
+            transition_m2_hr_params=_transition_m2_hr_params,
         )
         heater_ref_1 = c << heater
         heater_ref_1.dmove(
@@ -218,6 +227,7 @@ def build_terminated_mzm_oband(
         optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
         transition_m1_m2_params=transition_m1_m2_params,
+        transition_m2_hr_params=transition_m2_hr_params,
         heater_params=heater_params,
     )
     termination_ref = c << termination
@@ -255,6 +265,7 @@ def build_unterminated_mzm_cband(
     optical_waveguide_params: dict[str, Any] | None = None,
     m2_bonding_pad_params: dict[str, Any] | None = None,
     transition_m1_m2_params: dict[str, Any] | None = None,
+    transition_m2_hr_params: dict[str, Any] | None = None,
     heater_params: dict[str, Any] | None = None,
     **base_mzm_kwargs: Any,
 ) -> gf.Component:
@@ -298,6 +309,9 @@ def build_unterminated_mzm_cband(
     )
 
     if _heater_params["length"] > 0.0:
+        _transition_m2_hr_params = _merge(
+            DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
+        )
         heater = heater_straight_compact(
             heater_xs=xs_ht_wire(width=_heater_params["width"]),
             routing_xs=xs_ht_wire(width=_heater_params["routing_width"]),
@@ -306,6 +320,7 @@ def build_unterminated_mzm_cband(
             pad_size=_heater_params["pad_size"],
             pad_pitch=_heater_params["pad_pitch"],
             pad_vert_offset=_heater_params["pad_vert_offset"],
+            transition_m2_hr_params=_transition_m2_hr_params,
         )
         heater_ref_1 = c << heater
         heater_ref_1.dmove(
@@ -378,6 +393,7 @@ def build_terminated_mzm_cband(
         optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
         transition_m1_m2_params=transition_m1_m2_params,
+        transition_m2_hr_params=transition_m2_hr_params,
         heater_params=heater_params,
     )
     termination_ref = c << termination
