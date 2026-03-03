@@ -173,7 +173,12 @@ def build_unterminated_mzm_oband(
             c.add_port(name = 'e5', port = heater_ref_2.ports['e1'])
             c.add_port(name = 'e6', port = heater_ref_2.ports['e2'])
 
-    c.add_ports(mzm_ref.ports)
+    utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
+    for port in mzm_ref.ports:
+        if port.name in utility_ports:
+            c.add_port(name = f"_{port.name}", port = port)
+        else:
+            c.add_port(name = port.name, port = port)
     return c
 
 
@@ -232,7 +237,13 @@ def build_terminated_mzm_oband(
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
-    c.add_ports(mzm_ref.ports)
+    c.add_port(name = '_term', port = termination_ref.ports['term'])
+    utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2", "e2"]
+    for port in mzm_ref.ports:
+        if port.name in utility_ports:
+            c.add_port(name = f"_{port.name}", port = port)
+        else:
+            c.add_port(name = port.name, port = port)
     return c
 
 
@@ -339,7 +350,12 @@ def build_unterminated_mzm_cband(
             )
             c.add_port(name = 'e5', port = heater_ref_2.ports['e1'])
             c.add_port(name = 'e6', port = heater_ref_2.ports['e2'])
-    c.add_ports(mzm_ref.ports)
+    utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
+    for port in mzm_ref.ports:
+        if port.name in utility_ports:
+            c.add_port(name = f"_{port.name}", port = port)
+        else:
+            c.add_port(name = port.name, port = port)
     return c
 
 
@@ -398,7 +414,13 @@ def build_terminated_mzm_cband(
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
-    c.add_ports(mzm_ref.ports)
+    c.add_port(name = '_term', port = termination_ref.ports['term'])
+    utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2", "e2"]
+    for port in mzm_ref.ports:
+        if port.name in utility_ports:
+            c.add_port(name = f"_{port.name}", port = port)
+        else:
+            c.add_port(name = port.name, port = port)
     return c
 
 
@@ -436,6 +458,6 @@ def _merge(
 
 if __name__ == "__main__":
     from ltoi300.cells import mmi1x2_cband
-
-    mzm = build_terminated_mzm_cband(mmi_cell=mmi1x2_cband())
+    from ltoi300.cells import mmi1x2_oband
+    mzm = build_terminated_mzm_oband(mmi_cell=mmi1x2_oband())
     mzm.show()
