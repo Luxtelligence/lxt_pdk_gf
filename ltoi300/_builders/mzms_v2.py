@@ -151,6 +151,8 @@ def build_unterminated_mzm_oband(
             origin=heater_ref_1.ports["ht_start"].dcenter,
             destination=mzm_ref.ports["ht1_1"].dcenter + (0, _heater_params["offset"]),
         )
+        c.add_port(name = 'e3', port = heater_ref_1.ports['e1'])
+        c.add_port(name = 'e4', port = heater_ref_1.ports['e2'])
         if _heater_params["both_arms"]:
             heater_ref_2 = c << heater
             heater_ref_2.dmirror_y()
@@ -159,6 +161,8 @@ def build_unterminated_mzm_oband(
                 destination=mzm_ref.ports["ht2_1"].dcenter
                 + (0, -_heater_params["offset"]),
             )
+            c.add_port(name = 'e5', port = heater_ref_2.ports['e1'])
+            c.add_port(name = 'e6', port = heater_ref_2.ports['e2'])
 
     c.add_ports(mzm_ref.ports)
     return c
@@ -308,6 +312,8 @@ def build_unterminated_mzm_cband(
             origin=heater_ref_1.ports["ht_start"].dcenter,
             destination=mzm_ref.ports["ht1_1"].dcenter + (0, _heater_params["offset"]),
         )
+        c.add_port(name = 'e3', port = heater_ref_1.ports['e1'])
+        c.add_port(name = 'e4', port = heater_ref_1.ports['e2'])
         if _heater_params["both_arms"]:
             heater_ref_2 = c << heater
             heater_ref_2.dmirror_y()
@@ -316,7 +322,8 @@ def build_unterminated_mzm_cband(
                 destination=mzm_ref.ports["ht2_1"].dcenter
                 + (0, -_heater_params["offset"]),
             )
-
+            c.add_port(name = 'e5', port = heater_ref_2.ports['e1'])
+            c.add_port(name = 'e6', port = heater_ref_2.ports['e2'])
     c.add_ports(mzm_ref.ports)
     return c
 
