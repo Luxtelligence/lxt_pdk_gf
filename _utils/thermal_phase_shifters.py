@@ -1,8 +1,9 @@
+from typing import Any
+
 import gdsfactory as gf
 import numpy as np
 from gdsfactory.cross_section import CrossSection
 from gdsfactory.routing import route_quad
-from typing import Any
 
 
 @gf.cell
@@ -148,17 +149,20 @@ def heater_straight_compact(
 
         if "layer_openings" not in transition_m2_hr_params:
             warnings.warn(
-                '"layer_openings" key not found in transition_m2_hr_params. Using default value (41, 0).'
+                '"layer_openings" key not found in transition_m2_hr_params. Using default value (41, 0).',
+                stacklevel=1,
             )
             transition_m2_hr_params["layer_openings"] = (41, 0)
         if "layer_m2" not in transition_m2_hr_params:
             warnings.warn(
-                '"layer_m2" key not found in transition_m2_hr_params. Using default value (22, 0).'
+                '"layer_m2" key not found in transition_m2_hr_params. Using default value (22, 0).',
+                stacklevel=1,
             )
             transition_m2_hr_params["layer_m2"] = (22, 0)
         if "opening_offset" not in transition_m2_hr_params:
             warnings.warn(
-                '"opening_offset" key not found in transition_m2_hr_params. Using default value 2.5.'
+                '"opening_offset" key not found in transition_m2_hr_params. Using default value 2.5.',
+                stacklevel=1,
             )
             transition_m2_hr_params["opening_offset"] = 2.5
 
@@ -203,7 +207,7 @@ def heater_straight_compact(
             name="e1",
             center=(
                 bps.ports["e11"].dcenter[0],
-                bps.ports["e11"].dcenter[1]+pad_h/2,
+                bps.ports["e11"].dcenter[1] + pad_h / 2,
             ),
             width=pad_w,
             orientation=90.0,
@@ -214,14 +218,14 @@ def heater_straight_compact(
             name="e2",
             center=(
                 bps.ports["e2"].dcenter[0],
-                bps.ports["e2"].dcenter[1]+pad_h/2,
+                bps.ports["e2"].dcenter[1] + pad_h / 2,
             ),
             width=pad_w,
             orientation=90.0,
             port_type="electrical",
             layer=layer_m2,
         )
-    else: # no transition to M2/HR
+    else:  # no transition to M2/HR
         c.add_port(
             name="e1",
             port=bps.ports["e11"],
