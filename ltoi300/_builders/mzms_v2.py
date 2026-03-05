@@ -51,7 +51,7 @@ DEFAULT_TERMINATION_PARAMS: dict[str, Any] = {
 }
 DEFAULT_TRANSITION_M1_M2_PARAMS: dict[str, Any] = {
     "type": "array",  # or "solid"
-    "layer_openings": LAYER.V2,
+    "layer_openings": LAYER.VIA_M1_M2,
     "layer_m1": LAYER.M1,
     "layer_m2": LAYER.M2,
     "opening_offset": 2.5,
@@ -61,7 +61,7 @@ DEFAULT_TRANSITION_M1_M2_PARAMS: dict[str, Any] = {
 }
 DEFAULT_TRANSITION_M2_HR_PARAMS: dict[str, Any] = {
     "type": "solid",  # or "array"
-    "layer_openings": LAYER.V3,
+    "layer_openings": LAYER.VIA_M2_HRL,
     "layer_hr": LAYER.HRL,
     "layer_m2": LAYER.M2,
     "opening_offset": 2.5,
@@ -160,8 +160,8 @@ def build_unterminated_mzm_oband(
             origin=heater_ref_1.ports["ht_start"].dcenter,
             destination=mzm_ref.ports["ht1_1"].dcenter + (0, _heater_params["offset"]),
         )
-        c.add_port(name = 'e3', port = heater_ref_1.ports['e1'])
-        c.add_port(name = 'e4', port = heater_ref_1.ports['e2'])
+        c.add_port(name="e3", port=heater_ref_1.ports["e1"])
+        c.add_port(name="e4", port=heater_ref_1.ports["e2"])
         if _heater_params["both_arms"]:
             heater_ref_2 = c << heater
             heater_ref_2.dmirror_y()
@@ -170,15 +170,15 @@ def build_unterminated_mzm_oband(
                 destination=mzm_ref.ports["ht2_1"].dcenter
                 + (0, -_heater_params["offset"]),
             )
-            c.add_port(name = 'e5', port = heater_ref_2.ports['e1'])
-            c.add_port(name = 'e6', port = heater_ref_2.ports['e2'])
+            c.add_port(name="e5", port=heater_ref_2.ports["e1"])
+            c.add_port(name="e6", port=heater_ref_2.ports["e2"])
 
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
     for port in mzm_ref.ports:
         if port.name in utility_ports:
-            c.add_port(name = f"_{port.name}", port = port)
+            c.add_port(name=f"_{port.name}", port=port)
         else:
-            c.add_port(name = port.name, port = port)
+            c.add_port(name=port.name, port=port)
     return c
 
 
@@ -237,13 +237,13 @@ def build_terminated_mzm_oband(
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
-    c.add_port(name = '_term', port = termination_ref.ports['term'])
+    c.add_port(name="_term", port=termination_ref.ports["term"])
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2", "e2"]
     for port in mzm_ref.ports:
         if port.name in utility_ports:
-            c.add_port(name = f"_{port.name}", port = port)
+            c.add_port(name=f"_{port.name}", port=port)
         else:
-            c.add_port(name = port.name, port = port)
+            c.add_port(name=port.name, port=port)
     return c
 
 
@@ -338,8 +338,8 @@ def build_unterminated_mzm_cband(
             origin=heater_ref_1.ports["ht_start"].dcenter,
             destination=mzm_ref.ports["ht1_1"].dcenter + (0, _heater_params["offset"]),
         )
-        c.add_port(name = 'e3', port = heater_ref_1.ports['e1'])
-        c.add_port(name = 'e4', port = heater_ref_1.ports['e2'])
+        c.add_port(name="e3", port=heater_ref_1.ports["e1"])
+        c.add_port(name="e4", port=heater_ref_1.ports["e2"])
         if _heater_params["both_arms"]:
             heater_ref_2 = c << heater
             heater_ref_2.dmirror_y()
@@ -348,14 +348,14 @@ def build_unterminated_mzm_cband(
                 destination=mzm_ref.ports["ht2_1"].dcenter
                 + (0, -_heater_params["offset"]),
             )
-            c.add_port(name = 'e5', port = heater_ref_2.ports['e1'])
-            c.add_port(name = 'e6', port = heater_ref_2.ports['e2'])
+            c.add_port(name="e5", port=heater_ref_2.ports["e1"])
+            c.add_port(name="e6", port=heater_ref_2.ports["e2"])
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
     for port in mzm_ref.ports:
         if port.name in utility_ports:
-            c.add_port(name = f"_{port.name}", port = port)
+            c.add_port(name=f"_{port.name}", port=port)
         else:
-            c.add_port(name = port.name, port = port)
+            c.add_port(name=port.name, port=port)
     return c
 
 
@@ -414,13 +414,13 @@ def build_terminated_mzm_cband(
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
-    c.add_port(name = '_term', port = termination_ref.ports['term'])
+    c.add_port(name="_term", port=termination_ref.ports["term"])
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2", "e2"]
     for port in mzm_ref.ports:
         if port.name in utility_ports:
-            c.add_port(name = f"_{port.name}", port = port)
+            c.add_port(name=f"_{port.name}", port=port)
         else:
-            c.add_port(name = port.name, port = port)
+            c.add_port(name=port.name, port=port)
     return c
 
 
@@ -457,7 +457,7 @@ def _merge(
 
 
 if __name__ == "__main__":
-    from ltoi300.cells import mmi1x2_cband
     from ltoi300.cells import mmi1x2_oband
+
     mzm = build_terminated_mzm_oband(mmi_cell=mmi1x2_oband())
     mzm.show()

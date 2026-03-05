@@ -31,8 +31,8 @@ class LayerMapLTOI300(LayerMap):
     LABELS: Layer = (4, 0)
     M1: Layer = (20, 0)
     M2: Layer = (22, 0)
-    V2: Layer = (40, 0)  # M1-M2 contact layer (VIA_M1_M2)
-    V3: Layer = (41, 0)  # M2-HRL contact layer (VIA_M2_HRL)
+    VIA_M1_M2: Layer = (40, 0)  # M1-M2 contact layer (VIA_M1_M2)
+    VIA_M2_HRL: Layer = (41, 0)  # M2-HRL contact layer (VIA_M2_HRL)
     HRL: Layer = (23, 0)
     WAFER: Layer = (990, 0)
 
