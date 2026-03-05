@@ -30,7 +30,7 @@ chip_layout = chip_frame()
 # ### Get the O-band ring resonator and edge couplers
 
 # %%
-ring_resonator_oband = gf.get_component("ring_resonator_single_mode_oband")
+ring_resonator_oband = gf.get_component("ring_resonator_single_mode_point_coupler_oband")
 # ring_resonator_oband
 
 # %%
@@ -66,7 +66,7 @@ ecs_oband = {
 # ### Get the C-band ring resonator and edge couplers
 
 # %%
-ring_resonator_cband = gf.get_component("ring_resonator_single_mode_cband")
+ring_resonator_cband = gf.get_component("ring_resonator_single_mode_point_coupler_cband")
 # ring_resonator_cband
 
 # %%
@@ -228,6 +228,51 @@ ecs_oband_modulator = {
 }
 
 # %% [markdown]
+# ### Wirebonding pads
+
+
+# %%
+@gf.cell
+def bondpad_array(
+    pad_size: tuple = (170, 170),
+    pitch: float = 300,
+    N: int = 4,
+    chip_frame: gf.Component = chip_layout,
+    dx: float = 1400.0,
+    dy: float = 4800.0,
+):
+    c = gf.Component()
+
+    pad = gf.components.pad(
+        size=pad_size,
+        layer=LAYER.M2,
+    )
+    bp = c << gf.components.pad_array(
+        pad=pad,
+        columns=N,
+        column_pitch=pitch,
+        layer=LAYER.M2,
+        auto_rename_ports=True,
+        centered_ports=True,
+        port_orientation=-90.0,
+    )
+
+    bp.dmove(
+        origin=(bp.dxmin, bp.dymin),
+        destination=(chip_frame.dxmin + dx, chip_frame.dymin + dy),
+    )
+
+
+    c.add_ports(bp.ports)
+
+    return c
+
+
+bp_array = bondpad_array()
+# bp_array
+
+
+# %% [markdown]
 # ### Get the C-band terminated EO modulator and edge couplers
 
 # %%
@@ -276,6 +321,8 @@ def modulator_circuit(
     communication_band="oband",
     modulator_x_pos=-4000.0,
     modulator_y_pos=2000.0,
+    bp_port_names: tuple = ("e3", "e4"),  # hashable port name strings
+    waypoints_heater_routing: list = None,
 ) -> gf.Component:
     if communication_band == "oband":
         ecs = ecs_oband_modulator
@@ -328,11 +375,34 @@ def modulator_circuit(
         if communication_band == "oband"
         else "straight_rwg900_cband",
     )
+
+    # Routing to bondpad
+    heater_routing_width = 40.0
+    route_bundle(
+        c,
+        ports1=[mod_ref.ports["e3"], mod_ref.ports["e4"]],
+        ports2=[bp_array.ports[bp_port_names[0]], bp_array.ports[bp_port_names[1]]],
+        # cross_section=gf.get_cross_section(
+        #     "xs_ht_wire",
+        #     width=heater_routing_width,
+        # ),
+        bend=gf.components.bend_circular,
+        straight=gf.components.straight,
+        auto_taper=False,
+        allow_width_mismatch=True,
+        layer=LAYER.M2,
+        route_width=heater_routing_width,
+        waypoints=waypoints_heater_routing,
+        separation=10.0,
+    )
+
+
+
     text_ref = c << gf.components.text(
         f"{communication_band}" + "_modulator", layer=LAYER.LABELS, size=13
     )
     text_ref.dmove(
-        ((mod_ref.dxmin + mod_ref.dxmax) / 2, (mod_ref.dymin + mod_ref.dymax) / 2 + 250)
+        ((mod_ref.dxmin + mod_ref.dxmax) / 2, (mod_ref.dymin + mod_ref.dymax) / 2 + 100)
     )
 
     c.flatten()
@@ -344,60 +414,15 @@ def modulator_circuit(
 
 # %%
 modulator_circuit_oband = modulator_circuit(
-    "oband", modulator_x_pos=-4000.0, modulator_y_pos=2000.0
+    "oband", modulator_x_pos=-4000.0, modulator_y_pos=1650.0, bp_port_names=("e2", "e1")#, waypoints_heater_routing=[(-4900, 1370), (-4900, 1800)]
 )
 # modulator_circuit_oband
 
 # %%
 modulator_circuit_cband = modulator_circuit(
-    "cband", modulator_x_pos=-4100.0, modulator_y_pos=1000.0
+    "cband", modulator_x_pos=-4100.0, modulator_y_pos=650.0, bp_port_names=("e4", "e3"), waypoints_heater_routing=[(-4100, 1400), (-4100, 2200), (-3600, 2200)]
 )
 # modulator_circuit_cband
-
-# %% [markdown]
-# ### Wirebonding pads
-
-
-# %%
-@gf.cell
-def bondpad_array(
-    pad_size: tuple = (170, 170),
-    pitch: float = 300,
-    N: int = 14,
-    contact_window_offset: float = -10.0,
-    chip_frame: gf.Component = chip_layout,
-    dx: float = 5400.0,
-    dy: float = 4805.0,
-):
-    c = gf.Component()
-
-    for lay, offs in zip((LAYER.M2, LAYER.V3), (0.0, contact_window_offset)):
-        pad = gf.components.pad(
-            size=(pad_size[0] + 2 * offs, pad_size[1] + 2 * offs),
-            layer=lay,
-        )
-        bp = c << gf.components.pad_array(
-            pad=pad,
-            columns=N,
-            column_pitch=pitch,
-            layer=lay,
-            auto_rename_ports=True,
-            centered_ports=True,
-            port_orientation=-90.0,
-        )
-
-        bp.dmove(
-            origin=(bp.dxmin, bp.dymin),
-            destination=(chip_frame.dxmin + dx - offs, chip_frame.dymin + dy - offs),
-        )
-
-    c.add_ports(bp.ports)
-
-    return c
-
-
-bp_array = bondpad_array()
-# bp_array
 
 # %% [markdown]
 # Assemble on the die outline
@@ -418,6 +443,7 @@ def die_assembled(
 
     c.add_ports(circuit_oband.ports, prefix="oband")
     c.add_ports(circuit_cband.ports, prefix="cband")
+
     return c
 
 
