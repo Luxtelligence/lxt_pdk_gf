@@ -1,0 +1,6 @@
+info: {}
+name: ring_resonator_multimode_point_coupler_cband_RR200_RW1p_a81346be
+settings:
+  gap: 1.2
+  ring_radius: 200
+  ring_width: 1.5

@@ -358,13 +358,13 @@ def unterminated_mzm_2x2mmi_oband(
 
 
 @gf.cell
-def ring_resonator_single_mode_oband(
+def ring_resonator_single_mode_point_coupler_oband(
     ring_radius: float = 200.0,
     ring_width: float = 0.7,
     gap: float = 1.05,
     bus_length: float | None = None,
 ) -> gf.Component:
-    """Returns a ring resonator with an evanescent coupler for O-band operation.
+    """Returns a ring resonator with an evanescent point coupler for O-band operation.
     The gap is set to 1.05 um to ensure critical coupling.
     Note: the critical coupling condition is loss-specific and
     a different gap may be required for other loss conditions."""
@@ -378,13 +378,13 @@ def ring_resonator_single_mode_oband(
 
 
 @gf.cell
-def ring_resonator_multimode_oband(
+def ring_resonator_multimode_point_coupler_oband(
     ring_radius: float = 200.0,
     ring_width: float = 1.5,
     gap: float = 0.75,
     bus_length: float | None = None,
 ) -> gf.Component:
-    """Returns a multimode ring resonator with an evanescent coupler for O-band operation.
+    """Returns a multimode ring resonator with an evanescent point coupler for O-band operation.
     The gap is set to 0.75 um to ensure critical coupling.
     Note: the critical coupling condition is loss-specific and
     a different gap may be required for other loss conditions."""
@@ -655,13 +655,13 @@ def unterminated_mzm_2x2mmi_cband(
 
 
 @gf.cell
-def ring_resonator_single_mode_cband(
+def ring_resonator_single_mode_point_coupler_cband(
     ring_radius: float = 200.0,
     ring_width: float = 0.9,
     gap: float = 1.5,
     bus_length: float | None = None,
 ) -> gf.Component:
-    """Returns a single mode ring resonator with an evanescent coupler for C-band operation.
+    """Returns a single mode ring resonator with an evanescent point coupler for C-band operation.
     The gap is set to 1.5 um to ensure critical coupling.
     Note: the critical coupling condition is loss-specific and
     a different gap may be required for other loss conditions."""
@@ -675,13 +675,13 @@ def ring_resonator_single_mode_cband(
 
 
 @gf.cell
-def ring_resonator_multimode_cband(
+def ring_resonator_multimode_point_coupler_cband(
     ring_radius: float = 200.0,
     ring_width: float = 1.5,
     gap: float = 1.2,
     bus_length: float | None = None,
 ) -> gf.Component:
-    """Returns a multimode ring resonator with an evanescent coupler for C-band operation.
+    """Returns a multimode ring resonator with an evanescent point coupler for C-band operation.
     The gap is set to 1.2 um to ensure critical coupling.
     Note: the critical coupling condition is loss-specific and
     a different gap may be required for other loss conditions."""
