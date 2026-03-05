@@ -952,7 +952,7 @@ def _test_point_coupler(
     return sdict
 
 
-def ring_resonator_single_mode_cband(
+def _ring_resonator_single_mode_cband(
     wl: Float = 1.55,
     ring_radius: float = 200.0,
     loss_dB_cm: float = 0.5,
@@ -1008,7 +1008,7 @@ if __name__ == "__main__":
     wl_grid = np.linspace(1.54, 1.56, 30_000)
 
     # Evaluate the ring resonator on the entire grid (SAX evaluates these vectorized)
-    s_dicts = ring_resonator_single_mode_cband(wl=wl_grid)
+    s_dicts = _ring_resonator_single_mode_cband(wl=wl_grid)
 
     # Extract the Through port transmission (o1 to o2)
     thru_transmission = s_dicts["o1", "o2"]

@@ -8,6 +8,8 @@ The `lxt_pdk_gf` PDK is released open-source to allow users to easily evaluate a
 
 ## Installation
 
+We recommend [KLayout](https://www.klayout.de/) as a layout viewer and editor for GDS and OASIS files. gdsfactory itself is based on and closely integrated with KLayout.
+
 Python 3.12 is required. We recommend [VSCode](https://code.visualstudio.com/) or [Google Antigravity](https://antigravity.google/) as IDEs.
 
 If you do not have Python installed, you can [download Anaconda](https://www.anaconda.com/download/). Once Python is available, clone the repository and install the package in editable mode:
@@ -29,12 +31,12 @@ To activate them in KLayout:
 
 1. Open KLayout and go to **File → Setup**.
 2. Navigate to the **Application** section and select **Layer Properties**.
-3. Under **Default layer properties file**, click **Browse** and point it to the `.lyp` file for your PDK (e.g. `ltoi300/klayout/ltoi300.lyp`).
+3. Under **Default layer properties file**, click **Browse** and point it to the `.lyp` file for your PDK (e.g. `lxt_pdk_gf/ltoi300/klayout/ltoi300.lyp`).
 4. Click **Apply** and **OK**. Restart KLayout to apply the changes.
 
 ## KLayout DRC
 
-Design Rule Check (DRC) scripts for each process stack can be downloaded from [luxtelligence.ai](https://luxtelligence.ai/). The files have a `.lydrc` extension and are specific to the technology stack you are using.
+Design Rule Check (DRC) runsets for KLayout can be downloaded from [resources.luxtelligence.ai](https://resources.luxtelligence.ai/request-access?resource=drc). The files have a `.lydrc` extension and are specific to the technology stack you are using.
 
 **Installation:**
 

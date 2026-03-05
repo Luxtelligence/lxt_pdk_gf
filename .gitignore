@@ -174,7 +174,8 @@ cython_debug/
 # GDSII layouts
 
 *.oas
-lnoi/**/*.gds
+*.gds
+!tests/gds_ref/**/*.gds
 
 # Test with different PDK distributions
 
