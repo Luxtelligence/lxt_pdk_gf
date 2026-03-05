@@ -4,8 +4,9 @@
 # Here we provide an example of PIC layout with the ltoi300 PDK. We start by
 # choosing a die floorplan compatible with a submission for an LXT MPW run,
 # then place some edge couplers for I/O at the right locations on the chip
-# frame. Finally we create a circuit cell with an evanescently-coupled ring
+# frame. We create a circuit cell with an evanescently-coupled ring
 # resonator and connect it with the input and output edge couplers.
+# We also create routed modulator cells.
 
 # %%
 from functools import partial
