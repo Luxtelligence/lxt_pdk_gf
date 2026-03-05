@@ -4,7 +4,13 @@ The release naming convention follows [Semantic Versioning](https://semver.org/s
 
 ## v2.0
 
+### New
 
+- Technology definition for ltoi300
+- Basic Component definitions: edge couplers, mmis, ring cavities, phase and amplitude modulators for O-band and C-band
+- Added first compact models for ltoi300
+- Added one more circuit placement example notebook for the ltoi300 technology
+- Expand README with KLayout lyp and DRC instructions
 
 ## v1.3.0
 
