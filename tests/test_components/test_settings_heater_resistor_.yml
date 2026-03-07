@@ -1,6 +1,25 @@
 info:
   length: 150
 name: heater_resistor_PNone_W0p9_O0
+ports:
+  e1:
+    center:
+    - 0
+    - 0
+    layer: 48
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 0.9
+  e2:
+    center:
+    - 150
+    - 0
+    layer: 48
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 0.9
 settings:
   offset: 0
   width: 0.9

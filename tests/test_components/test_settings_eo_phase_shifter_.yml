@@ -1,5 +1,42 @@
 info: {}
 name: eo_phase_shifter_RCWM2p5_TL100_ML7500_RCCW10_RGPW180_RG_617881fc
+ports:
+  e1:
+    center:
+    - -190
+    - -7
+    layer: 16
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 80
+  e2:
+    center:
+    - 7690
+    - -7
+    layer: 16
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 80
+  o1:
+    center:
+    - 0
+    - 0
+    layer: 3
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 7500
+    - 0
+    layer: 3
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   cpw_cell: uni_cpw_straight
   draw_cpw: true

@@ -1,5 +1,24 @@
 info: {}
 name: S_bend_vert_VO25_HE100_DS5_CSxs_rwg1000
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: 3
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 110
+    - 25
+    layer: 3
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   cross_section: xs_rwg1000
   dx_straight: 5

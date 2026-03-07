@@ -1,0 +1,21 @@
+name: Release Drafter and Labels
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [edited, opened, reopened, synchronize, unlabeled, labeled]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  update_release_draft:
+    permissions:
+      contents: write
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      # Drafts your next Release notes as Pull Requests are merged into "master"
+      - uses: release-drafter/release-drafter@v6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
