@@ -19,16 +19,16 @@ from ltoi300._builders.mmis import (
 from ltoi300._builders.mmis import (
     build_mmi2x2_oband as _build_mmi2x2_oband,
 )
-from ltoi300._builders.mzms_v2 import (
+from ltoi300._builders.mzms import (
     build_terminated_mzm_cband as _build_terminated_mzm_cband,
 )
-from ltoi300._builders.mzms_v2 import (
+from ltoi300._builders.mzms import (
     build_terminated_mzm_oband as _build_terminated_mzm_oband,
 )
-from ltoi300._builders.mzms_v2 import (
+from ltoi300._builders.mzms import (
     build_unterminated_mzm_cband as _build_unterminated_mzm_cband,
 )
-from ltoi300._builders.mzms_v2 import (
+from ltoi300._builders.mzms import (
     build_unterminated_mzm_oband as _build_unterminated_mzm_oband,
 )
 from ltoi300._builders.straights import (
