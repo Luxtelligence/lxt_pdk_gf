@@ -159,7 +159,7 @@ def _eo_phase_shifter(
     neff_0: float = 1.75,
     ng_0: float = 2.1,
     loss: float = 2e-5,
-    V_pi: float = np.nan,
+    V_pi: float | None = None,
     V_dc: float = 0.0,
 ) -> sax.SDict:
     """General electro-optic phase shifter model.
@@ -171,13 +171,13 @@ def _eo_phase_shifter(
         neff_0: effective index at center wavelength.
         ng_0: group index at center wavelength.
         loss: propagation loss (dB/um).
-        V_pi: voltage for pi phase shift (V). If NaN, calculated from default.
+        V_pi: voltage for pi phase shift (V).
         V_dc: static voltage applied (V).
     """
-    # Default V_pi
-    if np.isnan(V_pi):
-        V_pi = 2 * 2.8e4 * wl / length / wl_0
-    v = V_dc / V_pi
+    if V_pi is not None:
+        v = V_dc / V_pi
+    else:
+        raise ValueError("V_pi must be specified.")
 
     # Effective index at the operation frequency
     neff = neff_0 - (ng_0 - neff_0) * (wl - wl_0) / wl_0
@@ -412,6 +412,155 @@ def unterminated_mzm_2x2mmi_oband(
     return mzm()
 
 
+####################
+# MZMs - C-band
+####################
+
+
+def unterminated_mzm_1x2mmi_cband(
+    wl: Float = 1.55,
+    length_imbalance: float = 100.0,
+    modulation_length: float = 5000.0,
+    V_pi: float = np.nan,
+    V_dc: float = 0.0,
+    **kwargs,
+) -> sax.SDict:
+    """Model of an unterminated Mach-Zehnder modulator with EO phase modulation mechanism.
+    Uses 1x2 MMIs for splitting/combining in C-band.
+
+    Args:
+        wl: wavelength in um.
+        length_imbalance: length difference between the MZ branches, in um.
+        modulation_length: length of the EO modulation section, in um.
+        V_pi: voltage dropped on the EO phase modulation section for a pi phase shift (in V).
+        V_dc: voltage applied to the EO shifter (in V).
+        kwargs: to_phase_shifter keyword arguments.
+    """
+    mzm, _ = sax.circuit(
+        netlist={
+            "instances": {
+                "coupler": "mmi",
+                "top_shifter": "ps_top",
+                "bot_shifter": "ps_bot",
+                "dl": "wg_straight",
+                "splitter": "mmi",
+            },
+            "connections": {
+                "coupler,o2": "top_shifter,o1",
+                "coupler,o3": "bot_shifter,o1",
+                "bot_shifter,o2": "dl,o1",
+                "dl,o2": "splitter,o3",
+                "top_shifter,o2": "splitter,o2",
+            },
+            "ports": {
+                "o1": "coupler,o1",
+                "o2": "splitter,o1",
+            },
+        },
+        models={
+            "mmi": partial(
+                mmi1x2_cband,
+                wl=wl,
+            ),
+            "wg_straight": partial(
+                _straight,
+                wl=wl,
+                length=length_imbalance,
+                cross_section="xs_rwg900",
+            ),
+            "ps_top": partial(
+                eo_phase_shifter_cband,
+                wl=wl,
+                length=modulation_length,
+                V_dc=V_dc,
+                V_pi=V_pi,
+            ),
+            "ps_bot": partial(
+                eo_phase_shifter_cband,
+                wl=wl,
+                length=modulation_length,
+                V_dc=-V_dc,
+                V_pi=V_pi,
+            ),
+        },
+        backend="default",
+    )
+    return mzm()
+
+
+def unterminated_mzm_2x2mmi_cband(
+    wl: Float = 1.55,
+    length_imbalance: float = 100.0,
+    modulation_length: float = 5000.0,
+    V_pi: float = np.nan,
+    V_dc: float = 0.0,
+    **kwargs,
+) -> sax.SDict:
+    """Model of an unterminated Mach-Zehnder modulator with EO phase modulation mechanism.
+    Uses 2x2 MMIs for splitting/combining in C-band.
+
+    Args:
+        wl: wavelength in um.
+        length_imbalance: length difference between the MZ branches, in um.
+        modulation_length: length of the EO modulation section, in um.
+        V_pi: voltage dropped on the EO phase modulation section for a pi phase shift (in V).
+        V_dc: voltage applied to the EO shifter (in V).
+        kwargs: to_phase_shifter keyword arguments.
+    """
+    mzm, _ = sax.circuit(
+        netlist={
+            "instances": {
+                "coupler": "mmi",
+                "top_shifter": "ps_top",
+                "bot_shifter": "ps_bot",
+                "dl": "wg_straight",
+                "splitter": "mmi",
+            },
+            "connections": {
+                "coupler,o3": "top_shifter,o1",
+                "coupler,o4": "bot_shifter,o1",
+                "bot_shifter,o2": "dl,o1",
+                "dl,o2": "splitter,o4",
+                "top_shifter,o2": "splitter,o3",
+            },
+            "ports": {
+                "o1": "coupler,o1",
+                "o2": "coupler,o2",
+                "o3": "splitter,o2",
+                "o4": "splitter,o1",
+            },
+        },
+        models={
+            "mmi": partial(
+                mmi2x2_cband,
+                wl=wl,
+            ),
+            "wg_straight": partial(
+                _straight,
+                wl=wl,
+                length=length_imbalance,
+                cross_section="xs_rwg900",
+            ),
+            "ps_top": partial(
+                eo_phase_shifter_cband,
+                wl=wl,
+                length=modulation_length,
+                V_dc=V_dc,
+                V_pi=V_pi,
+            ),
+            "ps_bot": partial(
+                eo_phase_shifter_cband,
+                wl=wl,
+                length=modulation_length,
+                V_dc=-V_dc,
+                V_pi=V_pi,
+            ),
+        },
+        backend="default",
+    )
+    return mzm()
+
+
 ########################
 # Optical resonators
 ########################
@@ -488,10 +637,10 @@ if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
     # Define a  wavelength grid
-    wl_grid = np.linspace(1.26, 1.36, 3000)
+    wl_grid = np.linspace(1.5, 1.6, 3000)
 
     # Test the modulator response
-    s_dicts = unterminated_mzm_2x2mmi_oband(wl=wl_grid, length_imbalance=100, V_pi=10.0)
+    s_dicts = unterminated_mzm_2x2mmi_oband(wl=wl_grid, length_imbalance=100, V_dc=0.0)
 
     # Extract the Through port transmission (o1 to o2)
     thru_transmission = s_dicts["o1", "o3"]
@@ -507,7 +656,7 @@ if __name__ == "__main__":
     ax_top.plot(wl_grid, intensity_dB_cross)
     ax_top.set_ylabel("Intensity [dB]")
     ax_top.set_title("Modulator Response")
-    ax_top.set_ylim([-15, 0])
+    ax_top.set_ylim([-30, 0])
     ax_bot.plot(wl_grid, phase_deg)
     ax_bot.plot(wl_grid, phase_deg_cross)
     ax_bot.set_xlabel("Wavelength [um]")
