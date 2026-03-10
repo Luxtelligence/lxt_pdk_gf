@@ -175,8 +175,8 @@ def mmi2x2_oband(**kwargs) -> gf.Component:
 @gf.cell
 def terminated_mzm_1x2mmi_oband(
     modulation_length: float = 5000.0,
-    rf_gap: float = 6.0,
-    rf_central_conductor_width: float = 22.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 20.0,
     gsg_pitch: float = 100.0,
     length_imbalance: float = 100.0,
     bias_tuning_section_length: float = 700.0,
@@ -222,8 +222,8 @@ def terminated_mzm_1x2mmi_oband(
 @gf.cell
 def unterminated_mzm_1x2mmi_oband(
     modulation_length: float = 5000.0,
-    rf_gap: float = 6.0,
-    rf_central_conductor_width: float = 22.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 20.0,
     gsg_pitch: float = 100.0,
     length_imbalance: float = 100.0,
     bias_tuning_section_length: float = 700.0,
@@ -266,8 +266,8 @@ def unterminated_mzm_1x2mmi_oband(
 @gf.cell
 def terminated_mzm_2x2mmi_oband(
     modulation_length: float = 5000.0,
-    rf_gap: float = 6.0,
-    rf_central_conductor_width: float = 22.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 20.0,
     gsg_pitch: float = 100.0,
     length_imbalance: float = 100.0,
     bias_tuning_section_length: float = 700.0,
@@ -310,8 +310,8 @@ def terminated_mzm_2x2mmi_oband(
 @gf.cell
 def unterminated_mzm_2x2mmi_oband(
     modulation_length: float = 5000.0,
-    rf_gap: float = 6.0,
-    rf_central_conductor_width: float = 22.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 20.0,
     gsg_pitch: float = 100.0,
     length_imbalance: float = 100.0,
     bias_tuning_section_length: float = 700.0,

@@ -76,15 +76,15 @@ DEFAULT_TRANSITION_M2_HR_PARAMS: dict[str, Any] = {
 
 DEFAULT_CPW_PARAMS_OBAND: dict[str, Any] = {
     "type": "trail",
-    "rf_gap": 6.0,
+    "rf_gap": 5.5,
     "rf_ground_planes_width": 50.0,
-    "rf_central_conductor_width": 22.0,  # For Trails central conductor shrinks by th+tt at the modulation region.
+    "rf_central_conductor_width": 20.0,  # For Trails central conductor shrinks by th+tt at the modulation region.
 }
 DEFAULT_TRAIL_PARAMS_OBAND: dict[str, Any] = {
     "tl": 53.0,
     "tw": 53.0,
-    "th": 1.5,
-    "tt": 1.5,
+    "th": 2.5,
+    "tt": 2.5,
     "tc": 5.0,
 }
 
@@ -260,7 +260,7 @@ DEFAULT_CPW_PARAMS_CBAND: dict[str, Any] = {
 
 DEFAULT_TRAIL_PARAMS_CBAND: dict[str, Any] = {
     "tl": 53.0,
-    "tw": 39.0,
+    "tw": 53.0,
     "th": 1.5,
     "tt": 1.5,
     "tc": 5.0,

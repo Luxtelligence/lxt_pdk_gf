@@ -1,9 +1,9 @@
 info: {}
-name: terminated_mzm_1x2mmi_oband_ML5000_RG6_RCCW22_GP100_LI1_64dbe1b5
+name: terminated_mzm_1x2mmi_oband_ML5000_RG5p5_RCCW20_GP100_L_e0a93545
 settings:
   bias_tuning_section_length: 700
   gsg_pitch: 100
   length_imbalance: 100
   modulation_length: 5000
-  rf_central_conductor_width: 22
-  rf_gap: 6
+  rf_central_conductor_width: 20
+  rf_gap: 5.5
