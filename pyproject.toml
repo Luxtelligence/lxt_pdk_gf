@@ -27,7 +27,7 @@ license = {file = "LICENSE"}
 name = "lxt_pdk_gf"
 readme = "README.md"
 requires-python = "~=3.12.0"
-version = "1.2.0"
+version = "2.0"
 
 [project.optional-dependencies]
 dev = [
@@ -93,7 +93,7 @@ lint.select = [
 mypkg = ["*.csv", "*.yaml"]
 
 [tool.setuptools.packages]
-find = {exclude = ["_utils", "_utils.*"]}
+find = {exclude = ["tests", "tests.*", "docs", "docs.*"]}
 
 [tool.tbump]
 
