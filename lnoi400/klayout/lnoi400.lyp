@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <layer-properties>
  <properties>
   <frame-color>#7d57de</frame-color>
@@ -17,6 +18,25 @@
   <name>LN_RIDGE</name>
   <source>2/0@1</source>
  </properties>
+
+ <properties>
+  <frame-color>#ff00ff</frame-color>
+  <fill-color>#ff00ff</fill-color>
+  <frame-brightness>0</frame-brightness>
+  <fill-brightness>0</fill-brightness>
+  <dither-pattern/>
+  <line-style/>
+  <valid>true</valid>
+  <visible>true</visible>
+  <transparent>false</transparent>
+  <width>1</width>
+  <marked>false</marked>
+  <xfill>false</xfill>
+  <animation>0</animation>
+  <name>LT_RIDGE_PERIODIC</name>
+  <source>2/1@1</source>
+ </properties>
+
  <properties>
   <frame-color>#000080</frame-color>
   <fill-color>#000080</fill-color>
@@ -34,6 +54,7 @@
   <name>LN_SLAB</name>
   <source>3/0@1</source>
  </properties>
+
  <properties>
   <frame-color>#6750bf</frame-color>
   <fill-color>#6750bf</fill-color>
@@ -51,6 +72,7 @@
   <name>SLAB_NEGATIVE</name>
   <source>3/1@1</source>
  </properties>
+
  <properties>
   <frame-color>#5179b5</frame-color>
   <fill-color>#5179b5</fill-color>
@@ -68,6 +90,7 @@
   <name>LABELS</name>
   <source>4/0@1</source>
  </properties>
+
  <properties>
   <frame-color>#ffc6b8</frame-color>
   <fill-color>#ffc6b8</fill-color>
@@ -85,6 +108,7 @@
   <name>CHIP_CONTOUR</name>
   <source>6/0@1</source>
  </properties>
+
  <properties>
   <frame-color>#00fe9c</frame-color>
   <fill-color>#00fe9c</fill-color>
@@ -102,6 +126,7 @@
   <name>CHIP_EXCLUSION_ZONE</name>
   <source>6/1@1</source>
  </properties>
+
  <properties>
   <frame-color>#3503fc</frame-color>
   <fill-color>#3503fc</fill-color>
@@ -119,6 +144,7 @@
   <name>TL</name>
   <source>21/0@1</source>
  </properties>
+
  <properties>
   <frame-color>#3503fc</frame-color>
   <fill-color>#3503fc</fill-color>

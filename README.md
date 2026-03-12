@@ -1,35 +1,67 @@
-# lnoi400
+# Luxtelligence Process Design Kit (PDK) for gdsfactory
 
 ![Luxtelligence](LXT_Logo.png)
 
-[Luxtelligence](https://luxtelligence.ai/) lnoi400 Process Design Kit (PDK). The Luxtelligence Process Design Kit contains a library of components that facilitate the design of photonic integrated circuits for Luxtelligence's Lithium Niobate on Insulator (LNOI) foundry service. The PDK includes both electrical and optical building blocks, that make use of Lithium Niobate's electro-optic effect and attractive optical properties. PDK building blocks consist both of a geometrical layout, defining the starting point for the microfabrication of the integrated circuit, and a circuit model, that approximates the real frequency-domain behaviour of the optical component.
+[Luxtelligence](https://luxtelligence.ai/) Process Design Kit (PDK) for gdsfactory. The Luxtelligence PDK contains a library of components that facilitate the design of photonic integrated circuits for Luxtelligence's foundry service. The PDK includes both electrical and optical building blocks that leverage Lithium Tantalate and Lithium Niobate's electro-optic effect and attractive optical properties. Each building block consists of a geometrical layout, defining the starting point for microfabrication of the integrated circuit, and a compact circuit model that approximates the real frequency-domain behaviour of the component.
 
-The lnoi400 PDK is released open-source, to let users easily evaluate a sample of the offering of Luxtelligence. Please [contact us](mailto:foundry@luxtelligence.ai) for information on advanced building blocks and variations on the standard PDK geometry.
+The `lxt_pdk_gf` PDK is released open-source to allow users to easily evaluate a sample of what Luxtelligence has to offer. Please [contact us](mailto:foundry@luxtelligence.ai) for information on advanced building blocks and variations on the standard PDK geometry.
 
 ## Installation
 
-Use python3.11 or python3.12. We recommend [VSCode](https://code.visualstudio.com/) as an IDE.
+We recommend [KLayout](https://www.klayout.de/) as a layout viewer and editor for GDS and OASIS files. gdsfactory itself is based on and closely integrated with KLayout.
 
-If you don't have python installed on your system you can [download anaconda](https://www.anaconda.com/download/)
+Python 3.12 is required. We recommend [VSCode](https://code.visualstudio.com/) or [Google Antigravity](https://antigravity.google/) as IDEs.
 
-Once you have python installed, open Anaconda Prompt as Administrator and then install the latest gdsfactory using pip.
-
-![anaconda prompt](https://i.imgur.com/eKk2bbs.png)
-
+If you do not have Python installed, you can [download Anaconda](https://www.anaconda.com/download/). Once Python is available, clone the repository and install the package in editable mode:
 
 ```
 git clone https://github.com/Luxtelligence/lxt_pdk_gf.git
 cd lxt_pdk_gf
-pip install -e . pre-commit
-pre-commit install
+pip install -e .
 python install_tech.py
 ```
-Then you need to restart Klayout to make sure the new technology installed appears.
+
+Restart KLayout afterwards to ensure the newly installed technology appears.
+
+## KLayout Layer Properties
+
+Each PDK has a `klayout/` folder containing `.lyp` layer property files (e.g. `ltoi300/klayout/` and `lnoi400/klayout/`). These files define the colours, fill patterns, and display names for every process layer.
+
+To activate them in KLayout:
+
+1. Open KLayout and go to **File → Setup**.
+2. Navigate to the **Application** section and select **Layer Properties**.
+3. Under **Default layer properties file**, click **Browse** and point it to the `.lyp` file for your PDK (e.g. `lxt_pdk_gf/ltoi300/klayout/ltoi300.lyp`).
+4. Click **Apply** and **OK**. Restart KLayout to apply the changes.
+
+## KLayout DRC
+
+Design Rule Check (DRC) runsets for KLayout can be downloaded from [resources.luxtelligence.ai](https://resources.luxtelligence.ai/request-access?resource=drc). The files have a `.lydrc` extension and are specific to the technology stack you are using.
+
+**Installation:**
+
+Place the downloaded `.lydrc` file(s) in your local KLayout DRC folder:
+
+```
+<user home folder>/Klayout/drc/
+```
+
+> **Note:** KLayout has a known issue where only the first DRC file in the `drc/` folder is actually used. It is recommended to keep **only one `.lydrc` file** in that folder at a time. If you need to switch between DRC scripts for different stacks, simply replace the file.
+
+**Running the DRC in KLayout:**
+
+1. Open your GDS layout in KLayout.
+2. Go to **Tools → DRC**.
+3. Click **Edit DRC Script** and select the `.lydrc` file corresponding to your process stack.
+4. Run the script. The results will appear in a dedicated DRC results window, where violations are listed and can be highlighted in the layout.
+
+> **Important:** Not every flagged violation necessarily needs to be corrected — some rules may be advisory or context-dependent. Conversely, the DRC script does not guarantee that all possible design errors are caught. Always review results in the context of your specific design intent and consult Luxtelligence if in doubt.
 
 ## Examples
 
-After installing the PDK in your environment, you can validate that it is correctly working by running the Jupyter notebooks in the examples folder [docs/notebooks](https://github.com/Luxtelligence/lxt_pdk_gf/tree/main/docs/notebooks).
+After installing the PDK, you can verify that it is working correctly by running the Jupyter notebooks in the [docs/notebooks](https://github.com/Luxtelligence/lxt_pdk_gf/tree/main/docs/notebooks) folder.
 
 ## Documentation
 
-- [gdsfactory docs](https://gdsfactory.github.io/gdsfactory/)
+- [PDK documentation](https://luxtelligence.github.io/lxt_pdk_gf/)
+- [gdsfactory documentation](https://gdsfactory.github.io/gdsfactory/)
