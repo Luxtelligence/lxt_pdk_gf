@@ -8,6 +8,9 @@ dev:
 test:
 	pytest -s
 
+test-ports:
+	pytest -s tests/test_components.py::test_optical_port_positions
+
 update-pre:
 	pre-commit autoupdate --bleeding-edge
 

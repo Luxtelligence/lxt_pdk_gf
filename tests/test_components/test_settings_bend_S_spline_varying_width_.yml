@@ -1,6 +1,25 @@
 info:
   length: 60.493
 name: bend_S_spline_varying_width_S58_14p5_CSNone_CSNone_N201_310bbd98
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: 3
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.2
+  o2:
+    center:
+    - 58
+    - 14.5
+    layer: 3
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 0.3
 settings:
   npoints: 201
   path_method: spline_null_curvature

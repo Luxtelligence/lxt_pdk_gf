@@ -1,5 +1,24 @@
 info: {}
 name: double_linear_inverse_taper_CSSxs_swg250_CSExs_rwg1000__e181987f
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: 5
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.25
+  o2:
+    center:
+    - 360
+    - 0
+    layer: 3
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   cross_section_end: xs_rwg1000
   cross_section_start: xs_swg250

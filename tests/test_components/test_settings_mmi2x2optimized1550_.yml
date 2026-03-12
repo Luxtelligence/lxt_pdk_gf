@@ -1,5 +1,42 @@
 info: {}
 name: mmi2x2optimized1550_WM5_LM76p5_WT1p5_LT25_PR0p7_CSxs_rwg1000
+ports:
+  o1:
+    center:
+    - -25
+    - -1.75
+    layer: 3
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - -25
+    - 1.75
+    layer: 3
+    name: o2
+    orientation: 180
+    port_type: optical
+    width: 1
+  o3:
+    center:
+    - 101.5
+    - 1.75
+    layer: 3
+    name: o3
+    orientation: 0
+    port_type: optical
+    width: 1
+  o4:
+    center:
+    - 101.5
+    - -1.75
+    layer: 3
+    name: o4
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   cross_section: xs_rwg1000
   length_mmi: 76.5

@@ -17,7 +17,7 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  "gdsfactory~=9.3",
+  "gdsfactory~=9.39.0",
   "gplugins[sax]>=1.4,<2"
 ]
 description = "Luxtelligence lnoi400 pdk"
@@ -33,7 +33,8 @@ dev = [
   "pre-commit",
   "pytest",
   "pytest-cov",
-  "pytest_regressions"
+  "pytest_regressions",
+  "towncrier"
 ]
 docs = [
   "jupytext",
@@ -96,6 +97,10 @@ find = {}
 
 [tool.tbump]
 
+[[tool.tbump.before_commit]]
+cmd = "towncrier build --yes --version {new_version}"
+name = "create & check changelog"
+
 [[tool.tbump.file]]
 src = "README.md"
 
@@ -121,3 +126,13 @@ regex = '''
   \.
   (?P<patch>\d+)
   '''
+
+[tool.towncrier]
+directory = ".changelog.d"
+filename = "CHANGELOG.md"
+issue_format = "[#{issue}](https://github.com/luxtelligence/lnoi400/issues/{issue})"
+package = "gdsfactory"
+start_string = "<!-- towncrier release notes start -->\n"
+template = ".changelog.d/changelog_template.jinja"
+title_format = "## [{version}](https://github.com/luxtelligence/lnoi400/releases/tag/v{version}) - {project_date}"
+underlines = ["", "", ""]

@@ -1,5 +1,42 @@
 info: {}
 name: trail_cpw_L1000_SW21_GW4_T1p5_T44p7_T7_T1p5_T5_GPW180_R_121f14d9
+ports:
+  bp1:
+    center:
+    - -190
+    - 0
+    layer: 16
+    name: bp1
+    orientation: 180
+    port_type: electrical
+    width: 80
+  bp2:
+    center:
+    - 1190
+    - 0
+    layer: 16
+    name: bp2
+    orientation: 0
+    port_type: electrical
+    width: 80
+  e1:
+    center:
+    - 0
+    - 0
+    layer: 16
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 21
+  e2:
+    center:
+    - 1000
+    - 0
+    layer: 16
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 21
 settings:
   bondpad: CPW_pad_linear
   cross_section: xs_uni_cpw

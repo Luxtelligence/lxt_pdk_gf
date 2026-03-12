@@ -18,4 +18,41 @@ info:
     rf_pad_start_width: 80
     with_heater: false
 name: mzm_unbalanced_high_speed
+ports:
+  e1:
+    center:
+    - -300
+    - 0
+    layer: 16
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 80
+  e2:
+    center:
+    - 7800
+    - 0
+    layer: 16
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 80
+  o1:
+    center:
+    - -603.381
+    - 0
+    layer: 3
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 8944.148
+    - 0
+    layer: 3
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
 settings: {}

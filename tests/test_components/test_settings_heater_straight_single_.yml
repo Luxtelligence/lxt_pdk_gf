@@ -1,5 +1,42 @@
 info: {}
 name: heater_straight_single_L150_W0p9_O0_PCWR3_PS100_100_PPNone_PVO10
+ports:
+  e1:
+    center:
+    - 0
+    - 60.45
+    layer: 48
+    name: e1
+    orientation: 270
+    port_type: electrical
+    width: 100
+  e2:
+    center:
+    - 150
+    - 60.45
+    layer: 48
+    name: e2
+    orientation: 270
+    port_type: electrical
+    width: 100
+  ht_end:
+    center:
+    - 148.65
+    - 0.45
+    layer: 48
+    name: ht_end
+    orientation: 90
+    port_type: electrical
+    width: 0.9
+  ht_start:
+    center:
+    - 1.35
+    - 0.45
+    layer: 48
+    name: ht_start
+    orientation: 90
+    port_type: electrical
+    width: 0.9
 settings:
   length: 150
   offset: 0
