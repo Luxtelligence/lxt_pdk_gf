@@ -34,7 +34,6 @@ dev = [
   "pytest",
   "pytest-cov",
   "pytest_regressions",
-  "gdsfactoryplus",
   "towncrier"
 ]
 docs = [
