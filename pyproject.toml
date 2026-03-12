@@ -1,8 +1,8 @@
 # https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
 
 [build-system]
-build-backend = "flit_core.buildapi"
-requires = ["flit_core >=3.2,<4"]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=80", "wheel"]
 
 [lint.pydocstyle]
 convention = "google"
@@ -20,13 +20,13 @@ dependencies = [
   "gdsfactory~=9.39.0",
   "gplugins[sax]>=1.4,<2"
 ]
-description = "Luxtelligence lnoi400 pdk"
+description = "Luxtelligence gdsfactory PDK"
 keywords = ["python"]
 license = {file = "LICENSE"}
-name = "lnoi400"
+name = "lxt_pdk_gf"
 readme = "README.md"
 requires-python = "~=3.12.0"
-version = "1.2.0"
+version = "2.0"
 
 [project.optional-dependencies]
 dev = [
@@ -46,7 +46,7 @@ plus = [
 ]
 
 [tool.codespell]
-ignore-words-list = "te, te/tm, te, ba, fpr, fpr_spacing, ro, nd, donot, schem"
+ignore-words-list = "te, te/tm, te, ba, fpr, fpr_spacing, ro, rin, nd, donot, schem"
 
 [tool.gdsfactoryplus.drc]
 timeout = 300
@@ -67,8 +67,8 @@ strict = true
 # addopts = --tb=no
 addopts = '--tb=short'
 norecursedirs = ["extra/*.py"]
-python_files = ["lnoi400/*.py", "notebooks/*.ipynb", "tests/*.py"]
-testpaths = ["lnoi400/", "tests"]
+python_files = ["tests/*.py"]
+testpaths = ["tests"]
 
 [tool.ruff]
 fix = true
@@ -93,7 +93,7 @@ lint.select = [
 mypkg = ["*.csv", "*.yaml"]
 
 [tool.setuptools.packages]
-find = {}
+find = {exclude = ["tests", "tests.*", "docs", "docs.*"]}
 
 [tool.tbump]
 

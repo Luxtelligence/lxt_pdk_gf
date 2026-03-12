@@ -1,0 +1,6 @@
+info: {}
+name: edge_coupler_oband_IE10_TTL160_UTL80
+settings:
+  input_ext: 10
+  total_taper_length: 160
+  upper_taper_length: 80
