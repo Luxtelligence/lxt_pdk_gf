@@ -1,5 +1,6 @@
 import gdsfactory as gf
 
+from _utils.chip_floorplan import chip_frame
 from _utils.optical_resonators import ring_resonator as _ring_resonator
 from ltoi300._builders.edge_couplers import (
     build_cband_ltoi300_edge_coupler as _build_cband_ltoi300_edge_coupler,
@@ -695,4 +696,4 @@ def ring_resonator_multimode_point_coupler_cband(
 
 
 if __name__ == "__main__":
-    terminated_mzm_1x2mmi_oband().show()
+    chip_frame().show()
