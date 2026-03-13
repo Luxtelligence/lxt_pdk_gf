@@ -6,5 +6,24 @@ info:
   route_info_xs_rwg700_length: 10
   width: 0.7
 name: straight_rwg700_oband_L10
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: 55
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.7
+  o2:
+    center:
+    - 10
+    - 0
+    layer: 55
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 0.7
 settings:
   length: 10

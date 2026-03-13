@@ -1,5 +1,24 @@
 info: {}
 name: ring_resonator_single_mode_point_coupler_oband_RR200_RW_c767fe75
+ports:
+  o1:
+    center:
+    - 201.75
+    - -200
+    layer: 55
+    name: o1
+    orientation: 270
+    port_type: optical
+    width: 0.7
+  o2:
+    center:
+    - 201.75
+    - 200
+    layer: 55
+    name: o2
+    orientation: 90
+    port_type: optical
+    width: 0.7
 settings:
   gap: 1.05
   ring_radius: 200

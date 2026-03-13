@@ -1,4 +1,41 @@
 info:
   port_separation: 3.9
 name: mmi2x2_oband
+ports:
+  o1:
+    center:
+    - -25
+    - -1.95
+    layer: 55
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.7
+  o2:
+    center:
+    - -25
+    - 1.95
+    layer: 55
+    name: o2
+    orientation: 180
+    port_type: optical
+    width: 0.7
+  o3:
+    center:
+    - 122.5
+    - 1.95
+    layer: 55
+    name: o3
+    orientation: 0
+    port_type: optical
+    width: 0.7
+  o4:
+    center:
+    - 122.5
+    - -1.95
+    layer: 55
+    name: o4
+    orientation: 0
+    port_type: optical
+    width: 0.7
 settings: {}

@@ -8,6 +8,9 @@ dev:
 test:
 	pytest -s
 
+test-force:
+	pytest --force-regen -s tests/
+
 test-ports:
 	pytest -s tests/test_components.py::test_optical_port_positions
 

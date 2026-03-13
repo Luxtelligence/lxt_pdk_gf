@@ -6,5 +6,24 @@ info:
   route_info_xs_rwg2500_length: 10
   width: 2.5
 name: straight_rwg2500_L10
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: 55
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 2.5
+  o2:
+    center:
+    - 10
+    - 0
+    layer: 55
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 2.5
 settings:
   length: 10
