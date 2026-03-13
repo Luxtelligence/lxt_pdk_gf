@@ -35,11 +35,11 @@ repos:
   #       additional_dependencies:
   #         - "pydantic"
 
-  - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-    rev: v2.14.0
-    hooks:
-      - id: pretty-format-toml
-        args: [--autofix]
+  # - repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+  #   rev: v2.16.0
+  #   hooks:
+  #     - id: pretty-format-toml
+  #       args: [--autofix]
 
 
   - repo: https://github.com/aristanetworks/j2lint.git
@@ -51,7 +51,7 @@ repos:
         args: [--extensions, "j2,yml,yaml", --ignore, jinja-statements-delimiter, jinja-statements-indentation, --]
         exclude: .github/.*
   - repo: https://github.com/codespell-project/codespell
-    rev: v2.2.6
+    rev: v2.4.1
     hooks:
       - id: codespell
         additional_dependencies:

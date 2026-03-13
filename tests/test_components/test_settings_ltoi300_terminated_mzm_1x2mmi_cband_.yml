@@ -1,0 +1,127 @@
+info: {}
+name: terminated_mzm_1x2mmi_cband_ML5000_RG5p5_RCCW16_GP100_L_62984046
+ports:
+  _e2:
+    center:
+    - 5000
+    - 0
+    layer: 13
+    name: _e2
+    orientation: 0
+    port_type: electrical
+    width: 16
+  _ht1_1:
+    center:
+    - -1070
+    - 220
+    layer: 55
+    name: _ht1_1
+    orientation: 180
+    port_type: optical
+    width: 0.9
+  _ht1_2:
+    center:
+    - -370
+    - 220
+    layer: 55
+    name: _ht1_2
+    orientation: 0
+    port_type: optical
+    width: 0.9
+  _ht2_1:
+    center:
+    - -1070
+    - -170
+    layer: 55
+    name: _ht2_1
+    orientation: 180
+    port_type: optical
+    width: 0.9
+  _ht2_2:
+    center:
+    - -370
+    - -170
+    layer: 55
+    name: _ht2_2
+    orientation: 0
+    port_type: optical
+    width: 0.9
+  _term:
+    center:
+    - 5102.667
+    - 0
+    layer: 13
+    name: _term
+    orientation: 0
+    port_type: electrical
+    width: 1.5
+  e1:
+    center:
+    - -300
+    - 0
+    layer: 14
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 74.42
+  e3:
+    center:
+    - -996.35
+    - 380.45
+    layer: 14
+    name: e3
+    orientation: 90
+    port_type: electrical
+    width: 150
+  e4:
+    center:
+    - -826.35
+    - 380.45
+    layer: 14
+    name: e4
+    orientation: 90
+    port_type: electrical
+    width: 150
+  e5:
+    center:
+    - -996.35
+    - -330.45
+    layer: 14
+    name: e5
+    orientation: 270
+    port_type: electrical
+    width: 150
+  e6:
+    center:
+    - -826.35
+    - -330.45
+    layer: 14
+    name: e6
+    orientation: 270
+    port_type: electrical
+    width: 150
+  o1:
+    center:
+    - -1434.038
+    - 0
+    layer: 55
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.9
+  o2:
+    center:
+    - 5181.663
+    - 0
+    layer: 55
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 0.9
+settings:
+  bias_tuning_section_length: 700
+  gsg_pitch: 100
+  length_imbalance: 100
+  modulation_length: 5000
+  rf_central_conductor_width: 16
+  rf_gap: 5.5

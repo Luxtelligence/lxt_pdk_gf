@@ -11,6 +11,8 @@ extra/
 # C extensions
 *.so
 *.json
+# Allow JSON files in data directories (for PDK model data)
+!*/data/*.json
 ports/
 
 # Distribution / packaging
@@ -172,7 +174,8 @@ cython_debug/
 # GDSII layouts
 
 *.oas
-lnoi/**/*.gds
+*.gds
+!tests/gds_ref/**/*.gds
 
 # Test with different PDK distributions
 

@@ -1,0 +1,25 @@
+info: {}
+name: edge_coupler_cband_IE10_TTL160_UTL80
+ports:
+  o1:
+    center:
+    - -10
+    - 0
+    layer: 56
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.5
+  o2:
+    center:
+    - 160
+    - 0
+    layer: 55
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 0.9
+settings:
+  input_ext: 10
+  total_taper_length: 160
+  upper_taper_length: 80

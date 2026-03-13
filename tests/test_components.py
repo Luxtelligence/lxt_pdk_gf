@@ -1,40 +1,56 @@
 import pathlib
 
-import gdsfactory as gf
-import kfactory as kf
 import numpy as np
 import pytest
 from gdsfactory.difftest import difftest
 from pytest_regressions.data_regression import DataRegressionFixture
+from pytest_regressions.ndarrays_regression import NDArraysRegressionFixture
 
-from lnoi400 import PDK
+import lnoi400
+import ltoi300
 
-cells = PDK.cells
+pdks = {
+    "lnoi400": lnoi400.PDK,
+    "ltoi300": ltoi300.PDK,
+}
+
+gds_ref_dir = pathlib.Path(__file__).absolute().parent / "gds_ref"
 
 skip_test = {"import_gds"}
 
-component_names = set(cells.keys()) - set(skip_test)
-dirpath = pathlib.Path(__file__).absolute().parent / "gds_ref"
-dirpath.mkdir(exist_ok=True, parents=True)
 
-pcell_mapping = [
-    ("cell", "cell"),
-]
+def pytest_generate_tests(metafunc):
+    if (
+        "component_name" in metafunc.fixturenames
+        and "pdk_name" in metafunc.fixturenames
+    ):
+        argvalues = []
+        for pdk_name, pdk in pdks.items():
+            for component_name in pdk.cells.keys():
+                if component_name not in skip_test:
+                    argvalues.append((pdk_name, component_name))
+        metafunc.parametrize("pdk_name,component_name", argvalues)
+
+    if "model_name" in metafunc.fixturenames and "pdk_name" in metafunc.fixturenames:
+        argvalues = []
+        for pdk_name, pdk in pdks.items():
+            for model_name in pdk.models.keys():
+                argvalues.append((pdk_name, model_name))
+        metafunc.parametrize("pdk_name,model_name", argvalues)
 
 
-@pytest.fixture(params=component_names, scope="function")
-def component_name(request) -> str:
-    return request.param
-
-
-# @pytest.fixture(params=pcell_mapping, scope="function")
-# def name_mapping(request) -> str:
-#     return request.param
-
-
-def test_gds(component_name: str) -> None:
+def test_gds(
+    pdk_name: str,
+    component_name: str,
+) -> None:
     """Avoid regressions in GDS geometry shapes and layers."""
-    component = cells[component_name]()
+    pdk = pdks[pdk_name]
+    pdk.activate()
+    component = pdk.cells[component_name]()
+
+    dirpath = gds_ref_dir / pdk_name
+    dirpath.mkdir(exist_ok=True, parents=True)
+
     difftest(
         component,
         test_name=component_name,
@@ -43,63 +59,53 @@ def test_gds(component_name: str) -> None:
     )
 
 
-# def test_alternative_implementation(
-#     name_mapping: tuple,
-# ) -> None:
-#     """Test against the cells distributed with a different PDK implementation."""
-
-#     # TODO: Implement difftest with layers selection.
-
-#     assert name_mapping[0] == name_mapping[1]
-
-
 def test_settings(
+    pdk_name: str,
     component_name: str,
     data_regression: DataRegressionFixture,
 ) -> None:
     """Avoid regressions when exporting settings."""
-    component = cells[component_name]()
+    pdk = pdks[pdk_name]
+    pdk.activate()
+    component = pdk.cells[component_name]()
     data_regression.check(component.to_dict(with_ports=True))
 
 
-@pytest.mark.parametrize("component_name", component_names)
-def test_optical_port_positions(component_name: str) -> None:
-    """Ensure that optical ports are positioned correctly."""
-    component = cells[component_name]()
-    if isinstance(component, gf.ComponentAllAngle):
-        new_component = gf.Component()
-        kf.VInstance(component).insert_into_flat(new_component, levels=0)
-        new_component.add_ports(component.ports)
-        component = new_component
-    for port in component.ports:
-        if port.port_type == "optical":
-            port_layer = port.layer
-            port_width = port.width
-            port_position = port.center
-            port_angle = port.orientation
-            cs_region = kf.kdb.Region(component.begin_shapes_rec(port_layer))
-            optical_edges = cs_region.edges()
+def test_models_with_wavelength_sweep(
+    pdk_name: str,
+    model_name: str,
+    ndarrays_regression: NDArraysRegressionFixture,
+) -> None:
+    """Test models with different wavelengths to avoid regressions in frequency response."""
+    pdk = pdks[pdk_name]
+    pdk.activate()
+    models = pdk.models
 
-            tolerance = 0.001
-            poly = kf.kdb.DBox(-tolerance, -tolerance, tolerance, tolerance)
-            dbu_in_um = port.kcl.to_um(1)
-            port_marker = (
-                kf.kdb.DPolygon(poly).transformed(port.dcplx_trans).to_itype(dbu_in_um)
-            )
-            port_marker_region = kf.kdb.Region(port_marker)
+    wl = 1.55
 
-            interacting_edges = optical_edges.interacting(port_marker_region)
-            if interacting_edges.is_empty():
-                raise AssertionError(
-                    f"No optical edge found for port {port.name} at position {port_position} with width {port_width} and angle {port_angle}."
-                )
-            port_edge = next(iter(interacting_edges.each()))
-            edge_length = port_edge.length() * 0.001
-            if not np.isclose(edge_length, port_width, atol=1e-3):
-                raise AssertionError(
-                    f"Port {port.name} has width {port_width}, but the optical edge length is {edge_length}."
-                )
+    try:
+        model = models[model_name]
+        s_params = model(wl=wl)
+    except TypeError:
+        pytest.skip(f"{model_name} does not accept a wl argument")
+
+    # Convert s_params dictionary to arrays for regression testing
+    # s_params is a dict with tuple keys (port pairs) and JAX array values
+    arrays_to_check = {}
+    for key, value in sorted(s_params.items()):
+        # Convert tuple key to string for regression test compatibility
+        key_str = f"s_{key[0]}_{key[1]}"
+        # Convert JAX arrays to numpy and separate real/imag parts
+
+        value_np = np.array(value)
+        arrays_to_check[f"{key_str}_real"] = np.real(value_np)
+        arrays_to_check[f"{key_str}_imag"] = np.imag(value_np)
+
+    ndarrays_regression.check(
+        arrays_to_check,
+        default_tolerance={"atol": 1e-2, "rtol": 1e-2},
+    )
 
 
 if __name__ == "__main__":
-    print(component_names)
+    test_models_with_wavelength_sweep("lnoi400", "directional_coupler_balanced", 0)

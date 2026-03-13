@@ -3,10 +3,13 @@ install:
 	pre-commit install
 
 dev:
-	pip install -e .[dev,docs]
+	pip install -e .[dev,docs] --config-settings editable_mode=compat
 
 test:
 	pytest -s
+
+test-force:
+	pytest --force-regen -s tests/
 
 test-ports:
 	pytest -s tests/test_components.py::test_optical_port_positions
@@ -23,7 +26,8 @@ build:
 	python -m build
 
 docs:
-	python .github/write_cells_docs.py
+	python .github/write_cells_lnoi400.py
+	python .github/write_cells_ltoi300.py
 	jb build docs
 
 .PHONY: drc doc docs

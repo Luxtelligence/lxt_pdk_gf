@@ -3,7 +3,7 @@ import inspect
 from lnoi400 import _cells as cells
 from lnoi400.config import PATH
 
-filepath = PATH.repo / "docs" / "cells.rst"
+filepath = PATH.repo / "docs" / "cells_lnoi400.rst"
 
 skip = {}
 
@@ -18,7 +18,7 @@ with open(filepath, "w+") as f:
 Luxtelligence provides a library of components that have been fabricated in the reference material stack, and whose performance has been tested and validated. Here follows a list of the available parametric cells (gdsfactory.Component objects):
 
 
-Cells
+Cells lnoi400
 =============================
 """
     )
@@ -61,7 +61,8 @@ Cells
 
   import lnoi400
 
-  c = lnoi400.cells.{name}({kwargs})
+  c = lnoi400.cells.{name}({kwargs}).copy()
+  c.draw_ports()
   c.plot()
 
 """

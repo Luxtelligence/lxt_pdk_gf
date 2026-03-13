@@ -5,12 +5,12 @@ from gdsfactory.cross_section import get_cross_sections
 from gdsfactory.get_factories import get_cells
 from gdsfactory.pdk import Pdk
 
-from lnoi400 import cells, config, tech
+from _utils.models import get_models
+from lnoi400 import cells, config, models, tech
 from lnoi400.config import PATH
-from lnoi400.models import get_models
 from lnoi400.tech import LAYER, LAYER_STACK, LAYER_VIEWS
 
-_models = get_models()
+_models = get_models(models)
 _cells = get_cells(cells)
 _cross_sections = get_cross_sections(tech)
 
@@ -33,6 +33,7 @@ def get_pdk() -> Pdk:
         layer_views=LAYER_VIEWS,
         models=_models,
         routing_strategies=_routing_strategies,
+        version="1.2.0",
     )
 
 
@@ -52,4 +53,4 @@ __all__ = [
     "config",
     "tech",
 ]
-__version__ = "1.2.0"
+__version__ = "2.0"

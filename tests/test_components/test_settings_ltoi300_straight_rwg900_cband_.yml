@@ -1,0 +1,29 @@
+info:
+  length: 10
+  route_info_length: 10
+  route_info_type: xs_rwg900
+  route_info_weight: 10
+  route_info_xs_rwg900_length: 10
+  width: 0.9
+name: straight_rwg900_cband_L10
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: 55
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.9
+  o2:
+    center:
+    - 10
+    - 0
+    layer: 55
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 0.9
+settings:
+  length: 10
