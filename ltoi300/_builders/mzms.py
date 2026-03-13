@@ -30,7 +30,7 @@ DEFAULT_OPTICAL_WG_PARAMS: dict[str, Any] = {
 }
 DEFAULT_HEATER_PARAMS: dict[str, Any] = {
     "length": 1000.0,
-    "width": 0.9,
+    "width": 2.5,
     "routing_width": 6.0,
     "offset": 0.0,
     "both_arms": True,
