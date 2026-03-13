@@ -23,7 +23,7 @@ dependencies = [
 description = "Luxtelligence gdsfactory PDK"
 keywords = ["python"]
 license = {file = "LICENSE"}
-name = "lxt_pdk_gf"
+name = "lnoi400"
 readme = "README.md"
 requires-python = "~=3.12.0"
 version = "2.0"
