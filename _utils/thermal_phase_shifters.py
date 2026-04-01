@@ -8,7 +8,6 @@ from gdsfactory.routing import route_quad
 
 @gf.cell
 def heater_pads_assymm(
-    heater_xs: CrossSection,
     routing_xs: CrossSection,
     pad_size: tuple[float, float] = (150.0, 150.0),
     heater_length: float = 700.0,
@@ -16,7 +15,7 @@ def heater_pads_assymm(
 ) -> gf.Component:
     padwidth, _ = pad_size
     if pad_pitch is None:
-        pad_pitch = padwidth + 20.0
+        pad_pitch = heater_length - padwidth
 
     c = gf.Component()
     bondpads = gf.components.pad_array(
@@ -28,30 +27,9 @@ def heater_pads_assymm(
         port_orientation=-90.0,
         layer=routing_xs.layer,
     )
-    length = heater_length - padwidth - pad_pitch
     bps = c << bondpads
 
-    def routing():
-        c = gf.Component()
-        path = gf.path.straight(length=length)
-        c = path.extrude(routing_xs)
-        return c
-
-    try:
-        route = routing()
-    except Exception as e:
-        print(f"Error routing thermal phase shifter: {e}")
-        return None
-    route.ports["e2"].dcenter = (
-        route.ports["e2"].dcenter[0] - route.ports["e2"].dwidth / 2,
-        route.ports["e2"].dcenter[1],
-    )
-    route.ports["e2"].dangle = -90.0
-    rt = c << route
-    rt.dxmin = bps.dxmax
-    rt.dymin = bps.dymin
-    c.add_port(name="e11", port=bps.ports["e11"])
-    c.add_port(name="e12", port=rt.ports["e2"])
+    c.add_port(name="e1", port=bps.ports["e11"])
     c.add_port(name="e2", port=bps.ports["e12"])
     c.flatten()
     return c
@@ -87,11 +65,9 @@ def heater_straight_compact(
         pad_size=pad_size,
         heater_length=length,
         pad_pitch=pad_pitch,
-        heater_xs=heater_xs,
         routing_xs=routing_xs,
     )
     bps = c << bondpads
-    bondpads.ports["e12"].orientation = 270.0
 
     path = gf.path.straight(length=length)
     ht = path.extrude(heater_xs)
@@ -123,14 +99,14 @@ def heater_straight_compact(
 
     _ = route_quad(
         c,
-        port1=bps.ports["e11"],
+        port1=bps.ports["e1"],
         port2=ht.ports["e1"],
         **routing_params,
     )
 
     _ = route_quad(
         c,
-        port1=bps.ports["e12"],
+        port1=bps.ports["e2"],
         port2=ht.ports["e2"],
         **routing_params,
     )
@@ -176,7 +152,7 @@ def heater_straight_compact(
         n = 300
 
         tmp = gf.Component()
-        for port in [bps.ports["e11"], bps.ports["e2"]]:
+        for port in [bps.ports["e1"], bps.ports["e2"]]:
             pad_cx = port.dcenter[0]
             pad_cy = port.dcenter[1]
 
@@ -206,8 +182,8 @@ def heater_straight_compact(
         c.add_port(
             name="e1",
             center=(
-                bps.ports["e11"].dcenter[0],
-                bps.ports["e11"].dcenter[1] + pad_h / 2,
+                bps.ports["e1"].dcenter[0],
+                bps.ports["e1"].dcenter[1] + pad_h / 2,
             ),
             width=pad_w,
             orientation=90.0,
@@ -228,7 +204,7 @@ def heater_straight_compact(
     else:  # no transition to M2/HR
         c.add_port(
             name="e1",
-            port=bps.ports["e11"],
+            port=bps.ports["e1"],
         )
         c.add_port(
             name="e2",
