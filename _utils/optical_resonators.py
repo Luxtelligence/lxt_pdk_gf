@@ -48,6 +48,7 @@ def ring_resonator(
     bus_xs: CrossSectionSpec,
     ring_xs: CrossSectionSpec,
     bus_length: float | None = None,
+    over_under_distance: float = 0.5,
 ) -> gf.Component:
     """A ring resonator with an evanescent coupler."""
 
@@ -70,6 +71,19 @@ def ring_resonator(
         ring_radius + gap + 0.5 * (bus_xs.width + ring_xs.width),
         ring_ref.dcenter[1],
     ]
+
+    # Fix acute corners in the sleeve layers
+
+    main_layers = {bus_xs.layer, ring_xs.layer}
+    sleeve_layers = {
+        section.layer
+        for xs in (bus_xs, ring_xs)
+        for section in getattr(xs, "sections", [])
+        if section.layer not in main_layers
+    }
+    for layer in sleeve_layers:
+        c.over_under(layer=layer, distance=over_under_distance)
+
     c.add_ports(coupler_ref.ports)
     c.flatten()
     return c
@@ -150,17 +164,14 @@ def racetrack_resonator(
 
 
 if __name__ == "__main__":
-    from ltoi300.tech import xs_rwg, xs_rwg900
+    from ltoi300.tech import xs_rwg900
 
     xs_bus = xs_rwg900()
-    xs_racetrack = xs_rwg
-    c = racetrack_resonator(
+    xs_ring = xs_rwg900()
+    c = ring_resonator(
         gap=0.6,
-        rt_straight_length=200.0,
-        rt_height=100.0,
-        rt_width=2.0,
-        bus_length=100.0,
-        xs_bus=xs_bus,
-        xs_racetrack=xs_racetrack,
+        ring_radius=100.0,
+        bus_xs=xs_bus,
+        ring_xs=xs_ring,
     )
     c.show()
