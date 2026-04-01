@@ -48,6 +48,7 @@ def ring_resonator(
     bus_xs: CrossSectionSpec,
     ring_xs: CrossSectionSpec,
     bus_length: float | None = None,
+    over_under_distance: float = 0.5,
 ) -> gf.Component:
     """A ring resonator with an evanescent coupler."""
 
@@ -81,7 +82,7 @@ def ring_resonator(
         if section.layer not in main_layers
     }
     for layer in sleeve_layers:
-        c.over_under(layer=layer, distance=0.5)
+        c.over_under(layer=layer, distance=over_under_distance)
 
     c.add_ports(coupler_ref.ports)
     c.flatten()
