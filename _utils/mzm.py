@@ -267,7 +267,10 @@ def base_mzm(
         }
     if cpw_pad_params is None:
         cpw_pad_params = {
-            "single_side": False,
+            "left_optical_branch": "mmi",
+            "right_optical_branch": "mmi",
+            "left_rf_pad": "probe",
+            "right_rf_pad": "probe",
             "pitch": 100.0,
             "length_straight": 25.0,
             "length_tapered": 190.0,
@@ -357,7 +360,12 @@ def base_mzm(
 
     cpw_ref = MZM << cpw
 
-    if cpw_pad_params["single_side"]:
+    if (
+        cpw_pad_params["left_rf_pad"] == "probe"
+        and cpw_pad_params["right_rf_pad"] == "termination"
+        and cpw_pad_params["left_optical_branch"] == "mmi"
+        and cpw_pad_params["right_optical_branch"] == "mmi"
+    ):
         # Define optical combiner
         combiner1 = optical_combiner_direct(
             optical_xs=optical_waveguides["terminal_xs"],
@@ -396,7 +404,12 @@ def base_mzm(
             port=cpw_ref.ports["e2"],
         )
 
-    else:
+    if (
+        cpw_pad_params["left_rf_pad"] == "probe"
+        and cpw_pad_params["right_rf_pad"] == "probe"
+        and cpw_pad_params["left_optical_branch"] == "mmi"
+        and cpw_pad_params["right_optical_branch"] == "mmi"
+    ):
         # Define optical combiner
         combiner1 = optical_combiner_direct(
             optical_xs=optical_waveguides["terminal_xs"],

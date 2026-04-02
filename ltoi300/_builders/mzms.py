@@ -12,7 +12,10 @@ from ltoi300.tech import LAYER, xs_ht_wire, xs_rwg700, xs_rwg900, xs_uni_cpw
 ###############################################
 
 DEFAULT_CPW_PAD_PARAMS: dict[str, Any] = {
-    "single_side": False,
+    "left_rf_pad": "probe",
+    "right_rf_pad": "probe",
+    "left_optical_branch": "mmi",
+    "right_optical_branch": "mmi",
     "pitch": 100.0,
     "length_straight": 25.0,
     "length_tapered": 150.0,
@@ -201,7 +204,10 @@ def build_terminated_mzm_oband(
     _cpw_params = _merge(DEFAULT_CPW_PARAMS_OBAND, cpw_params)
     _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
     _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
-    _cpw_pad_params["single_side"] = True
+    _cpw_pad_params["right_rf_pad"] = "termination"
+    _cpw_pad_params["left_rf_pad"] = "probe"
+    _cpw_pad_params["right_optical_branch"] = "mmi"
+    _cpw_pad_params["left_optical_branch"] = "mmi"
     _transition_m1_m2_params = _merge(
         DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
     )
@@ -378,7 +384,10 @@ def build_terminated_mzm_cband(
     _cpw_params = _merge(DEFAULT_CPW_PARAMS_CBAND, cpw_params)
     _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
     _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
-    _cpw_pad_params["single_side"] = True
+    _cpw_pad_params["left_optical_branch"] = "mmi"
+    _cpw_pad_params["right_optical_branch"] = "mmi"
+    _cpw_pad_params["right_rf_pad"] = "termination"
+    _cpw_pad_params["left_rf_pad"] = "probe"
     _transition_m1_m2_params = _merge(
         DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
     )
