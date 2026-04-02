@@ -403,6 +403,32 @@ def base_mzm(
             name="e2",
             port=cpw_ref.ports["e2"],
         )
+        if "1x2" in mmi_cell.name:
+            MZM.add_port(
+                name="o1",
+                port=combiner1_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o2",
+                port=combiner2_ref.ports["o1"],
+            )
+        else:
+            MZM.add_port(
+                name="o2",
+                port=combiner1_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o1",
+                port=combiner1_ref.ports["o2"],
+            )
+            MZM.add_port(
+                name="o4",
+                port=combiner2_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=combiner2_ref.ports["o2"],
+            )
 
     if (
         cpw_pad_params["left_rf_pad"] == "probe"
@@ -434,6 +460,36 @@ def base_mzm(
             name="e2",
             port=cpw_ref.ports["e2"],
         )
+        if "1x2" in mmi_cell.name:
+            MZM.add_port(
+                name="o1",
+                port=combiner1_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o2",
+                port=cpw_ref.ports["o2"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=cpw_ref.ports["o3"],
+            )
+        else:
+            MZM.add_port(
+                name="o2",
+                port=combiner1_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o1",
+                port=combiner1_ref.ports["o2"],
+            )
+            MZM.add_port(
+                name="o4",
+                port=cpw_ref.ports["o3"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=cpw_ref.ports["o2"],
+            )
 
     if (
         cpw_pad_params["left_rf_pad"] == "probe"
@@ -451,6 +507,22 @@ def base_mzm(
         MZM.add_port(
             name="e2",
             port=cpw_ref.ports["e2"],
+        )
+        MZM.add_port(
+            name="o2",
+            port=pad1_ref.ports["o1"],
+        )
+        MZM.add_port(
+            name="o3",
+            port=cpw_ref.ports["o2"],
+        )
+        MZM.add_port(
+            name="o4",
+            port=cpw_ref.ports["o3"],
+        )
+        MZM.add_port(
+            name="o1",
+            port=pad1_ref.ports["o4"],
         )
 
     if (
@@ -498,74 +570,33 @@ def base_mzm(
             name="e2",
             port=pad2_ref.ports["e1"],
         )
+        if "1x2" in mmi_cell.name:
+            MZM.add_port(
+                name="o1",
+                port=combiner1_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o2",
+                port=combiner2_ref.ports["o1"],
+            )
+        else:
+            MZM.add_port(
+                name="o2",
+                port=combiner1_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o1",
+                port=combiner1_ref.ports["o2"],
+            )
+            MZM.add_port(
+                name="o4",
+                port=combiner2_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=combiner2_ref.ports["o2"],
+            )
 
-    if optical_waveguide_params["left_optical_branch"] == "mmi":
-        MZM.add_port(
-            name="o1",
-            port=combiner1_ref.ports["o1"],
-        )
-    if (
-        "2x2" in mmi_cell.name
-        and optical_waveguide_params["left_optical_branch"] == "mmi"
-        and optical_waveguide_params["right_optical_branch"] == "mmi"
-    ):
-        MZM.add_port(
-            name="o2",
-            port=combiner1_ref.ports["o2"],
-        )
-        MZM.add_port(
-            name="o3",
-            port=combiner2_ref.ports["o2"],
-        )
-        MZM.add_port(
-            name="o4",
-            port=combiner2_ref.ports["o1"],
-        )
-    if (
-        "1x2" in mmi_cell.name
-        and optical_waveguide_params["left_optical_branch"] == "mmi"
-        and optical_waveguide_params["right_optical_branch"] == "mmi"
-    ):
-        MZM.add_port(
-            name="o2",
-            port=combiner2_ref.ports["o1"],
-        )
-    print(mmi_cell.name)
-    if (
-        "1x2" in mmi_cell.name
-        and optical_waveguide_params["left_optical_branch"] == "mmi"
-        and optical_waveguide_params["right_optical_branch"] == "open"
-    ):
-        MZM.add_port(
-            name="o2",
-            port=cpw_ref.ports["o2"],
-        )
-        MZM.add_port(
-            name="o3",
-            port=cpw_ref.ports["o3"],
-        )
-
-    if (
-        "1x2" in mmi_cell.name
-        and optical_waveguide_params["left_optical_branch"] == "open"
-        and optical_waveguide_params["right_optical_branch"] == "open"
-    ):
-        MZM.add_port(
-            name="o1",
-            port=cpw_ref.ports["o4"],
-        )
-        MZM.add_port(
-            name="o2",
-            port=cpw_ref.ports["o1"],
-        )
-        MZM.add_port(
-            name="o3",
-            port=cpw_ref.ports["o2"],
-        )
-        MZM.add_port(
-            name="o4",
-            port=cpw_ref.ports["o3"],
-        )
     if (
         optical_waveguide_params["heater_section_length"] > 0.0
         and optical_waveguide_params["left_optical_branch"] == "mmi"
