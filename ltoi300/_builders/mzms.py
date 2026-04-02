@@ -325,7 +325,10 @@ def build_unterminated_mzm_cband(
         **base_mzm_kwargs,
     )
 
-    if _heater_params["length"] > 0.0:
+    if (
+        _heater_params["length"] > 0.0
+        and optical_waveguide_params["left_optical_branch"] == "mmi"
+    ):
         _transition_m2_hr_params = _merge(
             DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
         )
@@ -446,16 +449,19 @@ def build_phase_shifter_modular_cband(
     termination_params: dict[str, Any] | None = None,
     heater_params: dict[str, Any] | None = None,
 ):
-    """Create a routed terminated MZM for wafer-scale testing with edge couplers."""
+    """Create a phase-shifter modular C-band component.
+
+    Args:
+        cpw_pad_params: Overrides for CPW pad parameters. The keys
+            ``left_optical_branch`` and ``right_optical_branch`` accept:
+            - ``"mmi"``  – terminate the optical branch with an MMI coupler.
+            - ``"open"`` – leave the waveguide unterminated (bare port).
+    """
     c = gf.Component()
 
     _cpw_params = _merge(DEFAULT_CPW_PARAMS_CBAND, cpw_params)
     _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
     _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
-    _cpw_pad_params["left_optical_branch"] = "mmi"
-    _cpw_pad_params["right_optical_branch"] = "mmi"
-    _cpw_pad_params["right_rf_pad"] = "termination"
-    _cpw_pad_params["left_rf_pad"] = "probe"
     _transition_m1_m2_params = _merge(
         DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
     )
