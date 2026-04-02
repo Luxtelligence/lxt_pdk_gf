@@ -433,6 +433,74 @@ def build_terminated_mzm_cband(
     return c
 
 
+def build_phase_shifter_modular_cband(
+    mmi_cell: gf.Component,
+    modulation_length: float = 2000.0,
+    cpw_params: dict[str, Any] | None = None,
+    trail_params: dict[str, Any] | None = None,
+    cpw_pad_params: dict[str, Any] | None = None,
+    optical_waveguide_params: dict[str, Any] | None = None,
+    m2_bonding_pad_params: dict[str, Any] | None = None,
+    transition_m1_m2_params: dict[str, Any] | None = None,
+    transition_m2_hr_params: dict[str, Any] | None = None,
+    termination_params: dict[str, Any] | None = None,
+    heater_params: dict[str, Any] | None = None,
+):
+    """Create a routed terminated MZM for wafer-scale testing with edge couplers."""
+    c = gf.Component()
+
+    _cpw_params = _merge(DEFAULT_CPW_PARAMS_CBAND, cpw_params)
+    _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
+    _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
+    _cpw_pad_params["left_optical_branch"] = "mmi"
+    _cpw_pad_params["right_optical_branch"] = "mmi"
+    _cpw_pad_params["right_rf_pad"] = "termination"
+    _cpw_pad_params["left_rf_pad"] = "probe"
+    _transition_m1_m2_params = _merge(
+        DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
+    )
+    _transition_m2_hr_params = _merge(
+        DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
+    )
+
+    cpw_xs = xs_uni_cpw(
+        central_conductor_width=_cpw_params["rf_central_conductor_width"],
+        gap=_cpw_params["rf_gap"],
+        ground_planes_width=_cpw_params["rf_ground_planes_width"],
+    )
+    termination = double_layer_termination(
+        cpw_xs=cpw_xs,
+        termination_layer=LAYER.HRL,
+        m2_layer=LAYER.M2,
+        m2_pad_length=_termination_params["m2_pad_length"],
+        termination_params=_termination_params,
+        via_m1_m2_params=_transition_m1_m2_params,
+        via_m2_hr_params=_transition_m2_hr_params,
+    )
+    mzm_ref = c << build_unterminated_mzm_cband(
+        mmi_cell=mmi_cell,
+        modulation_length=modulation_length,
+        cpw_params=_cpw_params,
+        trail_params=trail_params,
+        cpw_pad_params=_cpw_pad_params,
+        optical_waveguide_params=optical_waveguide_params,
+        m2_bonding_pad_params=m2_bonding_pad_params,
+        transition_m1_m2_params=transition_m1_m2_params,
+        transition_m2_hr_params=transition_m2_hr_params,
+        heater_params=heater_params,
+    )
+    termination_ref = c << termination
+    termination_ref.connect("e1", mzm_ref.ports["e2"])
+    c.add_port(name="_term", port=termination_ref.ports["term"])
+    utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2", "e2"]
+    for port in mzm_ref.ports:
+        if port.name in utility_ports:
+            c.add_port(name=f"_{port.name}", port=port)
+        else:
+            c.add_port(name=port.name, port=port)
+    return c
+
+
 ############################################
 ########### Helper functions ###############
 ############################################
