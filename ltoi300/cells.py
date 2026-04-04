@@ -1,6 +1,5 @@
 import gdsfactory as gf
 
-from _utils.chip_floorplan import chip_frame
 from _utils.optical_resonators import ring_resonator as _ring_resonator
 from ltoi300._builders.edge_couplers import (
     build_cband_ltoi300_edge_coupler as _build_cband_ltoi300_edge_coupler,
@@ -31,6 +30,18 @@ from ltoi300._builders.mzms import (
 )
 from ltoi300._builders.mzms import (
     build_unterminated_mzm_oband as _build_unterminated_mzm_oband,
+)
+from ltoi300._builders.phase_modulators import (
+    build_terminated_eo_phase_shifter_cband as _build_terminated_eo_phase_shifter_cband,
+)
+from ltoi300._builders.phase_modulators import (
+    build_terminated_eo_phase_shifter_oband as _build_terminated_eo_phase_shifter_oband,
+)
+from ltoi300._builders.phase_modulators import (
+    build_unterminated_eo_phase_shifter_cband as _build_unterminated_eo_phase_shifter_cband,
+)
+from ltoi300._builders.phase_modulators import (
+    build_unterminated_eo_phase_shifter_oband as _build_unterminated_eo_phase_shifter_oband,
 )
 from ltoi300._builders.straights import (
     build_straight_rwg700 as _build_straight_rwg700,
@@ -353,6 +364,70 @@ def unterminated_mzm_2x2mmi_oband(
     )
 
 
+@gf.cell
+def unterminated_eo_phase_shifter_oband(
+    modulation_length: float = 5000.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 20.0,
+    gsg_pitch: float = 100.0,
+) -> gf.Component:
+    """Returns an unterminated EO phase shifter for O-band operation.
+
+    Optical waveguide routed through the gap of a CPW transmission line with GSG bonding
+    pads at both ends.
+
+    Args:
+        modulation_length: length of the EO modulation section (µm).
+        rf_gap: gap between the RF ground planes and the RF central conductor (µm).
+        rf_central_conductor_width: width of the RF central conductor (µm).
+        gsg_pitch: pitch of the GSG contact pads (µm).
+    """
+    cpw_params = {
+        "rf_gap": rf_gap,
+        "rf_central_conductor_width": rf_central_conductor_width,
+    }
+    cpw_pad_params = {
+        "pitch": gsg_pitch,
+    }
+    return _build_unterminated_eo_phase_shifter_oband(
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        cpw_pad_params=cpw_pad_params,
+    )
+
+
+@gf.cell
+def terminated_eo_phase_shifter_oband(
+    modulation_length: float = 5000.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 20.0,
+    gsg_pitch: float = 100.0,
+) -> gf.Component:
+    """Returns a terminated EO phase shifter for O-band operation.
+
+    One end of the CPW carries a GSG bonding pad; the other end carries a
+    matched RF termination (double-layer resistive wire).
+
+    Args:
+        modulation_length: length of the EO modulation section (µm).
+        rf_gap: gap between the RF ground planes and the RF central conductor (µm).
+        rf_central_conductor_width: width of the RF central conductor (µm).
+        gsg_pitch: pitch of the GSG contact pads (µm).
+    """
+    cpw_params = {
+        "rf_gap": rf_gap,
+        "rf_central_conductor_width": rf_central_conductor_width,
+    }
+    cpw_pad_params = {
+        "pitch": gsg_pitch,
+    }
+    return _build_terminated_eo_phase_shifter_oband(
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        cpw_pad_params=cpw_pad_params,
+    )
+
+
 #####################
 # Optical Resonators
 #####################
@@ -650,6 +725,70 @@ def unterminated_mzm_2x2mmi_cband(
     )
 
 
+@gf.cell
+def unterminated_eo_phase_shifter_cband(
+    modulation_length: float = 5000.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 16.0,
+    gsg_pitch: float = 100.0,
+) -> gf.Component:
+    """Returns an unterminated EO phase shifter for C-band operation.
+
+    Optical waveguide routed through the gap of a CPW transmission line with
+    GSG bonding pads at both ends.
+
+    Args:
+        modulation_length: length of the EO modulation section (µm).
+        rf_gap: gap between the RF ground planes and the RF central conductor (µm).
+        rf_central_conductor_width: width of the RF central conductor (µm).
+        gsg_pitch: pitch of the GSG contact pads (µm).
+    """
+    cpw_params = {
+        "rf_gap": rf_gap,
+        "rf_central_conductor_width": rf_central_conductor_width,
+    }
+    cpw_pad_params = {
+        "pitch": gsg_pitch,
+    }
+    return _build_unterminated_eo_phase_shifter_cband(
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        cpw_pad_params=cpw_pad_params,
+    )
+
+
+@gf.cell
+def terminated_eo_phase_shifter_cband(
+    modulation_length: float = 5000.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 16.0,
+    gsg_pitch: float = 100.0,
+) -> gf.Component:
+    """Returns a terminated EO phase shifter for C-band operation.
+
+    One end of the CPW carries a GSG bonding pad; the other end carries a
+    matched RF termination (double-layer resistive wire).
+
+    Args:
+        modulation_length: length of the EO modulation section (µm).
+        rf_gap: gap between the RF ground planes and the RF central conductor (µm).
+        rf_central_conductor_width: width of the RF central conductor (µm).
+        gsg_pitch: pitch of the GSG contact pads (µm).
+    """
+    cpw_params = {
+        "rf_gap": rf_gap,
+        "rf_central_conductor_width": rf_central_conductor_width,
+    }
+    cpw_pad_params = {
+        "pitch": gsg_pitch,
+    }
+    return _build_terminated_eo_phase_shifter_cband(
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        cpw_pad_params=cpw_pad_params,
+    )
+
+
 #####################
 # Optical Resonators
 #####################
@@ -696,4 +835,4 @@ def ring_resonator_multimode_point_coupler_cband(
 
 
 if __name__ == "__main__":
-    chip_frame().show()
+    terminated_eo_phase_shifter_oband().show()
