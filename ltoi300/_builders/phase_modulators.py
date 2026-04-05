@@ -42,7 +42,7 @@ DEFAULT_PM_OPTICAL_WG_PARAMS: dict[str, Any] = {
 
 
 # ---------------------------------------------------------------------------
-# Internal helper
+# Internal helpers
 # ---------------------------------------------------------------------------
 
 
@@ -93,7 +93,7 @@ def _build_phase_modulator(
         "taper_length": taper_length,
     }
 
-    # Build the CPW (the single embedded waveguide is automatically constructed).
+    # Build the CPW with a single embedded optical waveguide.
     if cpw_params["type"] == "straight":
         cpw = _straight_cpw(
             cpw_xs=_cpw_xs,
@@ -114,7 +114,7 @@ def _build_phase_modulator(
             f"Invalid CPW type: {cpw_params['type']}. Valid types are 'straight' and 'trail'."
         )
 
-    # Build the GSG bonding pad.
+    # Build the GSG bonding pad (upper waveguide only).
     pad = cpw_pad(
         cpw_xs=_cpw_xs,
         optical_waveguide_xs=terminal_xs,
@@ -125,18 +125,6 @@ def _build_phase_modulator(
         m2_bonding_pads_params=m2_bonding_pad_params,
         single_waveguide=True,
     )
-
-    # Derive CPW geometry from the cross-section parameters (not from the ref's
-    # .info dict, which is not available on a ComponentReference).
-    signal_width = cpw_params["rf_central_conductor_width"]
-
-    # For trail CPW the T-rails extend into the gap, enlarging the effective gap.
-    if cpw_params["type"] == "trail":
-        # trail_params is already merged before reaching this function.
-        th = trail_params.get("th", 0.0)
-        tt = trail_params.get("tt", 0.0)
-        # With T-rails the central conductor is also narrowed; update signal_width.
-        signal_width = signal_width - 2 * th - 2 * tt
 
     # Assemble the phase modulator.
     PM = gf.Component()
@@ -161,8 +149,144 @@ def _build_phase_modulator(
     return PM
 
 
+def _add_pm_ports_with_termination(
+    c: gf.Component,
+    pm_ref: gf.ComponentReference,
+    termination_ref: gf.ComponentReference,
+    wg_ext_ref: gf.ComponentReference,
+) -> None:
+    """Expose ports on a terminated PM assembly.
+
+    Explicitly exposes the primary optical and RF ports, hides the internal
+    CPW connection point under a leading underscore, and forwards any other
+    auxiliary ports (e.g. heater contacts added by pad/via builders).
+    """
+    c.add_port(name="_term", port=termination_ref.ports["term"])
+    c.add_port(name="o1", port=pm_ref.ports["o1"])
+    c.add_port(name="o2", port=wg_ext_ref.ports["o2"])
+    c.add_port(name="e1", port=pm_ref.ports["e1"])
+
+    # Forward any auxiliary ports not already handled above.
+    hidden = {"o1", "o2", "e1", "e2", "_e2", "_term"}
+    for port in pm_ref.ports:
+        if port.name not in hidden:
+            c.add_port(name=port.name, port=port)
+
+    # Keep the internal CPW port accessible for debugging/probing.
+    c.add_port(name="_e2", port=pm_ref.ports["e2"])
+
+
+def _build_unterminated_pm(
+    *,
+    optical_xs: gf.typings.CrossSectionSpec,
+    default_cpw_params: dict[str, Any],
+    default_trail_params: dict[str, Any],
+    modulation_length: float,
+    cpw_params: dict[str, Any] | None,
+    trail_params: dict[str, Any] | None,
+    cpw_pad_params: dict[str, Any] | None,
+    optical_waveguide_params: dict[str, Any] | None,
+    m2_bonding_pad_params: dict[str, Any] | None,
+    transition_m1_m2_params: dict[str, Any] | None,
+) -> gf.Component:
+    """Generic unterminated PM builder shared by O- and C-band variants."""
+    _transition_m1_m2_params = _merge(
+        DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
+    )
+    _m2_bonding_params = _build_m2_bonding_params(
+        m2_bonding_pad_params=m2_bonding_pad_params,
+        transition_m1_m2_params=_transition_m1_m2_params,
+    )
+    return _build_phase_modulator(
+        optical_xs=optical_xs,
+        cpw_params=_merge(default_cpw_params, cpw_params),
+        trail_params=_merge(default_trail_params, trail_params),
+        modulation_length=modulation_length,
+        cpw_pad_params=_merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params),
+        optical_waveguide_params=_merge(
+            DEFAULT_PM_OPTICAL_WG_PARAMS, optical_waveguide_params
+        ),
+        m2_bonding_pad_params=_m2_bonding_params,
+        single_side=False,
+    )
+
+
+def _wrap_pm_with_termination(
+    *,
+    optical_xs: gf.typings.CrossSectionSpec,
+    default_cpw_params: dict[str, Any],
+    default_trail_params: dict[str, Any],
+    modulation_length: float,
+    cpw_params: dict[str, Any] | None,
+    trail_params: dict[str, Any] | None,
+    cpw_pad_params: dict[str, Any] | None,
+    optical_waveguide_params: dict[str, Any] | None,
+    m2_bonding_pad_params: dict[str, Any] | None,
+    transition_m1_m2_params: dict[str, Any] | None,
+    transition_m2_hr_params: dict[str, Any] | None,
+    termination_params: dict[str, Any] | None,
+) -> gf.Component:
+    """Generic terminated PM builder shared by O- and C-band variants."""
+    _cpw_params = _merge(default_cpw_params, cpw_params)
+    _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
+    _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
+    _transition_m1_m2_params = _merge(
+        DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
+    )
+    _transition_m2_hr_params = _merge(
+        DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
+    )
+    # Use the *merged* M1→M2 params so user overrides propagate into the bonding vias.
+    _m2_bonding_params = _build_m2_bonding_params(
+        m2_bonding_pad_params=m2_bonding_pad_params,
+        transition_m1_m2_params=_transition_m1_m2_params,
+    )
+
+    cpw_xs = xs_uni_cpw(
+        central_conductor_width=_cpw_params["rf_central_conductor_width"],
+        gap=_cpw_params["rf_gap"],
+        ground_planes_width=_cpw_params["rf_ground_planes_width"],
+    )
+    termination = double_layer_termination(
+        cpw_xs=cpw_xs,
+        termination_layer=LAYER.HRL,
+        m2_layer=LAYER.M2,
+        m2_pad_length=_termination_params["m2_pad_length"],
+        termination_params=_termination_params,
+        via_m1_m2_params=_transition_m1_m2_params,
+        via_m2_hr_params=_transition_m2_hr_params,
+    )
+
+    pm_ref_component = _build_phase_modulator(
+        optical_xs=optical_xs,
+        cpw_params=_cpw_params,
+        trail_params=_merge(default_trail_params, trail_params),
+        modulation_length=modulation_length,
+        cpw_pad_params=_cpw_pad_params,
+        optical_waveguide_params=_merge(
+            DEFAULT_PM_OPTICAL_WG_PARAMS, optical_waveguide_params
+        ),
+        m2_bonding_pad_params=_m2_bonding_params,
+        single_side=True,  # the far end connects to the RF termination
+    )
+
+    c = gf.Component()
+    pm_ref = c << pm_ref_component
+    termination_ref = c << termination
+    termination_ref.connect("e1", pm_ref.ports["e2"])
+
+    # Extend the optical waveguide through the termination block.
+    wg_ext = c << gf.components.straight(
+        length=termination_ref.dxsize, cross_section=optical_xs
+    )
+    wg_ext.connect("o1", pm_ref.ports["o2"])
+
+    _add_pm_ports_with_termination(c, pm_ref, termination_ref, wg_ext)
+    return c
+
+
 # ---------------------------------------------------------------------------
-# O-band builders
+# O-band public builders
 # ---------------------------------------------------------------------------
 
 
@@ -192,21 +316,17 @@ def build_unterminated_eo_phase_shifter_oband(
     Returns:
         gf.Component with ports ``o1``, ``o2`` (optical) and ``e1``, ``e2`` (RF).
     """
-    _m2_bonding_params = _build_m2_bonding_params(
+    return _build_unterminated_pm(
+        optical_xs=xs_rwg700,
+        default_cpw_params=DEFAULT_CPW_PARAMS_OBAND,
+        default_trail_params=DEFAULT_TRAIL_PARAMS_OBAND,
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        trail_params=trail_params,
+        cpw_pad_params=cpw_pad_params,
+        optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
         transition_m1_m2_params=transition_m1_m2_params,
-    )
-    return _build_phase_modulator(
-        optical_xs=xs_rwg700,
-        cpw_params=_merge(DEFAULT_CPW_PARAMS_OBAND, cpw_params),
-        trail_params=_merge(DEFAULT_TRAIL_PARAMS_OBAND, trail_params),
-        modulation_length=modulation_length,
-        cpw_pad_params=_merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params),
-        optical_waveguide_params=_merge(
-            DEFAULT_PM_OPTICAL_WG_PARAMS, optical_waveguide_params
-        ),
-        m2_bonding_pad_params=_m2_bonding_params,
-        single_side=False,
     )
 
 
@@ -241,75 +361,24 @@ def build_terminated_eo_phase_shifter_oband(
         gf.Component with ports ``o1``, ``o2`` (optical), ``e1`` (RF pad)
         and ``_term`` (termination probe point, hidden underscore prefix).
     """
-    _cpw_params = _merge(DEFAULT_CPW_PARAMS_OBAND, cpw_params)
-    _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
-    _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
-    _transition_m1_m2_params = _merge(
-        DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
-    )
-    _transition_m2_hr_params = _merge(
-        DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
-    )
-    _m2_bonding_params = _build_m2_bonding_params(
+    return _wrap_pm_with_termination(
+        optical_xs=xs_rwg700,
+        default_cpw_params=DEFAULT_CPW_PARAMS_OBAND,
+        default_trail_params=DEFAULT_TRAIL_PARAMS_OBAND,
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        trail_params=trail_params,
+        cpw_pad_params=cpw_pad_params,
+        optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
         transition_m1_m2_params=transition_m1_m2_params,
+        transition_m2_hr_params=transition_m2_hr_params,
+        termination_params=termination_params,
     )
-
-    cpw_xs = xs_uni_cpw(
-        central_conductor_width=_cpw_params["rf_central_conductor_width"],
-        gap=_cpw_params["rf_gap"],
-        ground_planes_width=_cpw_params["rf_ground_planes_width"],
-    )
-    termination = double_layer_termination(
-        cpw_xs=cpw_xs,
-        termination_layer=LAYER.HRL,
-        m2_layer=LAYER.M2,
-        m2_pad_length=_termination_params["m2_pad_length"],
-        termination_params=_termination_params,
-        via_m1_m2_params=_transition_m1_m2_params,
-        via_m2_hr_params=_transition_m2_hr_params,
-    )
-
-    pm_ref_component = _build_phase_modulator(
-        optical_xs=xs_rwg700,
-        cpw_params=_cpw_params,
-        trail_params=_merge(DEFAULT_TRAIL_PARAMS_OBAND, trail_params),
-        modulation_length=modulation_length,
-        cpw_pad_params=_cpw_pad_params,
-        optical_waveguide_params=_merge(
-            DEFAULT_PM_OPTICAL_WG_PARAMS, optical_waveguide_params
-        ),
-        m2_bonding_pad_params=_m2_bonding_params,
-        single_side=True,  # the far end is directly connected to the termination
-    )
-
-    c = gf.Component()
-    pm_ref = c << pm_ref_component
-    termination_ref = c << termination
-    termination_ref.connect("e1", pm_ref.ports["e2"])
-
-    # Extend optical waveguide through termination
-    wg_ext = c << gf.components.straight(
-        length=termination_ref.dxsize, cross_section=xs_rwg700
-    )
-    wg_ext.connect("o1", pm_ref.ports["o2"])
-
-    c.add_port(name="_term", port=termination_ref.ports["term"])
-    c.add_port(name="o1", port=pm_ref.ports["o1"])
-    c.add_port(name="o2", port=wg_ext.ports["o2"])
-    c.add_port(name="e1", port=pm_ref.ports["e1"])
-
-    for port in pm_ref.ports:
-        if port.name not in ["o1", "o2", "e1", "e2", "_e2", "_term"]:
-            c.add_port(name=port.name, port=port)
-
-    c.add_port(name="_e2", port=pm_ref.ports["e2"])
-
-    return c
 
 
 # ---------------------------------------------------------------------------
-# C-band builders
+# C-band public builders
 # ---------------------------------------------------------------------------
 
 
@@ -339,21 +408,17 @@ def build_unterminated_eo_phase_shifter_cband(
     Returns:
         gf.Component with ports ``o1``, ``o2`` (optical) and ``e1``, ``e2`` (RF).
     """
-    _m2_bonding_params = _build_m2_bonding_params(
+    return _build_unterminated_pm(
+        optical_xs=xs_rwg900,
+        default_cpw_params=DEFAULT_CPW_PARAMS_CBAND,
+        default_trail_params=DEFAULT_TRAIL_PARAMS_CBAND,
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        trail_params=trail_params,
+        cpw_pad_params=cpw_pad_params,
+        optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
         transition_m1_m2_params=transition_m1_m2_params,
-    )
-    return _build_phase_modulator(
-        optical_xs=xs_rwg900,
-        cpw_params=_merge(DEFAULT_CPW_PARAMS_CBAND, cpw_params),
-        trail_params=_merge(DEFAULT_TRAIL_PARAMS_CBAND, trail_params),
-        modulation_length=modulation_length,
-        cpw_pad_params=_merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params),
-        optical_waveguide_params=_merge(
-            DEFAULT_PM_OPTICAL_WG_PARAMS, optical_waveguide_params
-        ),
-        m2_bonding_pad_params=_m2_bonding_params,
-        single_side=False,
     )
 
 
@@ -388,71 +453,20 @@ def build_terminated_eo_phase_shifter_cband(
         gf.Component with ports ``o1``, ``o2`` (optical), ``e1`` (RF pad)
         and ``_term`` (termination probe point, hidden underscore prefix).
     """
-    _cpw_params = _merge(DEFAULT_CPW_PARAMS_CBAND, cpw_params)
-    _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
-    _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
-    _transition_m1_m2_params = _merge(
-        DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
-    )
-    _transition_m2_hr_params = _merge(
-        DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
-    )
-    _m2_bonding_params = _build_m2_bonding_params(
+    return _wrap_pm_with_termination(
+        optical_xs=xs_rwg900,
+        default_cpw_params=DEFAULT_CPW_PARAMS_CBAND,
+        default_trail_params=DEFAULT_TRAIL_PARAMS_CBAND,
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        trail_params=trail_params,
+        cpw_pad_params=cpw_pad_params,
+        optical_waveguide_params=optical_waveguide_params,
         m2_bonding_pad_params=m2_bonding_pad_params,
         transition_m1_m2_params=transition_m1_m2_params,
+        transition_m2_hr_params=transition_m2_hr_params,
+        termination_params=termination_params,
     )
-
-    cpw_xs = xs_uni_cpw(
-        central_conductor_width=_cpw_params["rf_central_conductor_width"],
-        gap=_cpw_params["rf_gap"],
-        ground_planes_width=_cpw_params["rf_ground_planes_width"],
-    )
-    termination = double_layer_termination(
-        cpw_xs=cpw_xs,
-        termination_layer=LAYER.HRL,
-        m2_layer=LAYER.M2,
-        m2_pad_length=_termination_params["m2_pad_length"],
-        termination_params=_termination_params,
-        via_m1_m2_params=_transition_m1_m2_params,
-        via_m2_hr_params=_transition_m2_hr_params,
-    )
-
-    pm_ref_component = _build_phase_modulator(
-        optical_xs=xs_rwg900,
-        cpw_params=_cpw_params,
-        trail_params=_merge(DEFAULT_TRAIL_PARAMS_CBAND, trail_params),
-        modulation_length=modulation_length,
-        cpw_pad_params=_cpw_pad_params,
-        optical_waveguide_params=_merge(
-            DEFAULT_PM_OPTICAL_WG_PARAMS, optical_waveguide_params
-        ),
-        m2_bonding_pad_params=_m2_bonding_params,
-        single_side=True,  # the far end is directly connected to the termination
-    )
-
-    c = gf.Component()
-    pm_ref = c << pm_ref_component
-    termination_ref = c << termination
-    termination_ref.connect("e1", pm_ref.ports["e2"])
-
-    # Extend optical waveguide through termination
-    wg_ext = c << gf.components.straight(
-        length=termination_ref.dxsize, cross_section=xs_rwg900
-    )
-    wg_ext.connect("o1", pm_ref.ports["o2"])
-
-    c.add_port(name="_term", port=termination_ref.ports["term"])
-    c.add_port(name="o1", port=pm_ref.ports["o1"])
-    c.add_port(name="o2", port=wg_ext.ports["o2"])
-    c.add_port(name="e1", port=pm_ref.ports["e1"])
-
-    for port in pm_ref.ports:
-        if port.name not in ["o1", "o2", "e1", "e2", "_e2", "_term"]:
-            c.add_port(name=port.name, port=port)
-
-    c.add_port(name="_e2", port=pm_ref.ports["e2"])
-
-    return c
 
 
 if __name__ == "__main__":
