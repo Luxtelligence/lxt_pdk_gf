@@ -927,6 +927,7 @@ def cpw_pad(
     ground_pad_width: float = 150.0,
     optical_waveguide_xs: CrossSectionSpec | None = None,
     m2_bonding_pads_params: dict[str, Any] | None = None,
+    single_waveguide: bool = False,
 ) -> gf.Component:
     """RF access line for high-frequency GSG probes with curved electrodes
     following the optical waveguides. The probe pad maintains a
@@ -959,13 +960,15 @@ def cpw_pad(
     # 3. Waveguides along path_upper and path_lower (fixed waveguide_xs)
     if optical_waveguide_xs is not None:
         wg_upper = path_upper.extrude(optical_waveguide_xs)
-        wg_lower = path_lower.extrude(optical_waveguide_xs)
         pad << wg_upper
-        pad << wg_lower
         pad.add_port(name="o1", port=wg_upper.ports["o1"])
         pad.add_port(name="o2", port=wg_upper.ports["o2"])
-        pad.add_port(name="o3", port=wg_lower.ports["o2"])
-        pad.add_port(name="o4", port=wg_lower.ports["o1"])
+
+        if not single_waveguide:
+            wg_lower = path_lower.extrude(optical_waveguide_xs)
+            pad << wg_lower
+            pad.add_port(name="o3", port=wg_lower.ports["o2"])
+            pad.add_port(name="o4", port=wg_lower.ports["o1"])
 
     if m2_bonding_pads_params is not None:
         required_keys = ("layer_m2", "layer_openings")
@@ -1029,6 +1032,7 @@ def straight_cpw(
     cpw_xs: CrossSectionSpec,
     modulation_length: float = 1000.0,
     optical_waveguides: dict[str, Any] | None = None,
+    single_waveguide: bool = False,
 ) -> gf.Component:
     """A straight CPW transmission line"""
     if optical_waveguides is None:
@@ -1080,12 +1084,15 @@ def straight_cpw(
         cpw.add_port(name="o1", port=wg_top.ports["o1"])
         cpw.add_port(name="o2", port=wg_top.ports["o2"])
 
-        # Bottom waveguide (keep legacy naming/orientation behavior)
-        wg_bot = cpw << wg_cell
-        wg_bot.move(wg_bot.ports["o1"].dcenter, (x_start, y_offset2))
-        cpw.add_port(name="o4", port=wg_bot.ports["o1"])
-        cpw.add_port(name="o3", port=wg_bot.ports["o2"])
-        copy_info(cpw, wg_cell)
+        if not single_waveguide:
+            # Bottom waveguide (keep legacy naming/orientation behavior)
+            wg_bot = cpw << wg_cell
+            wg_bot.move(wg_bot.ports["o1"].dcenter, (x_start, y_offset2))
+            cpw.add_port(name="o4", port=wg_bot.ports["o1"])
+            cpw.add_port(name="o3", port=wg_bot.ports["o2"])
+            copy_info(cpw, wg_cell)
+        else:
+            copy_info(cpw, wg_cell)
 
     cpw.flatten()
     cpw.info["modulation_length"] = modulation_length
@@ -1102,6 +1109,7 @@ def trail_cpw(
     trail_params: dict[str, float] | None = None,
     rounding_radius: float = 0.5,
     optical_waveguides: dict[str, Any] | None = None,
+    single_waveguide: bool = False,
 ) -> gf.Component:
     """A CPW transmission line with periodic T-rails on all electrodes"""
     if trail_params is None:
@@ -1277,13 +1285,15 @@ def trail_cpw(
         cpw.add_port(name="o1", port=wg_top.ports["o1"])
         cpw.add_port(name="o2", port=wg_top.ports["o2"])
 
-        # Bottom waveguide (keep legacy naming/orientation behavior)
-        wg_bot = cpw << wg_cell
-        wg_bot.move(wg_bot.ports["o1"].dcenter, (x_start, y_offset2))
-        cpw.add_port(name="o4", port=wg_bot.ports["o1"])
-        cpw.add_port(name="o3", port=wg_bot.ports["o2"])
-
-        copy_info(cpw, wg_cell)
+        if not single_waveguide:
+            # Bottom waveguide (keep legacy naming/orientation behavior)
+            wg_bot = cpw << wg_cell
+            wg_bot.move(wg_bot.ports["o1"].dcenter, (x_start, y_offset2))
+            cpw.add_port(name="o4", port=wg_bot.ports["o1"])
+            cpw.add_port(name="o3", port=wg_bot.ports["o2"])
+            copy_info(cpw, wg_cell)
+        else:
+            copy_info(cpw, wg_cell)
 
     # Duplicate cell
     cpw.add_ref(
