@@ -114,10 +114,11 @@ def gc_focusing_arbitrary(
     else:
         c = gc_with_sleeve
 
+    c.flatten()
+
     if layer_slab:
         c.over_under(layer=layer_slab, distance=kwargs.get("over_under_distance", 0.5))
 
-    c.flatten()
     c.info["gaps"] = tuple(gaps)
     c.info["widths"] = tuple(widths)
     c.info["pitch"] = tuple(pitch)
