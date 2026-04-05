@@ -5,11 +5,13 @@ import numpy as np
 from gdsfactory.routing import route_quad
 from gdsfactory.typings import ComponentSpec, CrossSectionSpec
 
-from _utils.chip_floorplan import chip_frame
 from _utils.spline import (
     bend_S_spline,
     bend_S_spline_varying_width,
     spline_clamped_path,
+)
+from lnoi400._builders.grating_couplers import (
+    build_gc_focusing_1550 as _build_gc_focusing_1550,
 )
 from lnoi400.tech import LAYER, xs_uni_cpw
 
@@ -406,6 +408,28 @@ def double_linear_inverse_taper(
     double_taper.flatten()
 
     return double_taper
+
+
+###################
+# Grating Couplers
+###################
+
+
+@gf.cell
+def gc_focusing_1550(
+    sleeve_width: float = 4.5,
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    waveguide_length: float = 10.0,
+) -> gf.Component:
+    """Returns a focusing grating coupler for 1550 nm (C-band). The grating is
+    optimized for TE polarization and a launch angle in air of 14.5 degrees
+    w/r to the surface normal.
+    """
+    return _build_gc_focusing_1550(
+        sleeve_width=sleeve_width,
+        cross_section=cross_section,
+        waveguide_length=waveguide_length,
+    )
 
 
 ###################
@@ -1238,4 +1262,4 @@ def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
 
 
 if __name__ == "__main__":
-    chip_frame().show()
+    gc_focusing_1550().show()

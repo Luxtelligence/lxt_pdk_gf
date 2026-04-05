@@ -6,9 +6,9 @@ CrossSectionSpec = gf.typings.CrossSectionSpec
 
 
 @gf.cell
-def gc_lin_chirp(
-    Lx: tuple,
-    fx: tuple,
+def gc_focusing_arbitrary(
+    pitch: tuple,
+    fill_factor: tuple,
     alpha_t: float,
     tap_len: float,
     N: int,
@@ -18,11 +18,11 @@ def gc_lin_chirp(
     bias_gap: float,
     sleeve_width: float,
     ridge_thickness: float,
-    sidewall_angle: float,
     cross_section: CrossSectionSpec,
+    sidewall_angle: float | None = None,
     **kwargs,
 ):
-    """Focusing grating coupler with a linear filling factor evolution, defined in a partial etch technology."""
+    """Focusing grating coupler with arbitrary pitch and filling factor, defined in a partial etch technology."""
 
     kwargs.update(
         {
@@ -32,17 +32,21 @@ def gc_lin_chirp(
         }
     )
 
-    if not isinstance(Lx, np.ndarray):
-        Lx = np.array(Lx, dtype=np.float64)
+    if sidewall_angle is None:
+        sidewall_angle = 0.0
 
-    if not isinstance(fx, np.ndarray):
-        fx = np.array(fx, dtype=np.float64)
+    if not isinstance(pitch, np.ndarray):
+        pitch = np.array(pitch, dtype=np.float64)
+
+    if not isinstance(fill_factor, np.ndarray):
+        fill_factor = np.array(fill_factor, dtype=np.float64)
 
     widths = np.round(
-        Lx * fx - ridge_thickness * np.tan(np.pi * sidewall_angle / 180.0), 3
+        pitch * fill_factor - ridge_thickness * np.tan(np.pi * sidewall_angle / 180.0),
+        3,
     )
-    gaps = np.round(Lx - widths, 3)
-    Lx = np.round(Lx, 3)
+    gaps = np.round(pitch - widths, 3)
+    pitch = np.round(pitch, 3)
 
     xs = gf.get_cross_section(cross_section)
     layer_ridge = xs.layer
@@ -110,9 +114,12 @@ def gc_lin_chirp(
     else:
         c = gc_with_sleeve
 
+    if layer_slab:
+        c.over_under(layer=layer_slab, distance=kwargs.get("over_under_distance", 0.5))
+
     c.flatten()
     c.info["gaps"] = tuple(gaps)
     c.info["widths"] = tuple(widths)
-    c.info["Lx"] = tuple(Lx)
+    c.info["pitch"] = tuple(pitch)
 
     return c
