@@ -1,5 +1,6 @@
 import gdsfactory as gf
 
+from _utils.chip_floorplan import chip_frame  # noqa: F401
 from _utils.optical_resonators import ring_resonator as _ring_resonator
 from ltoi300._builders.edge_couplers import (
     build_cband_ltoi300_edge_coupler as _build_cband_ltoi300_edge_coupler,
