@@ -5,7 +5,7 @@ ports:
     center:
     - 10
     - 0
-    layer: 16
+    layer: TL
     name: e1
     orientation: 180
     port_type: electrical
@@ -14,7 +14,7 @@ ports:
     center:
     - 200
     - 0
-    layer: 16
+    layer: TL
     name: e2
     orientation: 0
     port_type: electrical

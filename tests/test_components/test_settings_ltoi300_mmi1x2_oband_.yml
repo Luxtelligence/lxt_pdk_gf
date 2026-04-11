@@ -6,7 +6,7 @@ ports:
     center:
     - -25
     - 0
-    layer: 55
+    layer: LT_RIDGE
     name: o1
     orientation: 180
     port_type: optical
@@ -15,7 +15,7 @@ ports:
     center:
     - 40.8
     - 1.225
-    layer: 55
+    layer: LT_RIDGE
     name: o2
     orientation: 0
     port_type: optical
@@ -24,7 +24,7 @@ ports:
     center:
     - 40.8
     - -1.225
-    layer: 55
+    layer: LT_RIDGE
     name: o3
     orientation: 0
     port_type: optical

@@ -5,7 +5,7 @@ ports:
     center:
     - 0
     - 60.45
-    layer: 48
+    layer: HT
     name: e1
     orientation: 270
     port_type: electrical
@@ -14,7 +14,7 @@ ports:
     center:
     - 150
     - 60.45
-    layer: 48
+    layer: HT
     name: e2
     orientation: 270
     port_type: electrical
@@ -23,7 +23,7 @@ ports:
     center:
     - 148.65
     - 0.45
-    layer: 48
+    layer: HT
     name: ht_end
     orientation: 90
     port_type: electrical
@@ -32,7 +32,7 @@ ports:
     center:
     - 1.35
     - 0.45
-    layer: 48
+    layer: HT
     name: ht_start
     orientation: 90
     port_type: electrical

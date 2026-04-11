@@ -5,7 +5,7 @@ ports:
     center:
     - -190
     - 0
-    layer: 16
+    layer: TL
     name: bp1
     orientation: 180
     port_type: electrical
@@ -14,7 +14,7 @@ ports:
     center:
     - 1190
     - 0
-    layer: 16
+    layer: TL
     name: bp2
     orientation: 0
     port_type: electrical
@@ -23,7 +23,7 @@ ports:
     center:
     - 0
     - 0
-    layer: 16
+    layer: TL
     name: e1
     orientation: 180
     port_type: electrical
@@ -32,7 +32,7 @@ ports:
     center:
     - 1000
     - 0
-    layer: 16
+    layer: TL
     name: e2
     orientation: 0
     port_type: electrical

@@ -5,7 +5,7 @@ ports:
     center:
     - -300
     - 0
-    layer: 16
+    layer: TL
     name: e1
     orientation: 180
     port_type: electrical
@@ -14,7 +14,7 @@ ports:
     center:
     - 7800
     - 0
-    layer: 16
+    layer: TL
     name: e2
     orientation: 0
     port_type: electrical
@@ -23,7 +23,7 @@ ports:
     center:
     - -592.41
     - 0
-    layer: 3
+    layer: LN_RIDGE
     name: o1
     orientation: 180
     port_type: optical
@@ -32,7 +32,7 @@ ports:
     center:
     - 8941.1
     - 0
-    layer: 3
+    layer: LN_RIDGE
     name: o2
     orientation: 0
     port_type: optical
