@@ -4,6 +4,8 @@ install:
 
 dev:
 	pip install -e .[dev,docs] --config-settings editable_mode=compat
+	curl -sf https://raw.githubusercontent.com/doplaydo/pdk-ci-workflow/main/templates/.pre-commit-config.yaml -o .pre-commit-config.yaml
+	pre-commit install
 
 test:
 	pytest -s

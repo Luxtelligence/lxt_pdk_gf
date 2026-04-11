@@ -181,3 +181,4 @@ cython_debug/
 
 test_pdk_releases.py
 mmi_test.gds
+.pre-commit-config.yaml

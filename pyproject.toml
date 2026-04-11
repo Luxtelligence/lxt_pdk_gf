@@ -4,9 +4,6 @@
 build-backend = "setuptools.build_meta"
 requires = ["setuptools>=80", "wheel"]
 
-[lint.pydocstyle]
-convention = "google"
-
 [project]
 authors = [
   {name = "Luxtelligence", email = "foundry@luxtelligence.ai"}
@@ -72,14 +69,16 @@ testpaths = ["tests"]
 
 [tool.ruff]
 fix = true
-lint.ignore = [
+
+[tool.ruff.lint]
+ignore = [
   "E501",  # line too long, handled by black
   "B008",  # do not perform function calls in argument defaults
   "C901",  # too complex
   "B905",  # `zip()` without an explicit `strict=` parameter
   "C408"  # C408 Unnecessary `dict` call (rewrite as a literal)
 ]
-lint.select = [
+select = [
   "E",  # pycodestyle errors
   "W",  # pycodestyle warnings
   "F",  # pyflakes
@@ -90,7 +89,7 @@ lint.select = [
 ]
 
 [tool.setuptools.package-data]
-mypkg = ["*.csv", "*.yaml"]
+"*" = ["*.csv", "*.yaml"]
 
 [tool.setuptools.packages]
 find = {exclude = ["tests", "tests.*", "docs", "docs.*"]}
@@ -115,7 +114,7 @@ message_template = "Bump to {new_version}"
 tag_template = "v{new_version}"
 
 [tool.tbump.version]
-current = "0.0.1"
+current = "2.0"
 # Example of a semver regexp.
 # Make sure this matches current_version before
 # using tbump
