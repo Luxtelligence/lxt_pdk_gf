@@ -495,9 +495,11 @@ def build_phase_shifter_modular_cband(
         transition_m2_hr_params=transition_m2_hr_params,
         heater_params=heater_params,
     )
-    termination_ref = c << termination
-    termination_ref.connect("e1", mzm_ref.ports["e2"])
-    c.add_port(name="_term", port=termination_ref.ports["term"])
+    if _cpw_pad_params["right_rf_pad"] == "termination":
+        termination_ref = c << termination
+        termination_ref.connect("e1", mzm_ref.ports["e2"])
+        c.add_port(name="_term", port=termination_ref.ports["term"])
+
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2", "e2"]
     for port in mzm_ref.ports:
         if port.name in utility_ports:

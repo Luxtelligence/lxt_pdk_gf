@@ -598,6 +598,295 @@ def base_mzm(
             )
 
     if (
+        cpw_pad_params["left_rf_pad"] == "open"
+        and cpw_pad_params["right_rf_pad"] == "probe"
+        and optical_waveguide_params["left_optical_branch"] == "open"
+        and optical_waveguide_params["right_optical_branch"] == "mmi"
+    ):
+        # Define optical combiner
+        combiner2 = optical_combiner_direct(
+            optical_xs=optical_waveguides["terminal_xs"],
+            cpw_xs=pad_xs,
+            mmi_cell=mmi_cell,
+            mmi_connection_length=optical_waveguide_params["mmi_connection_length"],
+            cpw_connection_length=optical_waveguide_params["cpw_connection_length"],
+            heater_section_length=0.0,
+            imbalance_length=0.0,
+            roc=optical_waveguide_params["roc"],
+        )
+        pad2_ref = MZM << pad
+        pad2_ref.connect("e2", cpw_ref.ports["e2"])
+        combiner2_ref = MZM << combiner2
+        combiner2_ref.connect("o3", pad2_ref.ports["o1"])
+
+        MZM.add_port(
+            name="e1",
+            port=cpw_ref.ports["e1"],
+        )
+        MZM.add_port(
+            name="e2",
+            port=pad2_ref.ports["e1"],
+        )
+        if "1x2" in mmi_cell.name:
+            MZM.add_port(
+                name="o1",
+                port=cpw_ref.ports["o4"],
+            )
+            MZM.add_port(
+                name="o2",
+                port=cpw_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=combiner2_ref.ports["o1"],
+            )
+
+        else:
+            MZM.add_port(
+                name="o1",
+                port=cpw_ref.ports["o4"],
+            )
+            MZM.add_port(
+                name="o2",
+                port=cpw_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o4",
+                port=combiner2_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=combiner2_ref.ports["o2"],
+            )
+    print(cpw_pad_params["left_rf_pad"])
+    print(cpw_pad_params["right_rf_pad"])
+    print(optical_waveguide_params["left_optical_branch"])
+    print(optical_waveguide_params["right_optical_branch"])
+    if (
+        cpw_pad_params["left_rf_pad"] == "open"
+        and cpw_pad_params["right_rf_pad"] == "termination"
+        and optical_waveguide_params["left_optical_branch"] == "open"
+        and optical_waveguide_params["right_optical_branch"] == "mmi"
+    ):
+        # Define optical combiner
+        combiner2 = optical_combiner_direct(
+            optical_xs=optical_waveguides["terminal_xs"],
+            cpw_xs=pad_xs,
+            mmi_cell=mmi_cell,
+            mmi_connection_length=optical_waveguide_params["mmi_connection_length"],
+            cpw_connection_length=optical_waveguide_params["cpw_connection_length"],
+            heater_section_length=0.0,
+            imbalance_length=0.0,
+            roc=optical_waveguide_params["roc"],
+        )
+
+        combiner2_ref = MZM << combiner2
+        combiner2_ref.connect("o3", cpw_ref.ports["o1"])
+
+        MZM.add_port(
+            name="e1",
+            port=cpw_ref.ports["e1"],
+        )
+        MZM.add_port(
+            name="e2",
+            port=cpw_ref.ports["e2"],
+        )
+        if "1x2" in mmi_cell.name:
+            MZM.add_port(
+                name="o1",
+                port=cpw_ref.ports["o4"],
+            )
+            MZM.add_port(
+                name="o2",
+                port=cpw_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=combiner2_ref.ports["o1"],
+            )
+
+        else:
+            MZM.add_port(
+                name="o1",
+                port=cpw_ref.ports["o4"],
+            )
+            MZM.add_port(
+                name="o2",
+                port=cpw_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o4",
+                port=combiner2_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=combiner2_ref.ports["o2"],
+            )
+
+    if (
+        cpw_pad_params["left_rf_pad"] == "probe"
+        and cpw_pad_params["right_rf_pad"] == "probe"
+        and optical_waveguide_params["left_optical_branch"] == "open"
+        and optical_waveguide_params["right_optical_branch"] == "open"
+    ):
+        pad1_ref = MZM << pad
+        pad1_ref.connect("e2", cpw_ref.ports["e1"])
+        pad2_ref = MZM << pad
+        pad2_ref.connect("e2", cpw_ref.ports["e2"])
+
+        MZM.add_port(
+            name="e1",
+            port=pad1_ref.ports["e1"],
+        )
+        MZM.add_port(
+            name="e2",
+            port=pad2_ref.ports["e1"],
+        )
+        MZM.add_port(
+            name="o2",
+            port=pad1_ref.ports["o1"],
+        )
+        MZM.add_port(
+            name="o4",
+            port=pad2_ref.ports["o1"],
+        )
+        MZM.add_port(
+            name="o3",
+            port=pad2_ref.ports["o4"],
+        )
+        MZM.add_port(
+            name="o1",
+            port=pad1_ref.ports["o4"],
+        )
+
+    if (
+        cpw_pad_params["left_rf_pad"] == "probe"
+        and cpw_pad_params["right_rf_pad"] == "open"
+        and optical_waveguide_params["left_optical_branch"] == "open"
+        and optical_waveguide_params["right_optical_branch"] == "open"
+    ):
+        pad1_ref = MZM << pad
+        pad1_ref.connect("e2", cpw_ref.ports["e1"])
+
+        MZM.add_port(
+            name="e1",
+            port=pad1_ref.ports["e1"],
+        )
+        MZM.add_port(
+            name="e2",
+            port=cpw_ref.ports["e2"],
+        )
+        MZM.add_port(
+            name="o2",
+            port=pad1_ref.ports["o1"],
+        )
+        MZM.add_port(
+            name="o4",
+            port=cpw_ref.ports["o3"],
+        )
+        MZM.add_port(
+            name="o3",
+            port=cpw_ref.ports["o2"],
+        )
+        MZM.add_port(
+            name="o1",
+            port=pad1_ref.ports["o4"],
+        )
+
+    if (
+        cpw_pad_params["left_rf_pad"] == "open"
+        and cpw_pad_params["right_rf_pad"] == "open"
+        and optical_waveguide_params["left_optical_branch"] == "open"
+        and optical_waveguide_params["right_optical_branch"] == "open"
+    ):
+        MZM.add_port(
+            name="e1",
+            port=cpw_ref.ports["e1"],
+        )
+        MZM.add_port(
+            name="e2",
+            port=cpw_ref.ports["e2"],
+        )
+        MZM.add_port(
+            name="o2",
+            port=cpw_ref.ports["o1"],
+        )
+        MZM.add_port(
+            name="o4",
+            port=cpw_ref.ports["o3"],
+        )
+        MZM.add_port(
+            name="o3",
+            port=cpw_ref.ports["o2"],
+        )
+        MZM.add_port(
+            name="o1",
+            port=cpw_ref.ports["o4"],
+        )
+
+    if (
+        cpw_pad_params["left_rf_pad"] == "probe"
+        and cpw_pad_params["right_rf_pad"] == "open"
+        and optical_waveguide_params["left_optical_branch"] == "mmi"
+        and optical_waveguide_params["right_optical_branch"] == "open"
+    ):
+        # Define optical combiner
+        combiner1 = optical_combiner_direct(
+            optical_xs=optical_waveguides["terminal_xs"],
+            cpw_xs=pad_xs,
+            mmi_cell=mmi_cell,
+            mmi_connection_length=optical_waveguide_params["mmi_connection_length"],
+            cpw_connection_length=optical_waveguide_params["cpw_connection_length"],
+            heater_section_length=optical_waveguide_params["heater_section_length"],
+            imbalance_length=optical_waveguide_params["imbalance_length"],
+            roc=optical_waveguide_params["roc"],
+        )
+
+        pad1_ref = MZM << pad
+        pad1_ref.connect("e2", cpw_ref.ports["e1"])
+        combiner1_ref = MZM << combiner1
+        combiner1_ref.connect("o3", pad1_ref.ports["o1"])
+
+        MZM.add_port(
+            name="e1",
+            port=pad1_ref.ports["e1"],
+        )
+        MZM.add_port(
+            name="e2",
+            port=cpw_ref.ports["e2"],
+        )
+        if "1x2" in mmi_cell.name:
+            MZM.add_port(
+                name="o1",
+                port=combiner1_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=cpw_ref.ports["o3"],
+            )
+            MZM.add_port(
+                name="o2",
+                port=cpw_ref.ports["o2"],
+            )
+        else:
+            MZM.add_port(
+                name="o2",
+                port=combiner1_ref.ports["o1"],
+            )
+            MZM.add_port(
+                name="o1",
+                port=combiner1_ref.ports["o2"],
+            )
+            MZM.add_port(
+                name="o4",
+                port=cpw_ref.ports["o3"],
+            )
+            MZM.add_port(
+                name="o3",
+                port=cpw_ref.ports["o2"],
+            )
+
+    if (
         optical_waveguide_params["heater_section_length"] > 0.0
         and optical_waveguide_params["left_optical_branch"] == "mmi"
     ):
