@@ -671,17 +671,16 @@ def base_mzm(
         # Define optical combiner
         combiner2 = optical_combiner_direct(
             optical_xs=optical_waveguides["terminal_xs"],
-            cpw_xs=pad_xs,
+            cpw_xs=_cpw_xs,
             mmi_cell=mmi_cell,
+            heater_section_length=0.0,
             mmi_connection_length=optical_waveguide_params["mmi_connection_length"],
             cpw_connection_length=optical_waveguide_params["cpw_connection_length"],
-            heater_section_length=0.0,
             imbalance_length=0.0,
             roc=optical_waveguide_params["roc"],
         )
-
         combiner2_ref = MZM << combiner2
-        combiner2_ref.connect("o3", cpw_ref.ports["o1"])
+        combiner2_ref.connect("o3", cpw_ref.ports["o3"])
 
         MZM.add_port(
             name="e1",
