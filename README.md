@@ -1,5 +1,17 @@
 # Luxtelligence Process Design Kit (PDK) for gdsfactory
 
+<!-- BADGES:START -->
+[![Docs](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/pages.yml/badge.svg)](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/pages.yml)
+[![Tests](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/test_code.yml/badge.svg)](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/test_code.yml)
+[![DRC](https://github.com/gdsfactory/lxt_pdk_gf/raw/badges/drc.svg)](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/drc.yml)
+[![Model Regression](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/model_regression.yml/badge.svg)](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/model_regression.yml)
+[![Test Coverage](https://github.com/gdsfactory/lxt_pdk_gf/raw/badges/coverage.svg)](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/test_coverage.yml)
+[![Model Coverage](https://github.com/gdsfactory/lxt_pdk_gf/raw/badges/model_coverage.svg)](https://github.com/gdsfactory/lxt_pdk_gf/actions/workflows/model_coverage.yml)
+[![Issues](https://github.com/gdsfactory/lxt_pdk_gf/raw/badges/issues.svg)](https://github.com/gdsfactory/lxt_pdk_gf/issues)
+[![PRs](https://github.com/gdsfactory/lxt_pdk_gf/raw/badges/prs.svg)](https://github.com/gdsfactory/lxt_pdk_gf/pulls)
+<!-- BADGES:END -->
+
+
 ![Luxtelligence](LXT_Logo.png)
 
 [Luxtelligence](https://luxtelligence.ai/) Process Design Kit (PDK) for gdsfactory. The Luxtelligence PDK contains a library of components that facilitate the design of photonic integrated circuits for Luxtelligence's foundry service. The PDK includes both electrical and optical building blocks that leverage Lithium Tantalate and Lithium Niobate's electro-optic effect and attractive optical properties. Each building block consists of a geometrical layout, defining the starting point for microfabrication of the integrated circuit, and a compact circuit model that approximates the real frequency-domain behaviour of the component.
