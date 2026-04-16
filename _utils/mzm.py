@@ -389,7 +389,7 @@ def base_mzm(
         right_opt_p1 = pad2_ref.ports["o1"]
         right_opt_p2 = pad2_ref.ports["o4"]
         right_combiner_cpw_xs = pad_xs
-    else:  # "open" or "termination"
+    if cpw_pad_params["right_rf_pad"] == "open" or cpw_pad_params["right_rf_pad"] == "bend_connection":
         MZM.add_port(
             name="e2",
             port=cpw_ref.ports["e2"],

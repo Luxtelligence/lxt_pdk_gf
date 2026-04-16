@@ -513,29 +513,58 @@ def build_phase_shifter_modular_cband(
             termination_params=_termination_params,
             via_m1_m2_params=_transition_m1_m2_params,
         )
-        m2_transition_ref = c << m2_transition_cell
-        m2_transition_ref.connect("e2", mzm_ref.ports["e1"], allow_width_mismatch=True, allow_layer_mismatch=True
+        m2_transition_ref_left = c << m2_transition_cell
+        m2_transition_ref_left.connect("e2", mzm_ref.ports["e1"], allow_width_mismatch=True, allow_layer_mismatch=True
         )
 
         wg_length = _transition_m1_m2_params["width"]
-        straight_o1 = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
-        straight_o1.connect("o1", mzm_ref.ports["o1"])
-        straight_o2 = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
-        straight_o2.connect("o1", mzm_ref.ports["o2"])
+        straight_o1_left = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o1_left.connect("o1", mzm_ref.ports["o1"])
+        straight_o2_left = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o2_left.connect("o1", mzm_ref.ports["o2"])
+
+
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection":
+        cpw_xs = xs_uni_cpw(
+            central_conductor_width=_cpw_params["rf_central_conductor_width"],
+            gap=_cpw_params["rf_gap"],
+            ground_planes_width=_cpw_params["rf_ground_planes_width"],
+        )
+
+        m2_transition_cell = m2_transition(
+            cpw_xs=cpw_xs,
+            m2_layer=LAYER.M2,
+            termination_params=_termination_params,
+            via_m1_m2_params=_transition_m1_m2_params,
+        )
+        m2_transition_ref_right = c << m2_transition_cell
+        m2_transition_ref_right.connect("e1", mzm_ref.ports["e2"], allow_width_mismatch=True, allow_layer_mismatch=True
+        )
+
+        wg_length = _transition_m1_m2_params["width"]
+        straight_o1_right = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o1_right.connect("o1", mzm_ref.ports["o3"])
+        straight_o2_right = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o2_right.connect("o1", mzm_ref.ports["o4"])
 
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
     if _cpw_pad_params["left_rf_pad"] == "bend_connection":
         utility_ports.extend(["e1", "o1", "o2"])
-    print(utility_ports)
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection":
+        utility_ports.extend(["e2", "o3", "o4"])
     for port in mzm_ref.ports:
         if port.name in utility_ports:
             c.add_port(name=f"_{port.name}", port=port)
         else:
             c.add_port(name=port.name, port=port)
     if _cpw_pad_params["left_rf_pad"] == "bend_connection":
-        c.add_port(name="e1", port=m2_transition_ref.ports["e1"])
-        c.add_port(name="o1", port=straight_o1.ports["o2"])
-        c.add_port(name="o2", port=straight_o2.ports["o2"])
+        c.add_port(name="e1", port=m2_transition_ref_left.ports["e1"])
+        c.add_port(name="o1", port=straight_o1_left.ports["o2"])
+        c.add_port(name="o2", port=straight_o2_left.ports["o2"])
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection":
+        c.add_port(name="e2", port=m2_transition_ref_right.ports["e2"])
+        c.add_port(name="o3", port=straight_o1_right.ports["o2"])
+        c.add_port(name="o4", port=straight_o2_right.ports["o2"])
     return c
 
 
