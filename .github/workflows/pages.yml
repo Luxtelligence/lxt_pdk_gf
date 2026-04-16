@@ -8,3 +8,4 @@ on:
 jobs:
   docs:
     uses: doplaydo/pdk-ci-workflow/.github/workflows/pages.yml@main
+    secrets: inherit
