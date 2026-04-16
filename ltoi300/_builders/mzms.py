@@ -507,25 +507,35 @@ def build_phase_shifter_modular_cband(
             ground_planes_width=_cpw_params["rf_ground_planes_width"],
         )
 
-        termination = m2_transition(
+        m2_transition_cell = m2_transition(
             cpw_xs=cpw_xs,
-            termination_layer=LAYER.HRL,
             m2_layer=LAYER.M2,
-            m2_pad_length=_termination_params["m2_pad_length"],
             termination_params=_termination_params,
             via_m1_m2_params=_transition_m1_m2_params,
         )
-        termination_ref = c << termination
-        termination_ref.connect("e1", mzm_ref.ports["e1"], allow_width_mismatch=True, allow_layer_mismatch=True
+        m2_transition_ref = c << m2_transition_cell
+        m2_transition_ref.connect("e2", mzm_ref.ports["e1"], allow_width_mismatch=True, allow_layer_mismatch=True
         )
 
+        wg_length = _transition_m1_m2_params["width"]
+        straight_o1 = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o1.connect("o1", mzm_ref.ports["o1"])
+        straight_o2 = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o2.connect("o1", mzm_ref.ports["o2"])
 
-    utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2", "e2"]
+    utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
+    if _cpw_pad_params["left_rf_pad"] == "bend_connection":
+        utility_ports.extend(["e1", "o1", "o2"])
+    print(utility_ports)
     for port in mzm_ref.ports:
         if port.name in utility_ports:
             c.add_port(name=f"_{port.name}", port=port)
         else:
             c.add_port(name=port.name, port=port)
+    if _cpw_pad_params["left_rf_pad"] == "bend_connection":
+        c.add_port(name="e1", port=m2_transition_ref.ports["e1"])
+        c.add_port(name="o1", port=straight_o1.ports["o2"])
+        c.add_port(name="o2", port=straight_o2.ports["o2"])
     return c
 
 

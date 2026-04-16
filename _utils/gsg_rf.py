@@ -841,9 +841,9 @@ def m2_transition(
 
 
 
-    c.add_port(name="e1", port=via_m1_m2.ports["e2"])
+    c.add_port(name="e1", port=via_m1_m2.ports["e1"])
 
-
+    c.add_port(name="e2", port=via_m1_m2.ports["e2"])
     c.flatten()
 
     return c
