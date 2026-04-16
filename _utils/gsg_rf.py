@@ -782,6 +782,73 @@ def double_layer_termination(
     return c
 
 
+@gf.cell
+def m2_transition(
+    cpw_xs: CrossSection,
+    m2_layer: LayerSpec,
+    termination_params: dict[str, Any] | None = None,
+    via_m1_m2_params: dict[str, Any] | None = None,
+) -> gf.Component:
+    """Double-layer termination for CPW lines. Creates transition from CPW to M2 layer and then to high-resistivity layer resistor wire.
+
+    Args:
+        cpw_xs: CPW cross-section of the line to be terminated
+        termination_layer: High-resistivity layer of the termination wire
+        m2_layer: M2 layer of the termination wire
+        effective_length: Effective length of the termination wire corresponding to a single termination resistor equivalent circuit.
+    """
+    if termination_params is None:
+        termination_params = {
+            "effective_length": 95.0,
+            "resistor_width": 1.5,
+            "hr_layer_offset": 0.0,
+            "hr_pad_length": 5.0,
+        }
+    if via_m1_m2_params is None:
+        via_m1_m2_params = {
+            "type": "array",
+            "layer_openings": (40, 0),
+            "opening_offset": 2.5,
+            "opening_size": 12.0,
+            "opening_separation": 12.0,
+            "width": 45.0,
+        }
+
+    c = gf.Component()
+
+    signal_width, ground_width, gap_width, signal_layer = get_cpw_from_xs(cpw_xs)
+
+    if via_m1_m2_params["type"] == "array":
+        via_m1_m2 = c << via_array(
+            cpw_xs=cpw_xs,
+            layer_openings=via_m1_m2_params["layer_openings"],
+            layer_m2=m2_layer,
+            opening_offset=via_m1_m2_params["opening_offset"],
+            opening_size=via_m1_m2_params["opening_size"],
+            separation=via_m1_m2_params["opening_separation"],
+            width=via_m1_m2_params["width"],
+        )
+    elif via_m1_m2_params["type"] == "solid":
+        via_m1_m2 = c << via_solid(
+            cpw_xs=cpw_xs,
+            layer_openings=via_m1_m2_params["layer_openings"],
+            layer_m2=m2_layer,
+            opening_offset=via_m1_m2_params["opening_offset"],
+            width=via_m1_m2_params["width"],
+        )
+    else:
+        raise ValueError(f"Invalid via type: {via_m1_m2_params['type']}")
+
+
+
+    c.add_port(name="e1", port=via_m1_m2.ports["e2"])
+
+
+    c.flatten()
+
+    return c
+
+
 def get_pad_xs(
     cpw_xs: CrossSection,
     pitch: float,

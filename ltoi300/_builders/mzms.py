@@ -2,7 +2,7 @@ from typing import Any
 
 import gdsfactory as gf
 
-from _utils.gsg_rf import double_layer_termination
+from _utils.gsg_rf import double_layer_termination, m2_transition
 from _utils.mzm import base_mzm
 from _utils.thermal_phase_shifters import heater_straight_compact
 from ltoi300.tech import LAYER, xs_ht_wire, xs_rwg700, xs_rwg900, xs_uni_cpw
@@ -499,6 +499,26 @@ def build_phase_shifter_modular_cband(
         termination_ref = c << termination
         termination_ref.connect("e1", mzm_ref.ports["e2"])
         c.add_port(name="_term", port=termination_ref.ports["term"])
+
+    if _cpw_pad_params["left_rf_pad"] == "bend_connection":
+        cpw_xs = xs_uni_cpw(
+            central_conductor_width=_cpw_params["rf_central_conductor_width"],
+            gap=_cpw_params["rf_gap"],
+            ground_planes_width=_cpw_params["rf_ground_planes_width"],
+        )
+
+        termination = m2_transition(
+            cpw_xs=cpw_xs,
+            termination_layer=LAYER.HRL,
+            m2_layer=LAYER.M2,
+            m2_pad_length=_termination_params["m2_pad_length"],
+            termination_params=_termination_params,
+            via_m1_m2_params=_transition_m1_m2_params,
+        )
+        termination_ref = c << termination
+        termination_ref.connect("e1", mzm_ref.ports["e1"], allow_width_mismatch=True, allow_layer_mismatch=True
+        )
+
 
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2", "e2"]
     for port in mzm_ref.ports:
