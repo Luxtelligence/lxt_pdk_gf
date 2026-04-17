@@ -541,17 +541,25 @@ def build_phase_shifter_modular_cband(
         m2_transition_ref_right.connect("e1", mzm_ref.ports["e2"], allow_width_mismatch=True, allow_layer_mismatch=True
         )
 
+        # Port numbering on the right side depends on how many ports the left
+        # optical branch contributes: "mmi" → 2 left ports (o1,o2) so right is
+        # o3/o4; "open" → 1 left port (o1) so right is o2/o3.
+        _left_is_mmi = optical_waveguide_params["left_optical_branch"] == "mmi"
+        _right_p1, _right_p2 = ("o2", "o3") if _left_is_mmi else ("o3", "o4")
+
         wg_length = _transition_m1_m2_params["width"]
         straight_o1_right = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
-        straight_o1_right.connect("o1", mzm_ref.ports["o3"])
+        straight_o1_right.connect("o1", mzm_ref.ports[_right_p1])
         straight_o2_right = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
-        straight_o2_right.connect("o1", mzm_ref.ports["o4"])
+        straight_o2_right.connect("o1", mzm_ref.ports[_right_p2])
 
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
     if _cpw_pad_params["left_rf_pad"] == "bend_connection":
         utility_ports.extend(["e1", "o1", "o2"])
-    if _cpw_pad_params["right_rf_pad"] == "bend_connection":
-        utility_ports.extend(["e2", "o3", "o4"])
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection" and _left_is_mmi:
+        utility_ports.extend(["e2", _right_p1, _right_p2, "o4"])
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection" and not _left_is_mmi:
+        utility_ports.extend(["e2", _right_p1, _right_p2])
     for port in mzm_ref.ports:
         if port.name in utility_ports:
             c.add_port(name=f"_{port.name}", port=port)
@@ -563,8 +571,8 @@ def build_phase_shifter_modular_cband(
         c.add_port(name="o2", port=straight_o2_left.ports["o2"])
     if _cpw_pad_params["right_rf_pad"] == "bend_connection":
         c.add_port(name="e2", port=m2_transition_ref_right.ports["e2"])
-        c.add_port(name="o3", port=straight_o1_right.ports["o2"])
-        c.add_port(name="o4", port=straight_o2_right.ports["o2"])
+        c.add_port(name=_right_p1, port=straight_o1_right.ports["o2"])
+        c.add_port(name=_right_p2, port=straight_o2_right.ports["o2"])
     return c
 
 
