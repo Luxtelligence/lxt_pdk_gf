@@ -295,6 +295,11 @@ def base_mzm(
             "m2_pad_length": 80.0,
         }
 
+    if "length_imbalance" in optical_waveguide_params:
+        optical_waveguide_params["imbalance_length"] = optical_waveguide_params.pop(
+            "length_imbalance"
+        )
+
     MZM = gf.Component()
 
     terminal_xs = (
