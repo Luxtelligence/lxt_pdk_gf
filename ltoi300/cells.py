@@ -2,6 +2,9 @@ import gdsfactory as gf
 
 from _utils.chip_floorplan import chip_frame
 from _utils.optical_resonators import ring_resonator as _ring_resonator
+from ltoi300._builders.directional_couplers import (
+    build_cband_ltoi300_directional_coupler as _build_cband_ltoi300_directional_coupler,
+)
 from ltoi300._builders.edge_couplers import (
     build_cband_ltoi300_edge_coupler as _build_cband_ltoi300_edge_coupler,
 )
@@ -414,6 +417,31 @@ def straight_rwg900_cband(length: float = 10.0, **kwargs) -> gf.Component:
     return _build_straight_rwg900(
         length=length,
         **kwargs,
+    )
+
+
+####################
+# Directional Couplers
+####################
+
+
+@gf.cell
+def directional_coupler_balanced_cband(
+    central_straight_length: float = 19.435,
+) -> gf.Component:
+    """Returns a standard 50/50 directional coupler for C-band propagation."""
+    return _build_cband_ltoi300_directional_coupler(
+        central_straight_length=central_straight_length,
+    )
+
+
+@gf.cell
+def directional_coupler_5_95_cband(
+    central_straight_length: float = 40.0,
+) -> gf.Component:
+    """Returns a standard 5/95 directional coupler for C-band propagation."""
+    return _build_cband_ltoi300_directional_coupler(
+        central_straight_length=central_straight_length,
     )
 
 
