@@ -370,7 +370,10 @@ def base_mzm(
         left_opt_p1 = pad1_ref.ports["o1"]
         left_opt_p2 = pad1_ref.ports["o4"]
         left_combiner_cpw_xs = pad_xs
-    if cpw_pad_params["left_rf_pad"] == "open" or cpw_pad_params["left_rf_pad"] == "bend_connection":
+    if (
+        cpw_pad_params["left_rf_pad"] == "open"
+        or cpw_pad_params["left_rf_pad"] == "bend_connection"
+    ):
         MZM.add_port(
             name="e1",
             port=cpw_ref.ports["e1"],
@@ -389,7 +392,11 @@ def base_mzm(
         right_opt_p1 = pad2_ref.ports["o1"]
         right_opt_p2 = pad2_ref.ports["o4"]
         right_combiner_cpw_xs = pad_xs
-    if cpw_pad_params["right_rf_pad"] == "open" or cpw_pad_params["right_rf_pad"] == "bend_connection":
+    if (
+        cpw_pad_params["right_rf_pad"] == "open"
+        or cpw_pad_params["right_rf_pad"] == "bend_connection"
+        or cpw_pad_params["right_rf_pad"] == "termination"
+    ):
         MZM.add_port(
             name="e2",
             port=cpw_ref.ports["e2"],
@@ -479,7 +486,6 @@ def base_mzm(
             MZM.add_port(name="o1", port=left_opt_p2)
             MZM.add_port(name="o4", port=right_opt_p1)
             MZM.add_port(name="o3", port=right_opt_p2)
-
 
     if (
         optical_waveguide_params["heater_section_length"] > 0.0
