@@ -68,7 +68,7 @@ def _exp_growth(
     return y
 
 
-@gf.cell
+@gf.cell(tags=["edge_couplers"])
 def double_layer_ec_custom(
     lower_taper_xs: CrossSection,
     upper_taper_xs: CrossSection,

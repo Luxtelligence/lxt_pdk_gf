@@ -9,4 +9,41 @@ info:
     rib_core_width_modulator: 2.5
     taper_length: 100
 name: eo_phase_shifter_high_speed
+ports:
+  e1:
+    center:
+    - -190
+    - -15.5
+    layer: TL
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 80
+  e2:
+    center:
+    - 7690
+    - -15.5
+    layer: TL
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 80
+  o1:
+    center:
+    - 0
+    - 0
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 7500
+    - 0
+    layer: LN_RIDGE
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
 settings: {}

@@ -6,5 +6,24 @@ info:
   route_info_xs_rwg1000_length: 10
   width: 1
 name: straight_rwg1000_L10
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 10
+    - 0
+    layer: LN_RIDGE
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   length: 10

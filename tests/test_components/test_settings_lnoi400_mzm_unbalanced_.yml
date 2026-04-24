@@ -1,5 +1,42 @@
 info: {}
 name: mzm_unbalanced_ML7500_LI100_LTAR75_RPSW80_RCCW10_RGPW18_0882c4f8
+ports:
+  e1:
+    center:
+    - -300
+    - 0
+    layer: TL
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 80
+  e2:
+    center:
+    - 7800
+    - 0
+    layer: TL
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 80
+  o1:
+    center:
+    - -592.41
+    - 0
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 8941.1
+    - 0
+    layer: LN_RIDGE
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   bias_tuning_section_length: 700
   cpw_cell: uni_cpw_straight

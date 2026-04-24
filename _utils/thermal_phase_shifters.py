@@ -6,7 +6,7 @@ from gdsfactory.cross_section import CrossSection
 from gdsfactory.routing import route_quad
 
 
-@gf.cell
+@gf.cell(tags=["thermal_phase_shifters"])
 def heater_pads_assymm(
     routing_xs: CrossSection,
     pad_size: tuple[float, float] = (150.0, 150.0),
@@ -35,7 +35,7 @@ def heater_pads_assymm(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["thermal_phase_shifters"])
 def heater_straight_compact(
     heater_xs: CrossSection,
     routing_xs: CrossSection,
@@ -216,7 +216,7 @@ def heater_straight_compact(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["thermal_phase_shifters"])
 def add_heater(
     heater_xs: CrossSection,
     routing_xs: CrossSection,

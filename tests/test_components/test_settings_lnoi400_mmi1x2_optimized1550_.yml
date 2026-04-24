@@ -1,5 +1,33 @@
 info: {}
 name: mmi1x2_optimized1550_WM6_LM26p75_WT1p5_LT25_PR0p55_CSxs_rwg1000
+ports:
+  o1:
+    center:
+    - -25
+    - 0
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 51.75
+    - 1.65
+    layer: LN_RIDGE
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
+  o3:
+    center:
+    - 51.75
+    - -1.65
+    layer: LN_RIDGE
+    name: o3
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   cross_section: xs_rwg1000
   length_mmi: 26.75
