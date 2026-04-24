@@ -21,12 +21,18 @@ from lnoi400.tech import LAYER, xs_uni_cpw
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def _straight(
     length: float = 10.0,
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
+    """_straight.
+
+    Args:
+        length: 10.0.
+        cross_section: "xs_rwg1000".
+    """
     return gf.components.straight(
         length=length,
         cross_section=cross_section,
@@ -34,9 +40,13 @@ def _straight(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
-    """Straight single-mode waveguide."""
+    """Straight single-mode waveguide.
+
+    Args:
+        length: 10.0.
+    """
     if "cross_section" not in kwargs:
         kwargs["cross_section"] = "xs_rwg1000"
     return _straight(
@@ -45,9 +55,13 @@ def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
-    """Straight multimode waveguide."""
+    """Straight multimode waveguide.
+
+    Args:
+        length: 10.0.
+    """
     if "cross_section" not in kwargs:
         kwargs["cross_section"] = "xs_rwg3000"
     return _straight(
@@ -61,7 +75,7 @@ def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
 ##########
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def L_turn_bend(
     radius: float = 80.0,
     p: float = 1.0,
@@ -72,6 +86,12 @@ def L_turn_bend(
     """
     A 90-degrees bend following an Euler path, with linearly-varying curvature
     (increasing and decreasing).
+
+    Args:
+        radius: 80.0.
+        p: 1.0.
+        with_arc_floorplan: True.
+        cross_section: "xs_rwg1000".
     """
 
     npoints = int(np.round(200 * radius / 80.0))
@@ -91,7 +111,7 @@ def L_turn_bend(
 # TODO: inquire about meaning of bend_points_distance in relation with Euler bends
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def U_bend_racetrack(
     v_offset: float = 90.0,
     p: float = 1.0,
@@ -99,7 +119,14 @@ def U_bend_racetrack(
     cross_section: CrossSectionSpec = "xs_rwg3000",
     **kwargs,
 ) -> gf.Component:
-    """A U-bend with fixed cross-section and dimensions, suitable for building a low-loss racetrack resonator."""
+    """A U-bend with fixed cross-section and dimensions, suitable for building a low-loss racetrack resonator.
+
+    Args:
+        v_offset: 90.0.
+        p: 1.0.
+        with_arc_floorplan: True.
+        cross_section: "xs_rwg3000".
+    """
 
     radius = 0.5 * v_offset
 
@@ -117,14 +144,21 @@ def U_bend_racetrack(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def S_bend_vert(
     v_offset: float = 25.0,
     h_extent: float = 100.0,
     dx_straight: float = 5.0,
     cross_section: CrossSectionSpec = "xs_rwg1000",
 ) -> gf.Component:
-    """A spline bend that bridges a vertical displacement."""
+    """A spline bend that bridges a vertical displacement.
+
+    Args:
+        v_offset: 25.0.
+        h_extent: 100.0.
+        dx_straight: 5.0.
+        cross_section: "xs_rwg1000".
+    """
 
     if np.abs(v_offset) < 10.0:
         raise ValueError(
@@ -162,7 +196,7 @@ def S_bend_vert(
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi1x2_optimized1550(
     width_mmi: float = 6.0,
     length_mmi: float = 26.75,
@@ -172,7 +206,16 @@ def mmi1x2_optimized1550(
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
-    """MMI1x2 with layout optimized for maximum transmission at 1550 nm."""
+    """MMI1x2 with layout optimized for maximum transmission at 1550 nm.
+
+    Args:
+        width_mmi: 6.0.
+        length_mmi: 26.75.
+        width_taper: 1.5.
+        length_taper: 25.0.
+        port_ratio: 0.55.
+        cross_section: "xs_rwg1000".
+    """
 
     gap_mmi = (
         port_ratio * width_mmi - width_taper
@@ -189,7 +232,7 @@ def mmi1x2_optimized1550(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi2x2optimized1550(
     width_mmi: float = 5.0,
     length_mmi: float = 76.5,
@@ -199,7 +242,16 @@ def mmi2x2optimized1550(
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
-    """MMI2x2 with layout optimized for maximum transmission at 1550 nm."""
+    """MMI2x2 with layout optimized for maximum transmission at 1550 nm.
+
+    Args:
+        width_mmi: 5.0.
+        length_mmi: 76.5.
+        width_taper: 1.5.
+        length_taper: 25.0.
+        port_ratio: 0.7.
+        cross_section: "xs_rwg1000".
+    """
 
     gap_mmi = (
         port_ratio * width_mmi - width_taper
@@ -223,7 +275,7 @@ mmi2x2_optimized1550 = mmi2x2optimized1550
 #####################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def directional_coupler_balanced(
     io_wg_sep: float = 30.6,
     sbend_length: float = 58,
@@ -321,7 +373,7 @@ def directional_coupler_balanced(
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def double_linear_inverse_taper(
     cross_section_start: CrossSectionSpec = "xs_swg250",
     cross_section_end: CrossSectionSpec = "xs_rwg1000",
@@ -333,6 +385,16 @@ def double_linear_inverse_taper(
     input_ext: float = 0.0,
 ) -> gf.Component:
     """Inverse taper with two layers, starting from a wire waveguide at the facet
+
+    Args:
+        cross_section_start: "xs_swg250".
+        cross_section_end: "xs_rwg1000".
+        lower_taper_length: 120.0.
+        lower_taper_end_width: 2.05.
+        upper_taper_start_width: 0.25.
+        upper_taper_length: 240.0.
+        slab_removal_width: 20.0.
+        input_ext: 0.0.
     and transitioning to a rib waveguide. The tapering profile is linear in both layers."""
 
     lower_taper_start_width = gf.get_cross_section(cross_section_start).width
@@ -438,7 +500,7 @@ def gc_focusing_1550(
 ###################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def CPW_pad_linear(
     start_width: float = 80.0,
     length_straight: float = 10.0,
@@ -447,6 +509,12 @@ def CPW_pad_linear(
 ) -> gf.Component:
     """RF access line for high-frequency GSG probes. The probe pad maintains a
     fixed gap/central conductor ratio across its length, to achieve a good
+
+    Args:
+        start_width: 80.0.
+        length_straight: 10.0.
+        length_tapered: 190.0.
+        cross_section: "xs_uni_cpw".
     impedance matching."""
 
     xs_cpw = gf.get_cross_section(cross_section)
@@ -521,7 +589,7 @@ def CPW_pad_linear(
 ####################
 
 
-@gf.cell()
+@gf.cell(tags=["cells"])
 def uni_cpw_straight(
     length: float = 1000.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw",
@@ -530,7 +598,16 @@ def uni_cpw_straight(
     ground_planes_width: float = 250.0,
     bondpad: ComponentSpec = "CPW_pad_linear",
 ) -> gf.Component:
-    """A CPW transmission line for microwaves, with a uniform cross section."""
+    """A CPW transmission line for microwaves, with a uniform cross section.
+
+    Args:
+        length: 1000.0.
+        cross_section: "xs_uni_cpw".
+        signal_width: 10.0.
+        gap_width: 4.0.
+        ground_planes_width: 250.0.
+        bondpad: "CPW_pad_linear".
+    """
 
     cpw_xs = gf.get_cross_section(
         cross_section,
@@ -563,7 +640,7 @@ def uni_cpw_straight(
     return cpw
 
 
-@gf.cell()
+@gf.cell(tags=["cells"])
 def trail_cpw(
     length: float = 1000.0,
     signal_width: float = 21,
@@ -578,7 +655,22 @@ def trail_cpw(
     bondpad: ComponentSpec = "CPW_pad_linear",
     cross_section: CrossSectionSpec = xs_uni_cpw,
 ) -> gf.Component:
-    """A CPW transmission line with periodic T-rails on all electrodes."""
+    """A CPW transmission line with periodic T-rails on all electrodes.
+
+    Args:
+        length: 1000.0.
+        signal_width: 21.
+        gap_width: 4.
+        th: 1.5.
+        tl: 44.7.
+        tw: 7.0.
+        tt: 1.5.
+        tc: 5.0.
+        ground_planes_width: 180.0.
+        rounding_radius: 0.5.
+        bondpad: "CPW_pad_linear".
+        cross_section: xs_uni_cpw.
+    """
 
     num_cells = np.floor(length / (tl + tc))
     gap_width_corrected = gap_width + 2 * th + 2 * tt  # total gap width with T-rails
@@ -677,13 +769,18 @@ def trail_cpw(
 ###################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def heater_resistor(
     path: gf.path.Path | None = None,
     width: float = 0.9,
     offset: float = 0.0,
 ) -> gf.Component:
     """A resistive wire used as a low-frequency phase shifter, exploiting
+
+    Args:
+        path: None.
+        width: 0.9.
+        offset: 0.0.
     the thermo-optical effect."""
 
     if not path:
@@ -695,7 +792,7 @@ def heater_resistor(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def heater_straight_single(
     length: float = 150.0,
     width: float = 0.9,
@@ -707,6 +804,15 @@ def heater_straight_single(
 ) -> gf.Component:
     """A straight resistive wire used as a low-frequency phase shifter,
     exploiting the thermo-optical effect. The heater is terminated by wide pads
+
+    Args:
+        length: 150.0.
+        width: 0.9.
+        offset: 0.0.
+        port_contact_width_ratio: 3.0.
+        pad_size: (100.0, 100.0).
+        pad_pitch: None.
+        pad_vert_offset: 10.0.
     for probing or bonding."""
 
     if pad_vert_offset <= 0:
@@ -808,7 +914,7 @@ def heater_straight_single(
 ###############
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def eo_phase_shifter(
     rib_core_width_modulator: float = 2.5,
     taper_length: float = 100.0,
@@ -820,6 +926,16 @@ def eo_phase_shifter(
     draw_cpw: bool = True,
 ) -> gf.Component:
     """Phase shifter based on the Pockels effect. The waveguide is located
+
+    Args:
+        rib_core_width_modulator: 2.5.
+        taper_length: 100.0.
+        modulation_length: 7500.0.
+        rf_central_conductor_width: 10.0.
+        rf_ground_planes_width: 180.0.
+        rf_gap: 4.0.
+        cpw_cell: uni_cpw_straight.
+        draw_cpw: True.
     within the gap of a CPW transmission line."""
     ps = gf.Component()
     xs_modulator = gf.get_cross_section("xs_rwg1000", width=rib_core_width_modulator)
@@ -881,7 +997,7 @@ def eo_phase_shifter(
     return ps
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     """High-speed phase shifter based on the Pockels effect. The waveguide is located
     within the gap of a CPW transmission line.
@@ -896,7 +1012,7 @@ def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     return ps
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def _mzm_interferometer(
     splitter: ComponentSpec = "mmi1x2_optimized1550",
     taper_length: float = 100.0,
@@ -910,6 +1026,21 @@ def _mzm_interferometer(
     lbend_tune_arm_reff: float = 75.0,
     lbend_combiner_reff: float = 80.0,
 ) -> gf.Component:
+    """_mzm_interferometer.
+
+    Args:
+        splitter: "mmi1x2_optimized1550".
+        taper_length: 100.0.
+        rib_core_width_modulator: 2.5.
+        modulation_length: 7500.0.
+        length_imbalance: 100.0.
+        bias_tuning_section_length: 750.0.
+        sbend_large_size: (200.0, 50.0).
+        sbend_small_size: (200.0, -45.0).
+        sbend_small_straight_extend: 5.0.
+        lbend_tune_arm_reff: 75.0.
+        lbend_combiner_reff: 80.0.
+    """
     interferometer = gf.Component()
 
     sbend_large = S_bend_vert(
@@ -1065,7 +1196,7 @@ def _mzm_interferometer(
     return interferometer
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mzm_unbalanced(
     modulation_length: float = 7500.0,
     length_imbalance: float = 100.0,
@@ -1085,6 +1216,23 @@ def mzm_unbalanced(
     **kwargs,
 ) -> gf.Component:
     """Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
+
+    Args:
+        modulation_length: 7500.0.
+        length_imbalance: 100.0.
+        lbend_tune_arm_reff: 75.0.
+        rf_pad_start_width: 80.0.
+        rf_central_conductor_width: 10.0.
+        rf_ground_planes_width: 180.0.
+        rf_gap: 4.0.
+        rf_pad_length_straight: 10.0.
+        rf_pad_length_tapered: 300.0.
+        bias_tuning_section_length: 700.0.
+        cpw_cell: uni_cpw_straight.
+        with_heater: False.
+        heater_offset: 1.2.
+        heater_width: 1.0.
+        heater_pad_size: (75.0, 75.0).
     The modulator works in a differential push-pull configuration driven by a single GSG line."""
 
     mzm = gf.Component()
@@ -1247,7 +1395,7 @@ def mzm_unbalanced(
     return mzm
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     """High-speed Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
     The modulator works in a differential push-pull configuration driven by a single GSG line.
@@ -1260,6 +1408,7 @@ def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     mzm = mzm_unbalanced(**kwargs)
     mzm.info["additional_settings"] = dict(mzm.settings)
     return mzm
+
 
 
 if __name__ == "__main__":

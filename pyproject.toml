@@ -4,9 +4,6 @@
 build-backend = "setuptools.build_meta"
 requires = ["setuptools>=80", "wheel"]
 
-[lint.pydocstyle]
-convention = "google"
-
 [project]
 authors = [
   {name = "Luxtelligence", email = "foundry@luxtelligence.ai"}
@@ -17,24 +14,25 @@ classifiers = [
   "Operating System :: OS Independent"
 ]
 dependencies = [
-  "gdsfactory~=9.34",
-  "gplugins>=1.4,<2",
-  "sax~=0.16.3"
+  "gdsfactory~=9.39.0",
+  "gplugins[sax]>=1.4,<2"
 ]
 description = "Luxtelligence gdsfactory PDK"
 keywords = ["python"]
 license = {file = "LICENSE"}
-name = "lxt_pdk_gf"
+name = "lnoi400"
 readme = "README.md"
 requires-python = "~=3.12.0"
 version = "2.0"
 
 [project.optional-dependencies]
 dev = [
+  "gdsfactoryplus",
   "pre-commit",
   "pytest",
   "pytest-cov",
-  "pytest_regressions"
+  "pytest_regressions",
+  "towncrier"
 ]
 docs = [
   "jupytext",
@@ -72,14 +70,16 @@ testpaths = ["tests"]
 
 [tool.ruff]
 fix = true
-lint.ignore = [
+
+[tool.ruff.lint]
+ignore = [
   "E501",  # line too long, handled by black
   "B008",  # do not perform function calls in argument defaults
   "C901",  # too complex
   "B905",  # `zip()` without an explicit `strict=` parameter
   "C408"  # C408 Unnecessary `dict` call (rewrite as a literal)
 ]
-lint.select = [
+select = [
   "E",  # pycodestyle errors
   "W",  # pycodestyle warnings
   "F",  # pyflakes
@@ -90,12 +90,16 @@ lint.select = [
 ]
 
 [tool.setuptools.package-data]
-mypkg = ["*.csv", "*.yaml"]
+"*" = ["*.csv", "*.yaml"]
 
 [tool.setuptools.packages]
 find = {exclude = ["tests", "tests.*", "docs", "docs.*"]}
 
 [tool.tbump]
+
+[[tool.tbump.before_commit]]
+cmd = "towncrier build --yes --version {new_version}"
+name = "create & check changelog"
 
 [[tool.tbump.file]]
 src = "README.md"
@@ -111,7 +115,7 @@ message_template = "Bump to {new_version}"
 tag_template = "v{new_version}"
 
 [tool.tbump.version]
-current = "0.0.1"
+current = "2.0"
 # Example of a semver regexp.
 # Make sure this matches current_version before
 # using tbump
@@ -122,3 +126,13 @@ regex = '''
   \.
   (?P<patch>\d+)
   '''
+
+[tool.towncrier]
+directory = ".changelog.d"
+filename = "CHANGELOG.md"
+issue_format = "[#{issue}](https://github.com/luxtelligence/lnoi400/issues/{issue})"
+package = "gdsfactory"
+start_string = "<!-- towncrier release notes start -->\n"
+template = ".changelog.d/changelog_template.jinja"
+title_format = "## [{version}](https://github.com/luxtelligence/lnoi400/releases/tag/v{version}) - {project_date}"
+underlines = ["", "", ""]

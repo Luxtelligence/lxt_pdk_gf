@@ -129,6 +129,7 @@ LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp_yaml)
 # Cross-section functions
 ############################
 
+cross_sections: dict = {}
 xsection = gf.xsection
 
 

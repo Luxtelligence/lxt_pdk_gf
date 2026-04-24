@@ -1,5 +1,132 @@
 info: {}
 name: unterminated_mzm_2x2mmi_oband_ML5000_RG5p5_RCCW20_GP100_44ff146d
+ports:
+  _ht1_1:
+    center:
+    - -1070
+    - 220
+    layer: LT_RIDGE
+    name: _ht1_1
+    orientation: 180
+    port_type: optical
+    width: 0.7
+  _ht1_2:
+    center:
+    - -370
+    - 220
+    layer: LT_RIDGE
+    name: _ht1_2
+    orientation: 0
+    port_type: optical
+    width: 0.7
+  _ht2_1:
+    center:
+    - -1070
+    - -170
+    layer: LT_RIDGE
+    name: _ht2_1
+    orientation: 180
+    port_type: optical
+    width: 0.7
+  _ht2_2:
+    center:
+    - -370
+    - -170
+    layer: LT_RIDGE
+    name: _ht2_2
+    orientation: 0
+    port_type: optical
+    width: 0.7
+  e1:
+    center:
+    - -300
+    - 0
+    layer: M2
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 78.432
+  e2:
+    center:
+    - 5300
+    - 0
+    layer: M2
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 78.432
+  e3:
+    center:
+    - -996.35
+    - 380.45
+    layer: M2
+    name: e3
+    orientation: 90
+    port_type: electrical
+    width: 150
+  e4:
+    center:
+    - -826.35
+    - 380.45
+    layer: M2
+    name: e4
+    orientation: 90
+    port_type: electrical
+    width: 150
+  e5:
+    center:
+    - -996.35
+    - -330.45
+    layer: M2
+    name: e5
+    orientation: 270
+    port_type: electrical
+    width: 150
+  e6:
+    center:
+    - -826.35
+    - -330.45
+    layer: M2
+    name: e6
+    orientation: 270
+    port_type: electrical
+    width: 150
+  o1:
+    center:
+    - -1515.675
+    - 1.95
+    layer: LT_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.7
+  o2:
+    center:
+    - -1515.675
+    - -1.95
+    layer: LT_RIDGE
+    name: o2
+    orientation: 180
+    port_type: optical
+    width: 0.7
+  o3:
+    center:
+    - 5575.675
+    - 1.95
+    layer: LT_RIDGE
+    name: o3
+    orientation: 0
+    port_type: optical
+    width: 0.7
+  o4:
+    center:
+    - 5575.675
+    - -1.95
+    layer: LT_RIDGE
+    name: o4
+    orientation: 0
+    port_type: optical
+    width: 0.7
 settings:
   bias_tuning_section_length: 700
   gsg_pitch: 100
