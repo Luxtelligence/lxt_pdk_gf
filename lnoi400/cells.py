@@ -18,7 +18,7 @@ from lnoi400.tech import LAYER, xs_uni_cpw
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def _straight(
     length: float = 10.0,
     cross_section: CrossSectionSpec = "xs_rwg1000",
@@ -37,7 +37,7 @@ def _straight(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
     """Straight single-mode waveguide.
 
@@ -52,7 +52,7 @@ def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
     """Straight multimode waveguide.
 
@@ -72,7 +72,7 @@ def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
 ##########
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def L_turn_bend(
     radius: float = 80.0,
     p: float = 1.0,
@@ -108,7 +108,7 @@ def L_turn_bend(
 # TODO: inquire about meaning of bend_points_distance in relation with Euler bends
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def U_bend_racetrack(
     v_offset: float = 90.0,
     p: float = 1.0,
@@ -141,7 +141,7 @@ def U_bend_racetrack(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def S_bend_vert(
     v_offset: float = 25.0,
     h_extent: float = 100.0,
@@ -193,7 +193,7 @@ def S_bend_vert(
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi1x2_optimized1550(
     width_mmi: float = 6.0,
     length_mmi: float = 26.75,
@@ -229,7 +229,7 @@ def mmi1x2_optimized1550(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi2x2optimized1550(
     width_mmi: float = 5.0,
     length_mmi: float = 76.5,
@@ -272,7 +272,7 @@ mmi2x2_optimized1550 = mmi2x2optimized1550
 #####################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def directional_coupler_balanced(
     io_wg_sep: float = 30.6,
     sbend_length: float = 58,
@@ -370,7 +370,7 @@ def directional_coupler_balanced(
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def double_linear_inverse_taper(
     cross_section_start: CrossSectionSpec = "xs_swg250",
     cross_section_end: CrossSectionSpec = "xs_rwg1000",
@@ -475,7 +475,7 @@ def double_linear_inverse_taper(
 ###################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def CPW_pad_linear(
     start_width: float = 80.0,
     length_straight: float = 10.0,
@@ -564,7 +564,7 @@ def CPW_pad_linear(
 ####################
 
 
-@gf.cell()
+@gf.cell(tags=["cells"])
 def uni_cpw_straight(
     length: float = 1000.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw",
@@ -615,7 +615,7 @@ def uni_cpw_straight(
     return cpw
 
 
-@gf.cell()
+@gf.cell(tags=["cells"])
 def trail_cpw(
     length: float = 1000.0,
     signal_width: float = 21,
@@ -744,7 +744,7 @@ def trail_cpw(
 ###################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def heater_resistor(
     path: gf.path.Path | None = None,
     width: float = 0.9,
@@ -767,7 +767,7 @@ def heater_resistor(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def heater_straight_single(
     length: float = 150.0,
     width: float = 0.9,
@@ -889,7 +889,7 @@ def heater_straight_single(
 ###############
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def eo_phase_shifter(
     rib_core_width_modulator: float = 2.5,
     taper_length: float = 100.0,
@@ -972,7 +972,7 @@ def eo_phase_shifter(
     return ps
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     """High-speed phase shifter based on the Pockels effect. The waveguide is located
     within the gap of a CPW transmission line.
@@ -987,7 +987,7 @@ def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     return ps
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def _mzm_interferometer(
     splitter: ComponentSpec = "mmi1x2_optimized1550",
     taper_length: float = 100.0,
@@ -1171,7 +1171,7 @@ def _mzm_interferometer(
     return interferometer
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mzm_unbalanced(
     modulation_length: float = 7500.0,
     length_imbalance: float = 100.0,
@@ -1370,7 +1370,7 @@ def mzm_unbalanced(
     return mzm
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     """High-speed Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
     The modulator works in a differential push-pull configuration driven by a single GSG line.

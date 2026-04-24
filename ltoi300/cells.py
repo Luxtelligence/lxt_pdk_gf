@@ -52,7 +52,7 @@ from ltoi300.tech import xs_rwg700, xs_rwg900
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def straight_rwg700_oband(length: float = 10.0, **kwargs) -> gf.Component:
     """Returns a standard straight 700 nm-wide single-mode waveguide for O-band propagation.
     Args:
@@ -64,7 +64,7 @@ def straight_rwg700_oband(length: float = 10.0, **kwargs) -> gf.Component:
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def straight_rwg2500(length: float = 10.0, **kwargs) -> gf.Component:
     """Returns a straight 2500 nm-wide multi-mode waveguide.
     Args:
@@ -81,7 +81,7 @@ def straight_rwg2500(length: float = 10.0, **kwargs) -> gf.Component:
 ##########################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def edge_coupler_oband(
     input_ext: float = 10.0,
     total_taper_length: float = 160.0,
@@ -101,7 +101,7 @@ def edge_coupler_oband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def edge_coupler_cband(
     input_ext: float = 10.0,
     total_taper_length: float = 160.0,
@@ -126,7 +126,7 @@ def edge_coupler_cband(
 ##########################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi1x2_oband(**kwargs) -> gf.Component:
     r"""Returns a standard 1x2 MMI optimized for low insertion loss on a 300/120 stack in the O-band (at 1310 nm).
 
@@ -147,7 +147,7 @@ def mmi1x2_oband(**kwargs) -> gf.Component:
     return _build_mmi1x2_oband(**kwargs)
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi2x2_oband(**kwargs) -> gf.Component:
     r"""Returns a standard 2x2 MMI optimized for 50% splitting on a 300/120 stack in the O-band (at 1310 nm).
 
@@ -173,7 +173,7 @@ def mmi2x2_oband(**kwargs) -> gf.Component:
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def terminated_mzm_1x2mmi_oband(
     modulation_length: float = 5000.0,
     rf_gap: float = 5.5,
@@ -220,7 +220,7 @@ def terminated_mzm_1x2mmi_oband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def unterminated_mzm_1x2mmi_oband(
     modulation_length: float = 5000.0,
     rf_gap: float = 5.5,
@@ -264,7 +264,7 @@ def unterminated_mzm_1x2mmi_oband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def terminated_mzm_2x2mmi_oband(
     modulation_length: float = 5000.0,
     rf_gap: float = 5.5,
@@ -308,7 +308,7 @@ def terminated_mzm_2x2mmi_oband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def unterminated_mzm_2x2mmi_oband(
     modulation_length: float = 5000.0,
     rf_gap: float = 5.5,
@@ -358,7 +358,7 @@ def unterminated_mzm_2x2mmi_oband(
 #####################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def ring_resonator_single_mode_point_coupler_oband(
     ring_radius: float = 200.0,
     ring_width: float = 0.7,
@@ -378,7 +378,7 @@ def ring_resonator_single_mode_point_coupler_oband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def ring_resonator_multimode_point_coupler_oband(
     ring_radius: float = 200.0,
     ring_width: float = 1.5,
@@ -408,7 +408,7 @@ def ring_resonator_multimode_point_coupler_oband(
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def straight_rwg900_cband(length: float = 10.0, **kwargs) -> gf.Component:
     """Standard straight single-mode waveguide for C-band propagation."""
     return _build_straight_rwg900(
@@ -427,7 +427,7 @@ def straight_rwg900_cband(length: float = 10.0, **kwargs) -> gf.Component:
 #########################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi1x2_cband(**kwargs) -> gf.Component:
     r"""Returns a standard 1x2 MMI optimized for low insertion loss on a 300/120 stack in the C-band (at 1550 nm).
 
@@ -448,7 +448,7 @@ def mmi1x2_cband(**kwargs) -> gf.Component:
     return _build_mmi1x2_cband(**kwargs)
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi2x2_cband(**kwargs) -> gf.Component:
     r"""Returns a standard 2x2 MMI optimized for 50% splitting on a 300/120 stack in the C-band (at 1550 nm).
 
@@ -474,7 +474,7 @@ def mmi2x2_cband(**kwargs) -> gf.Component:
 ###############
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def terminated_mzm_1x2mmi_cband(
     modulation_length: float = 5000.0,
     rf_gap: float = 5.5,
@@ -518,7 +518,7 @@ def terminated_mzm_1x2mmi_cband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def unterminated_mzm_1x2mmi_cband(
     modulation_length: float = 5000.0,
     rf_gap: float = 5.5,
@@ -562,7 +562,7 @@ def unterminated_mzm_1x2mmi_cband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def terminated_mzm_2x2mmi_cband(
     modulation_length: float = 5000.0,
     rf_gap: float = 5.5,
@@ -606,7 +606,7 @@ def terminated_mzm_2x2mmi_cband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def unterminated_mzm_2x2mmi_cband(
     modulation_length: float = 5000.0,
     rf_gap: float = 5.5,
@@ -655,7 +655,7 @@ def unterminated_mzm_2x2mmi_cband(
 #####################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def ring_resonator_single_mode_point_coupler_cband(
     ring_radius: float = 200.0,
     ring_width: float = 0.9,
@@ -675,7 +675,7 @@ def ring_resonator_single_mode_point_coupler_cband(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def ring_resonator_multimode_point_coupler_cband(
     ring_radius: float = 200.0,
     ring_width: float = 1.5,

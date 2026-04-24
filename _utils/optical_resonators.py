@@ -5,7 +5,7 @@ from _utils.bends import bend_euler_tapered
 from _utils.cross_section import get_slab_extension
 
 
-@gf.cell
+@gf.cell(tags=["optical_resonators"])
 def ring(
     radius: float,
     cross_section: CrossSectionSpec,
@@ -41,7 +41,7 @@ def ring(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["optical_resonators"])
 def ring_resonator(
     gap: float,
     ring_radius: float,
@@ -75,7 +75,7 @@ def ring_resonator(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["optical_resonators"])
 def racetrack_resonator(
     gap: float,
     rt_straight_length: float,
