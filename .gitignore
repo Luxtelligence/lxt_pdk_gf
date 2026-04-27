@@ -181,3 +181,6 @@ cython_debug/
 
 test_pdk_releases.py
 mmi_test.gds
+
+# Throwaway local-only scripts (not for remote)
+check_pm_vs_mzm.py

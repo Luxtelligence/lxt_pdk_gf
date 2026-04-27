@@ -1,0 +1,7 @@
+info: {}
+name: unterminated_eo_phase_shifter_oband_ML5000_RG5p5_RCCW20_GP100
+settings:
+  gsg_pitch: 100
+  modulation_length: 5000
+  rf_central_conductor_width: 20
+  rf_gap: 5.5

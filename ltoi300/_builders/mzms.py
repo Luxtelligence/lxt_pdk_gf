@@ -47,7 +47,7 @@ DEFAULT_M2_BONDING_PAD_PARAMS: dict[str, Any] = {
 }
 DEFAULT_TERMINATION_PARAMS: dict[str, Any] = {
     "m2_pad_length": 10.0,
-    "effective_length": 48.5,
+    "effective_length": 58.112,
     "resistor_width": 1.5,
     "hr_layer_offset": 0.0,
     "hr_pad_length": 5.0,
