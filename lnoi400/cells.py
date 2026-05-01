@@ -1410,6 +1410,5 @@ def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     return mzm
 
 
-
 if __name__ == "__main__":
     gc_focusing_1550().show()
