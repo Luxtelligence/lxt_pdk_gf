@@ -1,3 +1,6 @@
+# macOS
+.DS_Store
+
 # Windows Explorer links
 *.lnk
 
@@ -184,3 +187,4 @@ mmi_test.gds
 
 # Throwaway local-only scripts (not for remote)
 check_pm_vs_mzm.py
+.pre-commit-config.yaml
