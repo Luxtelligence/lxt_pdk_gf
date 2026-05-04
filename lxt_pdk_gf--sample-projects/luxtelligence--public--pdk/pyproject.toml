@@ -1,0 +1,120 @@
+# https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+
+[build-system]
+build-backend = "flit_core.buildapi"
+requires = ["flit-core>=3.2,<4"]
+
+[lint.pydocstyle]
+convention = "google"
+
+[project]
+authors = [{name = "Luxtelligence", email = "foundry@luxtelligence.ai"}]
+classifiers = [
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.12"
+]
+dependencies = ["gdsfactory~=9.34", "gdsfactoryplus>=1", "gplugins[sax]~=2.0.0"]
+description = "Luxtelligence lnoi400 pdk"
+keywords = ["python"]
+license = {file = "LICENSE"}
+name = "lnoi400"
+readme = "README.md"
+requires-python = "~=3.12.0"
+version = "1.2.0"
+optional-dependencies.dev = [
+  "pre-commit",
+  "pytest",
+  "pytest-cov",
+  "pytest-regressions"
+]
+optional-dependencies.docs = ["jupyter-book==1.0.4", "jupytext", "matplotlib"]
+optional-dependencies.plus = ["gdsfactoryplus"]
+
+[tool.basedpyright]
+pythonPlatform = "Linux"
+reportMissingImports = true
+reportMissingTypeStubs = false
+reportUnknownMemberType = false
+reportUnusedCallResult = false
+
+[tool.codespell]
+ignore-words-list = "te, te/tm, te, ba, fpr, fpr_spacing, ro, nd, donot, schem"
+
+[tool.gdsfactoryplus]
+drc.timeout = 300
+pdk.name = "lnoi400"
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+
+[tool.pylsp-mypy]
+enabled = true
+live_mode = true
+strict = true
+
+[tool.pytest]
+# addopts = --tb=no
+ini_options.addopts = "--tb=short"
+ini_options.norecursedirs = ["extra/*.py"]
+ini_options.python_files = ["lnoi400/*.py", "notebooks/*.ipynb", "tests/*.py"]
+ini_options.testpaths = ["lnoi400/", "tests"]
+
+[tool.ruff]
+fix = true
+lint.ignore = [
+  "B008",  # do not perform function calls in argument defaults
+  "B905",  # `zip()` without an explicit `strict=` parameter
+  "C408",  # C408 Unnecessary `dict` call (rewrite as a literal)
+  "C901",  # too complex
+  "E501"
+]
+lint.select = [
+  "B",  # flake8-bugbear
+  "C",  # flake8-comprehensions
+  "E",  # pycodestyle errors
+  "F",  # pyflakes
+  "I",  # isort
+  "UP",
+  "W"
+]
+
+[tool.setuptools]
+package-data."*" = [
+  "*.csv",
+  "*.yaml",
+  "*.yml",
+  "*.gds",
+  "*.lyp",
+  "*.oas",
+  "*.lyt",
+  "*.dat",
+  "*.nc",
+  "*.svg",
+  "*.GDS",
+  "*.json",
+  "*.txt",
+  "*.md",
+  "*.OAS"
+]
+packages.find = {}
+
+[tool.tbump]
+file = [
+  {src = "README.md"},
+  {src = "pyproject.toml"},
+  {src = "lnoi400/__init__.py"}
+]
+git.message_template = "Bump to {new_version}"
+git.tag_template = "v{new_version}"
+version.current = "0.0.1"
+# Example of a semver regexp.
+# Make sure this matches current_version before
+# using tbump
+version.regex = '''  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  '''

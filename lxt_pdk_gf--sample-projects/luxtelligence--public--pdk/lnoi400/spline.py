@@ -1,0 +1,108 @@
+import gdsfactory as gf
+import numpy as np
+from gdsfactory.typings import Coordinate, CrossSectionSpec
+
+
+def spline_clamped_path(
+    t: np.ndarray, start: Coordinate = (0.0, 0.0), end: Coordinate = (120.0, 25.0)
+):
+    """Returns a spline path with a null first derivative at the extrema."""
+
+    xs = t
+    ys = (t**2) * (3 - 2 * t)
+
+    # Rescale to the start and end coordinates
+
+    xs = start[0] + (end[0] - start[0]) * xs
+    ys = start[1] + (end[1] - start[1]) * ys
+
+    path = gf.Path(np.column_stack([xs, ys]))
+    path.start_angle = path.end_angle = 0.0
+
+    return path
+
+
+def spline_null_curvature(
+    t: np.ndarray, start: Coordinate = (0.0, 0.0), end: Coordinate = (120.0, 25.0)
+):
+    """Returns a spline path with zero first and second derivatives at the extrema."""
+
+    xs = t
+    ys = (t**3) * (6 * t**2 - 15.0 * t + 10.0)
+
+    xs = start[0] + (end[0] - start[0]) * xs
+    ys = start[1] + (end[1] - start[1]) * ys
+
+    path = gf.Path(np.column_stack([xs, ys]))
+    path.start_angle = path.end_angle = 0.0
+
+    return path
+
+
+@gf.cell
+def bend_S_spline(
+    size: tuple[float, float] = (100.0, 30.0),
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    npoints: int = 201,
+    path_method=spline_clamped_path,
+) -> gf.Component:
+    """A spline bend merging a vertical offset."""
+
+    t = np.linspace(0, 1, npoints)
+    xs = gf.get_cross_section(cross_section)
+    path = path_method(t, start=(0.0, 0.0), end=size)
+
+    c = path.extrude(xs)
+
+    return c
+
+
+@gf.cell
+def bend_S_spline_varying_width(
+    size: tuple[float, float] = (58, 14.5),
+    cross_section1: CrossSectionSpec = None,
+    cross_section2: CrossSectionSpec = None,
+    npoints: int = 201,
+    path_method=spline_null_curvature,
+) -> gf.Component:
+    """
+    A spline bend merging a vertical offset.
+    Can accept arbitrary cross sections. Not tested as a standalone PDK element. Used as a building
+    block for cells with known behaviour.
+    """
+
+    if not cross_section1:
+        s0 = gf.Section(
+            width=0.2,
+            offset=0,
+            layer="LN_RIDGE",
+            name="_default",
+            port_names=("o1", "o2"),
+        )
+        s1 = gf.Section(
+            width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03
+        )
+        cross_section1 = gf.CrossSection(sections=[s0, s1])
+
+    if not cross_section2:
+        s0 = gf.Section(
+            width=0.3,
+            offset=0,
+            layer="LN_RIDGE",
+            name="_default",
+            port_names=("o1", "o2"),
+        )
+        s1 = gf.Section(
+            width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03
+        )
+        cross_section2 = gf.CrossSection(sections=[s0, s1])
+
+    t = np.linspace(0, 1, npoints)
+    path = path_method(t, start=(0.0, 0.0), end=size)
+
+    xtrans = gf.path.transition(
+        cross_section1=cross_section1,
+        cross_section2=cross_section2,
+        width_type="linear",
+    )
+    return gf.path.extrude_transition(path, xtrans)
