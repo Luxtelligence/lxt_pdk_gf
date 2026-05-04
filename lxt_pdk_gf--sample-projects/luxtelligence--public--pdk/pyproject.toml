@@ -14,7 +14,7 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.12"
 ]
-dependencies = ["gdsfactory~=9.0", "gdsfactoryplus>=1", "gplugins[sax]~=2.0.0"]
+dependencies = ["gdsfactory~=9.34", "gdsfactoryplus>=1", "gplugins[sax]~=2.0.0"]
 description = "Luxtelligence lnoi400 pdk"
 keywords = ["python"]
 license = {file = "LICENSE"}
