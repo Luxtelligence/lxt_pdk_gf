@@ -311,7 +311,10 @@ def build_unterminated_mzm_cband(
             _optical_waveguide_params["heater_section_length"] = _heater_params[
                 "length"
             ]
-
+    else:
+        _optical_waveguide_params = _merge(
+            DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
+        )
     mzm_ref = c << base_mzm(
         optical_xs=xs_rwg900,  # fixed by wrapper
         cpw_xs=xs_uni_cpw,  # fixed by wrapper
@@ -514,15 +517,22 @@ def build_phase_shifter_modular_cband(
             via_m1_m2_params=_transition_m1_m2_params,
         )
         m2_transition_ref_left = c << m2_transition_cell
-        m2_transition_ref_left.connect("e2", mzm_ref.ports["e1"], allow_width_mismatch=True, allow_layer_mismatch=True
+        m2_transition_ref_left.connect(
+            "e2",
+            mzm_ref.ports["e1"],
+            allow_width_mismatch=True,
+            allow_layer_mismatch=True,
         )
 
         wg_length = _transition_m1_m2_params["width"]
-        straight_o1_left = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o1_left = c << gf.components.straight(
+            length=wg_length, cross_section=xs_rwg900
+        )
         straight_o1_left.connect("o1", mzm_ref.ports["o1"])
-        straight_o2_left = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o2_left = c << gf.components.straight(
+            length=wg_length, cross_section=xs_rwg900
+        )
         straight_o2_left.connect("o1", mzm_ref.ports["o2"])
-
 
     if _cpw_pad_params["right_rf_pad"] == "bend_connection":
         cpw_xs = xs_uni_cpw(
@@ -538,7 +548,11 @@ def build_phase_shifter_modular_cband(
             via_m1_m2_params=_transition_m1_m2_params,
         )
         m2_transition_ref_right = c << m2_transition_cell
-        m2_transition_ref_right.connect("e1", mzm_ref.ports["e2"], allow_width_mismatch=True, allow_layer_mismatch=True
+        m2_transition_ref_right.connect(
+            "e1",
+            mzm_ref.ports["e2"],
+            allow_width_mismatch=True,
+            allow_layer_mismatch=True,
         )
 
         # Port numbering on the right side depends on how many ports the left
@@ -548,9 +562,13 @@ def build_phase_shifter_modular_cband(
         _right_p1, _right_p2 = ("o2", "o3") if _left_is_mmi else ("o3", "o4")
 
         wg_length = _transition_m1_m2_params["width"]
-        straight_o1_right = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o1_right = c << gf.components.straight(
+            length=wg_length, cross_section=xs_rwg900
+        )
         straight_o1_right.connect("o1", mzm_ref.ports[_right_p1])
-        straight_o2_right = c << gf.components.straight(length=wg_length, cross_section=xs_rwg900)
+        straight_o2_right = c << gf.components.straight(
+            length=wg_length, cross_section=xs_rwg900
+        )
         straight_o2_right.connect("o1", mzm_ref.ports[_right_p2])
 
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
