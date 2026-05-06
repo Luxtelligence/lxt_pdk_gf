@@ -130,6 +130,10 @@ def build_unterminated_mzm_oband(
             _optical_waveguide_params["heater_section_length"] = _heater_params[
                 "length"
             ]
+    else:
+        _optical_waveguide_params = _merge(
+            DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
+        )
 
     mzm_ref = c << base_mzm(
         optical_xs=xs_rwg700,  # fixed by wrapper
@@ -250,6 +254,162 @@ def build_terminated_mzm_oband(
             c.add_port(name=f"_{port.name}", port=port)
         else:
             c.add_port(name=port.name, port=port)
+    return c
+
+
+def build_phase_shifter_modular_oband(
+    mmi_cell: gf.Component,
+    modulation_length: float = 2000.0,
+    cpw_params: dict[str, Any] | None = None,
+    trail_params: dict[str, Any] | None = None,
+    cpw_pad_params: dict[str, Any] | None = None,
+    optical_waveguide_params: dict[str, Any] | None = None,
+    m2_bonding_pad_params: dict[str, Any] | None = None,
+    transition_m1_m2_params: dict[str, Any] | None = None,
+    transition_m2_hr_params: dict[str, Any] | None = None,
+    termination_params: dict[str, Any] | None = None,
+    heater_params: dict[str, Any] | None = None,
+):
+    """Create a phase-shifter modular O-band component.
+
+    Args:
+        cpw_pad_params: Overrides for CPW pad parameters. The keys
+            ``left_optical_branch`` and ``right_optical_branch`` accept:
+            - ``"mmi"``  – terminate the optical branch with an MMI coupler.
+            - ``"open"`` – leave the waveguide unterminated (bare port).
+    """
+    c = gf.Component()
+
+    _cpw_params = _merge(DEFAULT_CPW_PARAMS_OBAND, cpw_params)
+    _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
+    _cpw_pad_params = _merge(DEFAULT_CPW_PAD_PARAMS, cpw_pad_params)
+    _transition_m1_m2_params = _merge(
+        DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params
+    )
+    _transition_m2_hr_params = _merge(
+        DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
+    )
+
+    cpw_xs = xs_uni_cpw(
+        central_conductor_width=_cpw_params["rf_central_conductor_width"],
+        gap=_cpw_params["rf_gap"],
+        ground_planes_width=_cpw_params["rf_ground_planes_width"],
+    )
+    termination = double_layer_termination(
+        cpw_xs=cpw_xs,
+        termination_layer=LAYER.HRL,
+        m2_layer=LAYER.M2,
+        m2_pad_length=_termination_params["m2_pad_length"],
+        termination_params=_termination_params,
+        via_m1_m2_params=_transition_m1_m2_params,
+        via_m2_hr_params=_transition_m2_hr_params,
+    )
+
+    mzm_ref = c << build_unterminated_mzm_oband(
+        mmi_cell=mmi_cell,
+        modulation_length=modulation_length,
+        cpw_params=_cpw_params,
+        trail_params=trail_params,
+        cpw_pad_params=_cpw_pad_params,
+        optical_waveguide_params=optical_waveguide_params,
+        m2_bonding_pad_params=m2_bonding_pad_params,
+        transition_m1_m2_params=transition_m1_m2_params,
+        transition_m2_hr_params=transition_m2_hr_params,
+        heater_params=heater_params,
+    )
+    if _cpw_pad_params["right_rf_pad"] == "termination":
+        termination_ref = c << termination
+        termination_ref.connect("e1", mzm_ref.ports["e2"])
+        c.add_port(name="_term", port=termination_ref.ports["term"])
+
+    if _cpw_pad_params["left_rf_pad"] == "bend_connection":
+        cpw_xs = xs_uni_cpw(
+            central_conductor_width=_cpw_params["rf_central_conductor_width"],
+            gap=_cpw_params["rf_gap"],
+            ground_planes_width=_cpw_params["rf_ground_planes_width"],
+        )
+
+        m2_transition_cell = m2_transition(
+            cpw_xs=cpw_xs,
+            m2_layer=LAYER.M2,
+            termination_params=_termination_params,
+            via_m1_m2_params=_transition_m1_m2_params,
+        )
+        m2_transition_ref_left = c << m2_transition_cell
+        m2_transition_ref_left.connect(
+            "e2",
+            mzm_ref.ports["e1"],
+            allow_width_mismatch=True,
+            allow_layer_mismatch=True,
+        )
+
+        wg_length = _transition_m1_m2_params["width"]
+        straight_o1_left = c << gf.components.straight(
+            length=wg_length, cross_section=xs_rwg700
+        )
+        straight_o1_left.connect("o1", mzm_ref.ports["o1"])
+        straight_o2_left = c << gf.components.straight(
+            length=wg_length, cross_section=xs_rwg700
+        )
+        straight_o2_left.connect("o1", mzm_ref.ports["o2"])
+
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection":
+        cpw_xs = xs_uni_cpw(
+            central_conductor_width=_cpw_params["rf_central_conductor_width"],
+            gap=_cpw_params["rf_gap"],
+            ground_planes_width=_cpw_params["rf_ground_planes_width"],
+        )
+
+        m2_transition_cell = m2_transition(
+            cpw_xs=cpw_xs,
+            m2_layer=LAYER.M2,
+            termination_params=_termination_params,
+            via_m1_m2_params=_transition_m1_m2_params,
+        )
+        m2_transition_ref_right = c << m2_transition_cell
+        m2_transition_ref_right.connect(
+            "e1",
+            mzm_ref.ports["e2"],
+            allow_width_mismatch=True,
+            allow_layer_mismatch=True,
+        )
+
+        # Port numbering on the right side depends on how many ports the left
+        # optical branch contributes: "mmi" → 2 left ports (o1,o2) so right is
+        # o3/o4; "open" → 1 left port (o1) so right is o2/o3.
+        _left_is_mmi = optical_waveguide_params["left_optical_branch"] == "mmi"
+        _right_p1, _right_p2 = ("o2", "o3") if _left_is_mmi else ("o3", "o4")
+
+        wg_length = _transition_m1_m2_params["width"]
+        straight_o1_right = c << gf.components.straight(
+            length=wg_length, cross_section=xs_rwg700
+        )
+        straight_o1_right.connect("o1", mzm_ref.ports[_right_p1])
+        straight_o2_right = c << gf.components.straight(
+            length=wg_length, cross_section=xs_rwg700
+        )
+        straight_o2_right.connect("o1", mzm_ref.ports[_right_p2])
+
+    utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
+    if _cpw_pad_params["left_rf_pad"] == "bend_connection":
+        utility_ports.extend(["e1", "o1", "o2"])
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection" and _left_is_mmi:
+        utility_ports.extend(["e2", _right_p1, _right_p2, "o4"])
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection" and not _left_is_mmi:
+        utility_ports.extend(["e2", _right_p1, _right_p2])
+    for port in mzm_ref.ports:
+        if port.name in utility_ports:
+            c.add_port(name=f"_{port.name}", port=port)
+        else:
+            c.add_port(name=port.name, port=port)
+    if _cpw_pad_params["left_rf_pad"] == "bend_connection":
+        c.add_port(name="e1", port=m2_transition_ref_left.ports["e1"])
+        c.add_port(name="o1", port=straight_o1_left.ports["o2"])
+        c.add_port(name="o2", port=straight_o2_left.ports["o2"])
+    if _cpw_pad_params["right_rf_pad"] == "bend_connection":
+        c.add_port(name="e2", port=m2_transition_ref_right.ports["e2"])
+        c.add_port(name=_right_p1, port=straight_o1_right.ports["o2"])
+        c.add_port(name=_right_p2, port=straight_o2_right.ports["o2"])
     return c
 
 
