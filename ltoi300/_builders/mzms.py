@@ -148,7 +148,9 @@ def build_unterminated_mzm_oband(
         **base_mzm_kwargs,
     )
 
-    if _heater_params["length"] > 0.0:
+    if (_heater_params["length"] > 0.0) and (
+        _optical_waveguide_params["left_optical_branch"] == "mmi"
+    ):
         _transition_m2_hr_params = _merge(
             DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
         )
