@@ -72,8 +72,11 @@ def ring_resonator(
         ring_ref.dcenter[1],
     ]
 
-    # Fix acute corners in the sleeve layers
+    # Flatten before over_under so that all shapes are owned directly by c.
+    c.add_ports(coupler_ref.ports)
+    c.flatten()
 
+    # Fix acute corners in the sleeve layers
     main_layers = {bus_xs.layer, ring_xs.layer}
     sleeve_layers = {
         section.layer
@@ -84,8 +87,6 @@ def ring_resonator(
     for layer in sleeve_layers:
         c.over_under(layer=layer, distance=over_under_distance)
 
-    c.add_ports(coupler_ref.ports)
-    c.flatten()
     return c
 
 
