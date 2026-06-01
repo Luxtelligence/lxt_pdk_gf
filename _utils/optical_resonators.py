@@ -73,8 +73,6 @@ def ring_resonator(
     ]
 
     # Flatten before over_under so that all shapes are owned directly by c.
-    # over_under internally calls remove_layers(recursive=True), which would
-    # otherwise descend into and corrupt the cached sub-components (bus, ring).
     c.add_ports(coupler_ref.ports)
     c.flatten()
 
