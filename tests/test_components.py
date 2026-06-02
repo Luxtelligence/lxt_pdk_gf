@@ -68,7 +68,7 @@ def test_settings(
     pdk = pdks[pdk_name]
     pdk.activate()
     component = pdk.cells[component_name]()
-    data_regression.check(component.to_dict())
+    data_regression.check(component.to_dict(with_ports=True))
 
 
 def test_models_with_wavelength_sweep(

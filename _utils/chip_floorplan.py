@@ -1,7 +1,7 @@
 import gdsfactory as gf
 
 
-@gf.cell
+@gf.cell(tags=["chip_floorplan"])
 def chip_frame(
     size: tuple[float, float] = (10_000, 5000),
     exclusion_zone_width: float = 50,

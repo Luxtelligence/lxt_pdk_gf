@@ -1,44 +1,11 @@
-name: Test pre-commit and code regressions
-
+name: Test code
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  pre-commit:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-      - name: Set up Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-          cache: "pip"
-          cache-dependency-path: pyproject.toml
-      - name: Test pre-commit hooks
-        run: |
-          python -m pip install --upgrade pip
-          pip install pre-commit
-          pre-commit run -a
-  test_code:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      max-parallel: 12
-      matrix:
-        python-version: ["3.12"]
-        os: [ubuntu-latest]
-    steps:
-      - uses: actions/checkout@v6
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python-version }}
-          cache: "pip"
-          cache-dependency-path: pyproject.toml
-      - name: Install dependencies
-        run: |
-          make dev
-      - name: Test with pytest
-        run: pytest
+  test:
+    uses: doplaydo/pdk-ci-workflow/.github/workflows/test_code.yml@main
+    secrets:
+      GFP_API_KEY: ${{ secrets.GFP_API_KEY }}

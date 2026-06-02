@@ -11,7 +11,7 @@ LayerViews:
     color: "#4c209e"
   LABELS:
     layer: [4, 0]
-    color: "#5179b5"
+    color: "gray"
   CHIP_CONTOUR:
     layer: [6, 0]
     color: "#ffc6b8"

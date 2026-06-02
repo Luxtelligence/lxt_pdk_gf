@@ -33,6 +33,7 @@ def get_pdk() -> Pdk:
         layer_views=LAYER_VIEWS,
         models=_models,
         routing_strategies=_routing_strategies,
+        version="1.2.0",
     )
 
 

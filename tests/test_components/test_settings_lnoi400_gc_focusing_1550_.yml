@@ -183,6 +183,25 @@ info:
   - 0.48
   - 0.48
 name: gc_focusing_1550_SW4p5_CSxs_rwg1000_WL10
+ports:
+  o1:
+    center:
+    - -9.693
+    - 0
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 43.087
+    - 0
+    layer: LN_RIDGE
+    name: o2
+    orientation: 0
+    port_type: vertical_te
+    width: 10
 settings:
   cross_section: xs_rwg1000
   sleeve_width: 4.5

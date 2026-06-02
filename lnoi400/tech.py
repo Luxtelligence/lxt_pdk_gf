@@ -129,6 +129,7 @@ LAYER_VIEWS = gf.technology.LayerViews(filepath=PATH.lyp_yaml)
 # Cross-section functions
 ############################
 
+cross_sections: dict = {}
 xsection = gf.xsection
 
 
@@ -285,6 +286,7 @@ route_bundle_rwg1000 = partial(
     end_straight_length=5.0,
     min_straight_taper=100.0,
     on_collision="show_error",
+    sbend="bend_s",
 )
 
 if __name__ == "__main__":

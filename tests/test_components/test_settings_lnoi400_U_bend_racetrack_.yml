@@ -11,6 +11,25 @@ info:
   route_info_xs_rwg3000_length: 205.358
   width: 3
 name: U_bend_racetrack_VO90_P1_WAFTrue_CSxs_rwg3000
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 3
+  o2:
+    center:
+    - 0
+    - 90
+    layer: LN_RIDGE
+    name: o2
+    orientation: 180
+    port_type: optical
+    width: 3
 settings:
   cross_section: xs_rwg3000
   p: 1
