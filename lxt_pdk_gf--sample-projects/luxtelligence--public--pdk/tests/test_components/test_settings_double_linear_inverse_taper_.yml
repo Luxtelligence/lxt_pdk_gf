@@ -1,0 +1,11 @@
+info: {}
+name: double_linear_inverse_t_e181987f
+settings:
+  cross_section_end: xs_rwg1000
+  cross_section_start: xs_swg250
+  input_ext: 0
+  lower_taper_end_width: 2.05
+  lower_taper_length: 120
+  slab_removal_width: 20
+  upper_taper_length: 240
+  upper_taper_start_width: 0.25

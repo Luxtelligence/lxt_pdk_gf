@@ -1,0 +1,11 @@
+info: {}
+name: heater_straight_single__802d638b
+settings:
+  length: 150
+  offset: 0
+  pad_size:
+  - 100
+  - 100
+  pad_vert_offset: 10
+  port_contact_width_ratio: 3
+  width: 0.9
