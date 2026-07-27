@@ -148,7 +148,7 @@ def heater_wire(
     heater_xs: CrossSection,
     length: float = 700.0,
     port_contact_width_ratio: float = 3.0,
-    via_size: tuple[float, float] = (80, 80),
+    via_size: tuple[float, float] = (20, 20),
     via_offset_y: float = 30,
     layer_via: gf.typings.LayerSpec = (41, 0),
     layer_m2: gf.typings.LayerSpec = (22, 0),
