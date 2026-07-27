@@ -4,7 +4,7 @@ import gdsfactory as gf
 
 from _utils.gsg_rf import double_layer_termination
 from _utils.mzm import base_mzm
-from _utils.thermal_phase_shifters import heater_straight_compact
+from _utils.thermal_phase_shifters import add_heater
 from ltoi300.tech import LAYER, xs_ht_wire, xs_rwg700, xs_rwg900, xs_uni_cpw
 
 ###############################################
@@ -17,6 +17,8 @@ DEFAULT_CPW_PAD_PARAMS: dict[str, Any] = {
     "length_straight": 25.0,
     "length_tapered": 150.0,
     "ground_pad_width": 150.0,
+    "dc_pad_width": 80.0,
+    "dc_ground_width": 150.0,
 }
 DEFAULT_OPTICAL_WG_PARAMS: dict[str, Any] = {
     "taper_length": 100.0,
@@ -27,17 +29,36 @@ DEFAULT_OPTICAL_WG_PARAMS: dict[str, Any] = {
     "heater_section_length": 100.0,
     "mmi_connection_length": 10.0,
     "cpw_connection_length": 75.0,
+    "sbend_length": 150.0,
+    "sbend_offset": 40.0,
+    "horizontal_offset": 0.0,
+    "thermal_phase_shifter_node": True,
+    "electric_phase_shifter_node": False,
+    "electric_phase_shifter_length": 2000.0,
+    "dc_phase_shifter_node": False,
+    "dc_phase_shifter_length": 2000.0,
+    "folding": False,
 }
 DEFAULT_HEATER_PARAMS: dict[str, Any] = {
     "length": 1000.0,
     "width": 2.5,
-    "routing_width": 6.0,
+    "routing_width": 60,
     "offset": 0.0,
     "both_arms": True,
     "port_contact_width_ratio": 3.0,
     "pad_size": (150.0, 150.0),
     "pad_pitch": None,
     "pad_vert_offset": 10.0,
+    "pad_e1_heater_offset": None,
+    "pad_e2_heater_offset": None,
+    "pad_e3_heater_offset": None,
+    "pad_e4_heater_offset": None,
+    "pad_e1_heater_route": None,
+    "pad_e2_heater_route": None,
+    "pad_e3_heater_route": None,
+    "pad_e4_heater_route": None,
+    "align_pads_same_y": None,
+    "thermal_phase_shifter_node": True,
 }
 DEFAULT_M2_BONDING_PAD_PARAMS: dict[str, Any] = {
     "m2_pad_length": 80.0,
@@ -114,12 +135,16 @@ def build_unterminated_mzm_oband(
 
     c = gf.Component()
 
+    _optical_waveguide_params = _merge(
+        DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
+    )
     _heater_params = _merge(DEFAULT_HEATER_PARAMS, heater_params)
-    if _heater_params["length"] > 0.0:
-        _optical_waveguide_params = _merge(
-            DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
-        )
 
+    if _optical_waveguide_params.get("electric_phase_shifter_node") or _optical_waveguide_params.get("dc_phase_shifter_node"):
+        _optical_waveguide_params["thermal_phase_shifter_node"] = False
+        _heater_params["thermal_phase_shifter_node"] = False
+
+    if _heater_params["length"] > 0.0 and _heater_params.get("thermal_phase_shifter_node", True):
         if (
             _optical_waveguide_params["heater_section_length"]
             < _heater_params["length"]
@@ -141,37 +166,35 @@ def build_unterminated_mzm_oband(
         **base_mzm_kwargs,
     )
 
-    if _heater_params["length"] > 0.0:
+    if _heater_params["length"] > 0.0 and _heater_params.get("thermal_phase_shifter_node", True):
         _transition_m2_hr_params = _merge(
             DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
         )
-        heater = heater_straight_compact(
-            heater_xs=xs_ht_wire(width=_heater_params["width"]),
-            routing_xs=xs_ht_wire(width=_heater_params["routing_width"]),
-            length=_heater_params["length"],
+        add_heater_kwargs = {
+            "transition_m2_hr_params": _transition_m2_hr_params,
+        }
+        for key in ["pad_e1_heater_offset", "pad_e2_heater_offset", "pad_e3_heater_offset", "pad_e4_heater_offset", "align_pads_same_y", "pad_e1_heater_route", "pad_e2_heater_route", "pad_e3_heater_route", "pad_e4_heater_route"]:
+            if _heater_params.get(key) is not None:
+                add_heater_kwargs[key] = _heater_params[key]
+
+        heater_comp = add_heater(
+            heater_xs=xs_ht_wire(width=_heater_params["width"], ht_layer=LAYER.HRL),
+            routing_xs=xs_ht_wire(width=_heater_params["routing_width"], ht_layer=LAYER.M2),
+            interferometer=mzm_ref,
+            heater_on_both_branches=_heater_params["both_arms"],
+            heater_offset=_heater_params["offset"],
+            heater_width=_heater_params["width"],
+            heater_pad_size=_heater_params["pad_size"],
+            bias_tuning_section_length=_heater_params["length"],
             port_contact_width_ratio=_heater_params["port_contact_width_ratio"],
-            pad_size=_heater_params["pad_size"],
-            pad_pitch=_heater_params["pad_pitch"],
-            pad_vert_offset=_heater_params["pad_vert_offset"],
-            transition_m2_hr_params=_transition_m2_hr_params,
+            **add_heater_kwargs,
         )
-        heater_ref_1 = c << heater
-        heater_ref_1.dmove(
-            origin=heater_ref_1.ports["ht_start"].dcenter,
-            destination=mzm_ref.ports["ht1_1"].dcenter + (0, _heater_params["offset"]),
-        )
-        c.add_port(name="e3", port=heater_ref_1.ports["e1"])
-        c.add_port(name="e4", port=heater_ref_1.ports["e2"])
+        heater_ref = c << heater_comp
+        c.add_port(name="e3", port=heater_ref.ports["e1_heater"])
+        c.add_port(name="e4", port=heater_ref.ports["e2_heater"])
         if _heater_params["both_arms"]:
-            heater_ref_2 = c << heater
-            heater_ref_2.dmirror_y()
-            heater_ref_2.dmove(
-                origin=heater_ref_2.ports["ht_start"].dcenter,
-                destination=mzm_ref.ports["ht2_1"].dcenter
-                + (0, -_heater_params["offset"]),
-            )
-            c.add_port(name="e5", port=heater_ref_2.ports["e1"])
-            c.add_port(name="e6", port=heater_ref_2.ports["e2"])
+            c.add_port(name="e5", port=heater_ref.ports["e3_heater"])
+            c.add_port(name="e6", port=heater_ref.ports["e4_heater"])
 
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
     for port in mzm_ref.ports:
@@ -179,6 +202,8 @@ def build_unterminated_mzm_oband(
             c.add_port(name=f"_{port.name}", port=port)
         else:
             c.add_port(name=port.name, port=port)
+    mzm_info = mzm_ref.cell.info.model_dump() if hasattr(mzm_ref.cell.info, "model_dump") else dict(mzm_ref.cell.info)
+    c.info.update(mzm_info)
     return c
 
 
@@ -234,6 +259,7 @@ def build_terminated_mzm_oband(
         transition_m1_m2_params=transition_m1_m2_params,
         transition_m2_hr_params=transition_m2_hr_params,
         heater_params=heater_params,
+        termination=termination,
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
@@ -244,6 +270,8 @@ def build_terminated_mzm_oband(
             c.add_port(name=f"_{port.name}", port=port)
         else:
             c.add_port(name=port.name, port=port)
+    mzm_info = mzm_ref.cell.info.model_dump() if hasattr(mzm_ref.cell.info, "model_dump") else dict(mzm_ref.cell.info)
+    c.info.update(mzm_info)
     return c
 
 
@@ -292,12 +320,16 @@ def build_unterminated_mzm_cband(
 
     c = gf.Component()
 
+    _optical_waveguide_params = _merge(
+        DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
+    )
     _heater_params = _merge(DEFAULT_HEATER_PARAMS, heater_params)
-    if _heater_params["length"] > 0.0:
-        _optical_waveguide_params = _merge(
-            DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
-        )
 
+    if _optical_waveguide_params.get("electric_phase_shifter_node") or _optical_waveguide_params.get("dc_phase_shifter_node"):
+        _optical_waveguide_params["thermal_phase_shifter_node"] = False
+        _heater_params["thermal_phase_shifter_node"] = False
+
+    if _heater_params["length"] > 0.0 and _heater_params.get("thermal_phase_shifter_node", True):
         if (
             _optical_waveguide_params["heater_section_length"]
             < _heater_params["length"]
@@ -319,43 +351,43 @@ def build_unterminated_mzm_cband(
         **base_mzm_kwargs,
     )
 
-    if _heater_params["length"] > 0.0:
+    if _heater_params["length"] > 0.0 and _heater_params.get("thermal_phase_shifter_node", True):
         _transition_m2_hr_params = _merge(
             DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params
         )
-        heater = heater_straight_compact(
-            heater_xs=xs_ht_wire(width=_heater_params["width"]),
-            routing_xs=xs_ht_wire(width=_heater_params["routing_width"]),
-            length=_heater_params["length"],
+        add_heater_kwargs = {
+            "transition_m2_hr_params": _transition_m2_hr_params,
+        }
+        for key in ["pad_e1_heater_offset", "pad_e2_heater_offset", "pad_e3_heater_offset", "pad_e4_heater_offset", "align_pads_same_y", "pad_e1_heater_route", "pad_e2_heater_route", "pad_e3_heater_route", "pad_e4_heater_route"]:
+            if _heater_params.get(key) is not None:
+                add_heater_kwargs[key] = _heater_params[key]
+
+        heater_comp = add_heater(
+            heater_xs=xs_ht_wire(width=_heater_params["width"], ht_layer=LAYER.HRL),
+            routing_xs=xs_ht_wire(width=_heater_params["routing_width"], ht_layer=LAYER.M2),
+            interferometer=mzm_ref,
+            heater_on_both_branches=_heater_params["both_arms"],
+            heater_offset=_heater_params["offset"],
+            heater_width=_heater_params["width"],
+            heater_pad_size=_heater_params["pad_size"],
+            bias_tuning_section_length=_heater_params["length"],
             port_contact_width_ratio=_heater_params["port_contact_width_ratio"],
-            pad_size=_heater_params["pad_size"],
-            pad_pitch=_heater_params["pad_pitch"],
-            pad_vert_offset=_heater_params["pad_vert_offset"],
-            transition_m2_hr_params=_transition_m2_hr_params,
+            **add_heater_kwargs,
         )
-        heater_ref_1 = c << heater
-        heater_ref_1.dmove(
-            origin=heater_ref_1.ports["ht_start"].dcenter,
-            destination=mzm_ref.ports["ht1_1"].dcenter + (0, _heater_params["offset"]),
-        )
-        c.add_port(name="e3", port=heater_ref_1.ports["e1"])
-        c.add_port(name="e4", port=heater_ref_1.ports["e2"])
+        heater_ref = c << heater_comp
+        c.add_port(name="e3", port=heater_ref.ports["e1_heater"])
+        c.add_port(name="e4", port=heater_ref.ports["e2_heater"])
         if _heater_params["both_arms"]:
-            heater_ref_2 = c << heater
-            heater_ref_2.dmirror_y()
-            heater_ref_2.dmove(
-                origin=heater_ref_2.ports["ht_start"].dcenter,
-                destination=mzm_ref.ports["ht2_1"].dcenter
-                + (0, -_heater_params["offset"]),
-            )
-            c.add_port(name="e5", port=heater_ref_2.ports["e1"])
-            c.add_port(name="e6", port=heater_ref_2.ports["e2"])
+            c.add_port(name="e5", port=heater_ref.ports["e3_heater"])
+            c.add_port(name="e6", port=heater_ref.ports["e4_heater"])
     utility_ports = ["ht1_1", "ht1_2", "ht2_1", "ht2_2"]
     for port in mzm_ref.ports:
         if port.name in utility_ports:
             c.add_port(name=f"_{port.name}", port=port)
         else:
             c.add_port(name=port.name, port=port)
+    mzm_info = mzm_ref.cell.info.model_dump() if hasattr(mzm_ref.cell.info, "model_dump") else dict(mzm_ref.cell.info)
+    c.info.update(mzm_info)
     return c
 
 
@@ -411,6 +443,7 @@ def build_terminated_mzm_cband(
         transition_m1_m2_params=transition_m1_m2_params,
         transition_m2_hr_params=transition_m2_hr_params,
         heater_params=heater_params,
+        termination=termination,
     )
     termination_ref = c << termination
     termination_ref.connect("e1", mzm_ref.ports["e2"])
@@ -421,6 +454,8 @@ def build_terminated_mzm_cband(
             c.add_port(name=f"_{port.name}", port=port)
         else:
             c.add_port(name=port.name, port=port)
+    mzm_info = mzm_ref.cell.info.model_dump() if hasattr(mzm_ref.cell.info, "model_dump") else dict(mzm_ref.cell.info)
+    c.info.update(mzm_info)
     return c
 
 

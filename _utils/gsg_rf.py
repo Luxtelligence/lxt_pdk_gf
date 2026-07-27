@@ -1027,6 +1027,241 @@ def cpw_pad(
     return pad
 
 
+@gf.cell
+def rectangular_cpw_pad(
+    cpw_xs: CrossSectionSpec,
+    pitch: float = 100.0,
+    length_straight: float = 25.0,
+    length_tapered: float = 190.0,
+    ground_pad_width: float = 150.0,
+    optical_waveguide_xs: CrossSectionSpec | None = None,
+    m2_bonding_pads_params: dict[str, Any] | None = None,
+    single_waveguide: bool = False,
+    dc_pad_width: float = 80.0,
+) -> gf.Component:
+    """Rectangular GSG pad for DC phase shifter nodes.
+    Unlike cpw_pad, the signal and ground electrodes in the transition/taper region
+    are rectangular (constant width) rather than tapered.
+    """
+    pad = gf.Component()
+
+    # Get metal layer from cpw_xs
+    _cpw_xs = gf.get_cross_section(cpw_xs)
+    end_width, end_ground_width, end_gap, tl_layer = get_cpw_from_xs(_cpw_xs)
+
+    grid_size = 0.004
+    dc_pad_width = round(dc_pad_width / grid_size) * grid_size
+    ground_pad_width = round(ground_pad_width / grid_size) * grid_size
+    end_width = round(end_width / grid_size) * grid_size
+    end_ground_width = round(end_ground_width / grid_size) * grid_size
+    end_gap = round(end_gap / grid_size) * grid_size
+
+    total_length = length_straight + length_tapered
+
+    # 1. Define gap/slot paths
+    y_start_upper = pitch / 2
+    y_end_upper = end_width / 2 + end_gap / 2
+
+    npoints = int(np.round(2.5 * length_tapered))
+
+    straight_upper = np.array([
+        [0.0, y_start_upper],
+        [length_straight, y_start_upper],
+    ])
+    bend_upper = _spline_bend_points(
+        (length_straight, y_start_upper),
+        (total_length, y_end_upper),
+        npoints,
+    )
+    points_upper = np.vstack([straight_upper, bend_upper[1:]])
+    points_lower = points_upper.copy()
+    points_lower[:, 1] = -points_lower[:, 1]
+
+    path_upper = gf.Path(points_upper)
+    path_upper.start_angle = path_upper.end_angle = 0.0
+    path_lower = gf.Path(points_lower)
+    path_lower.start_angle = path_lower.end_angle = 0.0
+
+    # 2. Define gap width function
+    gap_straight = pitch - dc_pad_width
+    gap_straight = round(gap_straight / grid_size) * grid_size
+    t_straight_end = length_straight / total_length
+
+    def gap_width_func(t):
+        if np.isscalar(t):
+            t = np.array([t])
+            scalar_input = True
+        else:
+            scalar_input = False
+
+        widths = np.zeros_like(t)
+        mask_straight = t <= t_straight_end
+        widths[mask_straight] = gap_straight
+
+        mask_bend = t > t_straight_end
+        if np.any(mask_bend):
+            t_bend_norm = (t[mask_bend] - t_straight_end) / (1.0 - t_straight_end)
+            widths[mask_bend] = gap_straight + (end_gap - gap_straight) * (t_bend_norm**2) * (3 - 2 * t_bend_norm)
+
+        # Round to grid
+        grid = 0.002
+        widths_dbu = np.round(widths / grid)
+        widths = widths_dbu * grid
+        return widths[0] if scalar_input else widths
+
+    section_gap_upper = gf.Section(
+        layer=tl_layer,
+        width=0,
+        width_function=gap_width_func,
+        port_names=("o1", "o2"),
+    )
+    section_gap_lower = gf.Section(
+        layer=tl_layer,
+        width=0,
+        width_function=gap_width_func,
+        port_names=("o1", "o2"),
+    )
+
+    # 3. Create base metal polygon
+    y_pad_outer = dc_pad_width / 2 + gap_straight + ground_pad_width
+    y_cpw_outer = end_width / 2 + end_gap + end_ground_width
+
+    y_pad_outer = round(y_pad_outer / grid_size) * grid_size
+    y_cpw_outer = round(y_cpw_outer / grid_size) * grid_size
+
+    full_pts = [
+        (0.0, y_pad_outer),
+        (length_straight, y_pad_outer),
+        (total_length, y_cpw_outer),
+        (total_length, -y_cpw_outer),
+        (length_straight, -y_pad_outer),
+        (0.0, -y_pad_outer),
+    ]
+
+    pad_base = gf.Component()
+    pad_base.add_polygon(full_pts, layer=tl_layer)
+
+    # 4. Extrude gaps and perform boolean subtraction
+    xs_gap_upper = gf.CrossSection(sections=(section_gap_upper,))
+    xs_gap_lower = gf.CrossSection(sections=(section_gap_lower,))
+
+    gap_extrusion_upper = path_upper.extrude(cross_section=xs_gap_upper)
+    gap_extrusion_lower = path_lower.extrude(cross_section=xs_gap_lower)
+
+    pad_with_upper_cut = gf.boolean(
+        A=pad_base,
+        B=gap_extrusion_upper,
+        operation="not",
+        layer=tl_layer,
+    )
+    pad_final = gf.boolean(
+        A=pad_with_upper_cut,
+        B=gap_extrusion_lower,
+        operation="not",
+        layer=tl_layer,
+    )
+
+    # Add ports to pad_final
+    xs_straight = xs_cpw_single_layer(
+        central_conductor_width=dc_pad_width,
+        ground_planes_width=ground_pad_width,
+        gap=gap_straight,
+        layer=tl_layer,
+    )
+    pad_final.add_port(
+        name="e1",
+        cross_section=xs_straight,
+        orientation=180.0,
+        center=(0.0, 0.0),
+        port_type="electrical",
+    )
+    pad_final.add_port(
+        name="e2",
+        cross_section=_cpw_xs,
+        orientation=0.0,
+        center=(total_length, 0.0),
+        port_type="electrical",
+    )
+
+    p1 = pad << pad_final
+
+    # Add S-bend optical waveguides through the straight gaps
+    if optical_waveguide_xs is not None:
+        wg_upper = path_upper.extrude(optical_waveguide_xs)
+        pad << wg_upper
+        pad.add_port(name="o1", port=wg_upper.ports["o1"])
+        pad.add_port(name="o2", port=wg_upper.ports["o2"])
+
+        if not single_waveguide:
+            wg_lower = path_lower.extrude(optical_waveguide_xs)
+            pad << wg_lower
+            pad.add_port(name="o3", port=wg_lower.ports["o2"])
+            pad.add_port(name="o4", port=wg_lower.ports["o1"])
+
+    # Add M2 bonding pad overlay if parameters are provided
+    if m2_bonding_pads_params is not None:
+        required_keys = ("layer_m2", "layer_openings")
+        missing_keys = [k for k in required_keys if k not in m2_bonding_pads_params]
+        if missing_keys:
+            raise ValueError(
+                "m2_bonding_pads_params is missing required keys: "
+                + ", ".join(missing_keys)
+            )
+
+        allowed_optional_keys = {
+            "m1_opening_offset",
+            "opening_size",
+            "opening_separation",
+            "tl_opening_host_width",
+            "m2_pad_length",
+        }
+        unknown_keys = {
+            k
+            for k in m2_bonding_pads_params
+            if k not in set(required_keys) | allowed_optional_keys
+        }
+        if unknown_keys:
+            raise ValueError(
+                "m2_bonding_pads_params contains unknown keys: "
+                + ", ".join(sorted(unknown_keys))
+            )
+
+        m2_bonding_pads_component = m2_bonding_pads(
+            pad_xs=xs_straight,
+            layer_m2=m2_bonding_pads_params["layer_m2"],
+            layer_openings=m2_bonding_pads_params["layer_openings"],
+            **{
+                key: m2_bonding_pads_params[key]
+                for key in allowed_optional_keys
+                if key in m2_bonding_pads_params
+            },
+        )
+
+        M2_bonding_pads_ref = pad << m2_bonding_pads_component
+        M2_bonding_pads_ref.connect("e2", p1.ports["e1"])
+        pad.add_port(
+            name="e1",
+            port=M2_bonding_pads_ref.ports["e1"],
+        )
+        pad.add_port(
+            name="e3",
+            port=p1.ports["e1"],
+        )
+    else:
+        pad.add_port(name="e1", port=p1.ports["e1"])
+
+    # Add e2 port connected to the end of the rectangular pad (with CPW cross section for matching)
+    pad.add_port(
+        name="e2",
+        cross_section=cpw_xs,
+        orientation=0.0,
+        center=(total_length, 0.0),
+        port_type="electrical",
+    )
+
+    return pad
+
+
 @gf.cell()
 def straight_cpw(
     cpw_xs: CrossSectionSpec,

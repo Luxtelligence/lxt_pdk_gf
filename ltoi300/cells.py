@@ -193,6 +193,25 @@ def terminated_mzm_1x2mmi_oband(
     gsg_pitch: float = 100.0,
     length_imbalance: float = 100.0,
     bias_tuning_section_length: float = 700.0,
+    vertical_offset: float = 500.0,
+    horizontal_offset: float = 0.0,
+    thermal_phase_shifter_node: bool = True,
+    dc_phase_shifter_node: bool = False,
+    dc_phase_shifter_length: float = 2000.0,
+    sbend_length: float = 150.0,
+    sbend_offset: float = 40.0,
+    dc_pad_width: float = 80.0,
+    dc_ground_width: float = 150.0,
+    pad_e1_heater_offset: tuple[float, float] | None = None,
+    pad_e2_heater_offset: tuple[float, float] | None = None,
+    pad_e3_heater_offset: tuple[float, float] | None = None,
+    pad_e4_heater_offset: tuple[float, float] | None = None,
+    pad_e1_heater_route: list[tuple[float, float]] | None = None,
+    pad_e2_heater_route: list[tuple[float, float]] | None = None,
+    pad_e3_heater_route: list[tuple[float, float]] | None = None,
+    pad_e4_heater_route: list[tuple[float, float]] | None = None,
+    align_thermal_pads_same_y: bool = False,
+    folding: bool | None = None,
 ):
     """Returns a terminated MZM with 1x2 MMI splitter with effective index matching
     for O-band operation.
@@ -204,11 +223,49 @@ def terminated_mzm_1x2mmi_oband(
         gsg_pitch: pitch of the GSGs contact pads.
         length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
         bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
+        vertical_offset: vertical offset to fold the input splitter and heaters (µm).
+        horizontal_offset: horizontal offset for the folding routing (µm).
+        thermal_phase_shifter_node: if True, instantiates the heaters, pads, and detour arms; if False, routes folding directly to MMI.
+        dc_phase_shifter_node: if True, adds a secondary CPW modulator section on the top folded row without a termination block.
+        dc_phase_shifter_length: length of the DC CPW section (µm).
+        sbend_length: length of the pre-routing S-bend (µm).
+        sbend_offset: offset of the pre-routing S-bend (µm).
+        dc_pad_width: width of the signal conductor in the rectangular DC GSG pad (µm).
+        dc_ground_width: width of the ground electrodes in the rectangular DC GSG pad (µm).
+        pad_e1_heater_offset: longitudinal and vertical offset for pad e1_heater.
+        pad_e2_heater_offset: longitudinal and vertical offset for pad e2_heater.
+        pad_e3_heater_offset: longitudinal and vertical offset for pad e3_heater.
+        pad_e4_heater_offset: longitudinal and vertical offset for pad e4_heater.
+        pad_e1_heater_route: custom routing points (dx, dy) list relative to via contact for pad e1_heater.
+        pad_e2_heater_route: custom routing points (dx, dy) list relative to via contact for pad e2_heater.
+        pad_e3_heater_route: custom routing points (dx, dy) list relative to via contact for pad e3_heater.
+        pad_e4_heater_route: custom routing points (dx, dy) list relative to via contact for pad e4_heater.
+        align_thermal_pads_same_y: if True, aligns upper and lower branch pads along the same Y coordinates.
+        folding: if True, layout is folded; if False, layout is unfolded; if None, defaults to True if thermal or DC node is active, False otherwise.
     """
+
+    if folding is None:
+        folding = False
+
+    if folding:
+        if vertical_offset <= 0.0:
+            if dc_phase_shifter_node:
+                vertical_offset = 131.0
+            elif thermal_phase_shifter_node:
+                vertical_offset = 358
+            else:
+                vertical_offset = 131.0
+    # Unfolded: user-supplied vertical_offset is passed through unchanged.
+    # vertical_offset=0.0 means flat inline layout; >0 shifts upper arm row upward.
+
+    if dc_phase_shifter_node:
+        thermal_phase_shifter_node = False
 
     mmi_cell = mmi1x2_oband()  # noqa: use public cell
     cpw_pad_params = {
         "pitch": gsg_pitch,
+        "dc_pad_width": dc_pad_width,
+        "dc_ground_width": dc_ground_width,
     }
     cpw_params = {
         "rf_gap": rf_gap,
@@ -217,9 +274,27 @@ def terminated_mzm_1x2mmi_oband(
     optical_waveguide_params = {
         "length_imbalance": length_imbalance,
         "heater_section_length": bias_tuning_section_length,
+        "vertical_offset": vertical_offset,
+        "horizontal_offset": horizontal_offset,
+        "thermal_phase_shifter_node": thermal_phase_shifter_node,
+        "dc_phase_shifter_node": dc_phase_shifter_node,
+        "dc_phase_shifter_length": dc_phase_shifter_length,
+        "sbend_length": sbend_length,
+        "sbend_offset": sbend_offset,
+        "folding": folding,
     }
     heater_params = {
         "length": bias_tuning_section_length,
+        "thermal_phase_shifter_node": thermal_phase_shifter_node,
+        "pad_e1_heater_offset": pad_e1_heater_offset,
+        "pad_e2_heater_offset": pad_e2_heater_offset,
+        "pad_e3_heater_offset": pad_e3_heater_offset,
+        "pad_e4_heater_offset": pad_e4_heater_offset,
+        "pad_e1_heater_route": pad_e1_heater_route,
+        "pad_e2_heater_route": pad_e2_heater_route,
+        "pad_e3_heater_route": pad_e3_heater_route,
+        "pad_e4_heater_route": pad_e4_heater_route,
+        "align_pads_same_y": align_thermal_pads_same_y,
     }
 
     return _build_terminated_mzm_oband(
