@@ -233,7 +233,7 @@ def terminated_mzm_1x2mmi_oband(
 
 @gf.cell
 def terminated_mzm_1x2mmi_folded_oband(
-    modulation_length: float = 5000.0,
+    modulation_length: float = 4000.0,
     rf_gap: float = 5.5,
     rf_central_conductor_width: float = 20.0,
     gsg_pitch: float = 100.0,
