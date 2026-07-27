@@ -231,6 +231,51 @@ def terminated_mzm_1x2mmi_oband(
         heater_params=heater_params,
     )
 
+@gf.cell
+def terminated_mzm_1x2mmi_folded_oband(
+    modulation_length: float = 5000.0,
+    rf_gap: float = 5.5,
+    rf_central_conductor_width: float = 20.0,
+    gsg_pitch: float = 100.0,
+    length_imbalance: float = 100.0,
+    bias_tuning_section_length: float = 700.0,
+):
+    """Returns a terminated MZM with 1x2 MMI splitter with effective index matching
+    for O-band operation.
+
+    Args:
+        modulation_length: length of the EO modulation section.
+        rf_gap: gap between the RF ground planes and the RF central conductor.
+        rf_central_conductor_width: width of the RF central conductor.
+        gsg_pitch: pitch of the GSGs contact pads.
+        length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
+        bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
+    """
+
+    mmi_cell = mmi1x2_oband()  # noqa: use public cell
+    cpw_pad_params = {
+        "pitch": gsg_pitch,
+    }
+    cpw_params = {
+        "rf_gap": rf_gap,
+        "rf_central_conductor_width": rf_central_conductor_width,
+    }
+    optical_waveguide_params = {
+        "length_imbalance": length_imbalance,
+        "heater_section_length": bias_tuning_section_length,
+    }
+    heater_params = {
+        "length": bias_tuning_section_length,
+    }
+
+    return _build_terminated_mzm_oband(
+        mmi_cell=mmi_cell,
+        modulation_length=modulation_length,
+        cpw_params=cpw_params,
+        cpw_pad_params=cpw_pad_params,
+        optical_waveguide_params=optical_waveguide_params,
+        heater_params=heater_params,
+    )
 
 @gf.cell
 def unterminated_mzm_1x2mmi_oband(
