@@ -2,6 +2,8 @@ import gdsfactory as gf
 
 from _utils.chip_floorplan import chip_frame  # noqa: F401
 from _utils.optical_resonators import ring_resonator as _ring_resonator
+from _utils.Phase_shifters import EO_Phase_shifter as _EO_Phase_shifter
+from _utils.Phase_shifters import TO_phase_shifter as _TO_phase_shifter
 from ltoi300._builders.edge_couplers import (
     build_cband_ltoi300_edge_coupler as _build_cband_ltoi300_edge_coupler,
 )
@@ -833,6 +835,18 @@ def terminated_eo_phase_shifter_cband(
         cpw_params=cpw_params,
         cpw_pad_params=cpw_pad_params,
     )
+
+
+@gf.cell
+def EO_Phase_shifter(*args, **kwargs) -> gf.Component:
+    """Standalone EO Phase Shifter cell wrapper."""
+    return _EO_Phase_shifter(*args, **kwargs)
+
+
+@gf.cell
+def TO_phase_shifter(*args, **kwargs) -> gf.Component:
+    """Thermo-Optic dual-heater active section cell wrapper."""
+    return _TO_phase_shifter(*args, **kwargs)
 
 
 #####################
