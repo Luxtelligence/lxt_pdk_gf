@@ -341,7 +341,9 @@ def heater(
     length: float = 700.0,
     heater_width: float = 0.9,
     routing_width: float = 10.0,
-    pad_size: tuple[float, float] = (150.0, 150.0),
+    routing_width_m2: float = 60.0,
+    pad_size: tuple[float, float] = (60, 60),
+    pad_size_aligned: tuple[float, float] = (150.0, 150.0),
     pad_vert_offset: float = 10.0,
     optical_xs = None,
     layer_hrl = (23, 0),
@@ -352,6 +354,12 @@ def heater(
     length_imbalance: float = 20.0,
     roc: float | None = None,
     transition_m2_hr_params: dict[str, Any] | None = None,
+    pads_on_same_y: bool = False,
+    pad_group_vertical_offset: float = 320.0,
+    pad_group_horizontal_offset: float = 150.0,
+    pad_group_spacing: float | None = None,
+    routing_dx_offsets: tuple[float, float, float, float] = (0.0, 0.0, 0.0, 0.0),
+    routing_dy_offsets: tuple[float, float, float, float] | None = None,
     band: str = "oband",
 ) -> gf.Component:
     """Thermo-Optic dual-heater active section cell with integrated path-length compensation.
@@ -359,8 +367,9 @@ def heater(
     Ports:
       - o1, o2: Upper waveguide West input / East output
       - o3, o4: Lower waveguide East output / West input
-      - e1, e2: Upper heater Left / Right electrical pads
-      - e3, e4: Lower heater Left / Right electrical pads
+      - e1, e2: Upper heater Left / Right electrical pads (only if pads_on_same_y is False)
+      - e3, e4: Lower heater Left / Right electrical pads (only if pads_on_same_y is False)
+      - port_E_TO_1, port_E_TO_2, port_E_TO_3, port_E_TO_4: Aligned M2 pads in North-East (only if pads_on_same_y is True)
     """
     c = gf.Component()
     
@@ -476,11 +485,105 @@ def heater(
     c.add_port(name="o3", port=ext_down_out.ports["o2"])
     c.add_port(name="o4", port=ext_down_in.ports["o1"])
     
-    c.add_port(name="e1", port=ht_up.ports["e1"])
-    c.add_port(name="e2", port=ht_up.ports["e2"])
-    c.add_port(name="e3", port=ht_down.ports["e1"])
-    c.add_port(name="e4", port=ht_down.ports["e2"])
-    
+    if not pads_on_same_y:
+        c.add_port(name="e1", port=ht_up.ports["e1"])
+        c.add_port(name="e2", port=ht_up.ports["e2"])
+        c.add_port(name="e3", port=ht_down.ports["e1"])
+        c.add_port(name="e4", port=ht_down.ports["e2"])
+    else:
+        # Create aligned pads in the North-East
+        pad_w, pad_h = pad_size_aligned
+        pad_pitch = pad_group_spacing if pad_group_spacing is not None else pad_w + 20.0
+        
+        # Calculate origin of pad group relative to the East-most end of the upper heater
+        x_heater_max = max(ht_up.ports["e1"].dcenter[0], ht_up.ports["e2"].dcenter[0])
+        y_heater_max = max(ht_up.ports["e1"].dcenter[1], ht_up.ports["e2"].dcenter[1])
+        y_heater_min = min(ht_down.ports["e1"].dcenter[1], ht_down.ports["e2"].dcenter[1])
+        
+        y_pads = y_heater_max + pad_group_vertical_offset
+        x_start = x_heater_max + pad_group_horizontal_offset
+        
+        # Create a single pad component on M2 layer
+        layer_m2 = transition_m2_hr_params.get("layer_m2", (22, 0))
+        layer_openings = transition_m2_hr_params.get("layer_openings", (41, 0))
+        via_opening_offset = transition_m2_hr_params.get("opening_offset", 2.5)
+        
+        single_pad = gf.components.pad_array(
+            pad=gf.components.pad,
+            size=pad_size_aligned,
+            columns=1,
+            port_orientation=-90.0,  # Facing South towards heaters
+            layer=layer_m2,
+        )
+        
+        # Cross-section for M2 electrical routing
+        routing_xs_m2 = gf.cross_section.cross_section(
+            width=routing_width_m2,
+            layer=layer_m2,
+        )
+        
+        # Target ports to connect: UL (1), UR (2), LR (3), LL (4)
+        # This mapping is topologically crossing-free since UL/UR run above the heaters
+        # and LR/LL run below the heaters, with their pad-side drops naturally staggered.
+        target_ports = [
+            ht_up.ports["e1"],    # Upper Left (Index 0) -> Pad 1
+            ht_up.ports["e2"],    # Upper Right (Index 1) -> Pad 2
+            ht_down.ports["e2"],  # Lower Right (Index 2) -> Pad 3
+            ht_down.ports["e1"],  # Lower Left (Index 3) -> Pad 4
+        ]
+        
+        # Define Y and X offsets for custom Manhattan path routing to avoid crossings
+        if routing_dy_offsets is None:
+            dy_0 = y_pads - (y_heater_max + 140)   # UL (Index 0) above heater
+            dy_1 = y_pads - (y_heater_max + 60.0)  # UR (Index 1) above heater
+            dy_2 = y_pads - (y_heater_min - 60)    # LR (Index 2) below heater
+            dy_3 = y_pads - (y_heater_min - 140)   # LL (Index 3) below heater
+            dy_offsets = (dy_0, dy_1, dy_2, dy_3)
+        else:
+            dy_offsets = routing_dy_offsets
+        dx_offsets = routing_dx_offsets
+        
+        for i, original_port in enumerate(target_ports):
+            pad_ref = c << single_pad
+            pad_ref.dcenter = (x_start + i * pad_pitch, y_pads)
+            
+            # Expose top-level electrical port
+            c.add_port(
+                name=f"port_E_TO_{i+1}",
+                center=(pad_ref.ports["e11"].dcenter[0], pad_ref.ports["e11"].dcenter[1] + pad_h / 2),
+                width=pad_w,
+                orientation=90.0,
+                port_type="electrical",
+                layer=layer_m2,
+            )
+            
+            p_start = pad_ref.ports["e11"].dcenter
+            p_end = original_port.dcenter
+            
+            Y_route = y_pads - dy_offsets[i]
+            X_turn = p_end[0] + dx_offsets[i]
+            
+            # Determine the final vertical approach direction depending on port orientation.
+            # Mirroring ht_down flips its port orientation to -90.0 (pointing South).
+            if original_port.orientation is not None and abs(original_port.orientation - 90.0) < 1.0:
+                dy_final = 15.0  # Enter from the North, going South
+            else:
+                dy_final = -15.0 # Enter from the South, going North
+                
+            # Construct a clean 5-segment Manhattan path to prevent overlaps/DRC issues
+            pts = [
+                p_start,
+                (p_start[0], Y_route),
+                (X_turn, Y_route),
+                (X_turn, p_end[1] + dy_final),
+                (p_end[0], p_end[1] + dy_final),
+                p_end
+            ]
+            
+            path = gf.Path(pts)
+            route_comp = path.extrude(routing_xs_m2)
+            c << route_comp
+            
     c.flatten()
     return c
 
