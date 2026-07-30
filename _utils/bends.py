@@ -107,3 +107,23 @@ def bend_euler_tapered(
     xs_tapered = cross_section(width_function=width_fun)
 
     return euler_path.extrude(cross_section=xs_tapered)
+
+
+def get_s_bend_length(v: float, h: float, dx: float = 5.0) -> float:
+    """Numerically compute the arc length of a spline S-bend.
+    
+    Why: Bypasses version-dependent layout cell metadata lookup (.info dictionary) 
+    by calculating the geometrical length directly from the parametric spline equations.
+    """
+    import math
+    t = [i / 100.0 for i in range(101)]
+    length = 0.0
+    px, py = 0.0, 0.0
+    for i, t_val in enumerate(t):
+        x = t_val * h
+        y = v * (t_val**2) * (3 - 2 * t_val)
+        if i > 0:
+            length += math.sqrt((x - px)**2 + (y - py)**2)
+        px, py = x, y
+    return length + 2 * dx
+

@@ -33,6 +33,7 @@ from ltoi300._builders.mzms import (
 )
 from ltoi300._builders.mzms import (
     build_unterminated_mzm_oband as _build_unterminated_mzm_oband,
+    build_terminated_mzm_folded as _build_terminated_mzm_folded,
 )
 from ltoi300._builders.phase_modulators import (
     build_terminated_eo_phase_shifter_cband as _build_terminated_eo_phase_shifter_cband,
@@ -234,50 +235,22 @@ def terminated_mzm_1x2mmi_oband(
     )
 
 @gf.cell
-def terminated_mzm_1x2mmi_folded_oband(
-    modulation_length: float = 5000.0,
-    rf_gap: float = 5.5,
-    rf_central_conductor_width: float = 20.0,
-    gsg_pitch: float = 100.0,
-    length_imbalance: float = 100.0,
-    bias_tuning_section_length: float = 700.0,
-):
-    """Returns a terminated MZM with 1x2 MMI splitter with effective index matching
-    for O-band operation.
+def terminated_mzm_1x2mmi_folded(band: str = "oband", **kwargs) -> gf.Component:
+    """Folded MZM with 1x2 MMI splitter. Supports O-band and C-band."""
+    mmi_cell = mmi1x2_oband() if band == "oband" else mmi1x2_cband()
+    return _build_terminated_mzm_folded(mmi_cell=mmi_cell, band=band, **kwargs)
 
-    Args:
-        modulation_length: length of the EO modulation section.
-        rf_gap: gap between the RF ground planes and the RF central conductor.
-        rf_central_conductor_width: width of the RF central conductor.
-        gsg_pitch: pitch of the GSGs contact pads.
-        length_imbalance: length difference between the MZ branches for spectral bias tuning. If 0, MZ is balanced.
-        bias_tuning_section_length: length of the heater bias tuning section. If 0, the heater is disabled.
-    """
+@gf.cell
+def terminated_mzm_2x2mmi_folded(band: str = "oband", **kwargs) -> gf.Component:
+    """Folded MZM with 2x2 MMI splitter. Supports O-band and C-band."""
+    mmi_cell = mmi2x2_oband() if band == "oband" else mmi2x2_cband()
+    return _build_terminated_mzm_folded(mmi_cell=mmi_cell, band=band, **kwargs)
 
-    mmi_cell = mmi1x2_oband()  # noqa: use public cell
-    cpw_pad_params = {
-        "pitch": gsg_pitch,
-    }
-    cpw_params = {
-        "rf_gap": rf_gap,
-        "rf_central_conductor_width": rf_central_conductor_width,
-    }
-    optical_waveguide_params = {
-        "length_imbalance": length_imbalance,
-        "heater_section_length": bias_tuning_section_length,
-    }
-    heater_params = {
-        "length": bias_tuning_section_length,
-    }
+@gf.cell
+def terminated_mzm_1x2mmi_folded_oband(band: str = "oband", **kwargs) -> gf.Component:
+    """Returns a folded terminated MZM with 1x2 MMI for O-band operation."""
+    return terminated_mzm_1x2mmi_folded(band=band, **kwargs)
 
-    return _build_terminated_mzm_oband(
-        mmi_cell=mmi_cell,
-        modulation_length=modulation_length,
-        cpw_params=cpw_params,
-        cpw_pad_params=cpw_pad_params,
-        optical_waveguide_params=optical_waveguide_params,
-        heater_params=heater_params,
-    )
 
 @gf.cell
 def unterminated_mzm_1x2mmi_oband(
