@@ -235,21 +235,77 @@ def terminated_mzm_1x2mmi_oband(
     )
 
 @gf.cell
-def terminated_mzm_1x2mmi_folded(band: str = "oband", **kwargs) -> gf.Component:
+def terminated_mzm_1x2mmi_folded(
+    band: str = "oband",
+    vertical_offset: float | None = None,
+    horizontal_offset: float | None = None,
+    bias_tuning_section_length: float = 700.0,
+    dc_phase_shifter_length: float = 2000.0,
+    dc_ground_width: float = 150.0,
+    dc_pad_width: float = 80.0,
+    **kwargs
+) -> gf.Component:
     """Folded MZM with 1x2 MMI splitter. Supports O-band and C-band."""
     mmi_cell = mmi1x2_oband() if band == "oband" else mmi1x2_cband()
-    return _build_terminated_mzm_folded(mmi_cell=mmi_cell, band=band, **kwargs)
+    return _build_terminated_mzm_folded(
+        mmi_cell=mmi_cell,
+        band=band,
+        vertical_offset=vertical_offset,
+        horizontal_offset=horizontal_offset,
+        bias_tuning_section_length=bias_tuning_section_length,
+        dc_phase_shifter_length=dc_phase_shifter_length,
+        dc_ground_width=dc_ground_width,
+        dc_pad_width=dc_pad_width,
+        **kwargs
+    )
 
 @gf.cell
-def terminated_mzm_2x2mmi_folded(band: str = "oband", **kwargs) -> gf.Component:
+def terminated_mzm_2x2mmi_folded(
+    band: str = "oband",
+    vertical_offset: float | None = None,
+    horizontal_offset: float | None = None,
+    bias_tuning_section_length: float = 700.0,
+    dc_phase_shifter_length: float = 2000.0,
+    dc_ground_width: float = 150.0,
+    dc_pad_width: float = 80.0,
+    **kwargs
+) -> gf.Component:
     """Folded MZM with 2x2 MMI splitter. Supports O-band and C-band."""
     mmi_cell = mmi2x2_oband() if band == "oband" else mmi2x2_cband()
-    return _build_terminated_mzm_folded(mmi_cell=mmi_cell, band=band, **kwargs)
+    return _build_terminated_mzm_folded(
+        mmi_cell=mmi_cell,
+        band=band,
+        vertical_offset=vertical_offset,
+        horizontal_offset=horizontal_offset,
+        bias_tuning_section_length=bias_tuning_section_length,
+        dc_phase_shifter_length=dc_phase_shifter_length,
+        dc_ground_width=dc_ground_width,
+        dc_pad_width=dc_pad_width,
+        **kwargs
+    )
 
 @gf.cell
-def terminated_mzm_1x2mmi_folded_oband(band: str = "oband", **kwargs) -> gf.Component:
+def terminated_mzm_1x2mmi_folded_oband(
+    band: str = "oband",
+    vertical_offset: float | None = None,
+    horizontal_offset: float | None = None,
+    bias_tuning_section_length: float = 700.0,
+    dc_phase_shifter_length: float = 2000.0,
+    dc_ground_width: float = 150.0,
+    dc_pad_width: float = 80.0,
+    **kwargs
+) -> gf.Component:
     """Returns a folded terminated MZM with 1x2 MMI for O-band operation."""
-    return terminated_mzm_1x2mmi_folded(band=band, **kwargs)
+    return terminated_mzm_1x2mmi_folded(
+        band=band,
+        vertical_offset=vertical_offset,
+        horizontal_offset=horizontal_offset,
+        bias_tuning_section_length=bias_tuning_section_length,
+        dc_phase_shifter_length=dc_phase_shifter_length,
+        dc_ground_width=dc_ground_width,
+        dc_pad_width=dc_pad_width,
+        **kwargs
+    )
 
 
 @gf.cell

@@ -494,8 +494,8 @@ def build_terminated_mzm_folded(
     dc_phase_shifter_length: float = 2000.0,
     thermal_phase_shifter_node: bool = True,
     dc_phase_shifter_node: bool = False,
-    vertical_offset: float = 500.0,
-    horizontal_offset: float = 0.0,
+    vertical_offset: float | None = None,
+    horizontal_offset: float | None = None,
     uturn_radius: float | None = None,
     uturn_separation: float = 10.0,
     pads_on_same_y: bool = False,
@@ -530,13 +530,21 @@ def build_terminated_mzm_folded(
     if rf_central_conductor_width is None:
         rf_central_conductor_width = 20.0 if band == "oband" else 16.0
 
+    # Calculate baseline vertical and horizontal offsets dynamically
+    default_vertical_offset = 600.0 if pads_on_same_y else 500.0
+    default_horizontal_offset = 110.0 if pads_on_same_y else 150.0
+
+    # User-specified offsets are treated as relative additions to the baseline defaults
+    vertical_offset = default_vertical_offset + (vertical_offset or 0.0)
+    horizontal_offset = default_horizontal_offset + (horizontal_offset or 0.0)
+
+    # Increase default pad group vertical offset (ref vertical offset) by 100 um when pads_on_same_y is True
+    if pads_on_same_y and pad_group_vertical_offset == 320.0:
+        pad_group_vertical_offset = 420.0
+
     # Calculate loopback routing difference dynamically using dummy straight sections
     dummy_c = gf.Component()
-    if dc_phase_shifter_node:
-        spacing_ps = rf_central_conductor_width + rf_gap
-        p_space = abs(2 * spacing_ps - gsg_pitch)
-    else:
-        p_space = rf_central_conductor_width + rf_gap
+    p_space = rf_central_conductor_width + rf_gap
         
     d_r2_down = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
     d_r2_down.dmove((0, vertical_offset))
@@ -545,14 +553,13 @@ def build_terminated_mzm_folded(
     
     d_r1_down = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
     d_r1_up = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
-    d_r1_up.dmove((0, gsg_pitch))
+    d_r1_up.dmove((0, p_space))
     
-    if dc_phase_shifter_node:
-        # EO layout actual U-turn is parallel (since S-bends cross prior to U-turn)
-        ports1 = [d_r2_down.ports["o1"], d_r2_up.ports["o1"]]
-    else:
-        # TO layout actual U-turn is crossed
-        ports1 = [d_r2_up.ports["o1"], d_r2_down.ports["o1"]]
+    # Both EO (physically parallel overall) and TO (physically crossed overall) U-turns
+    # require concentric (non-crossing) physical paths inside the West loop-back.
+    # Therefore, we match the ports in a crossed configuration (upper-to-lower, lower-to-upper)
+    # to avoid routing collisions in route_bundle.
+    ports1 = [d_r2_up.ports["o1"], d_r2_down.ports["o1"]]
     ports2 = [d_r1_down.ports["o1"], d_r1_up.ports["o1"]]
     
     actual_uturn_radius = uturn_radius if uturn_radius is not None else terminal_xs.radius
@@ -573,9 +580,9 @@ def build_terminated_mzm_folded(
 
     if compensation_length is None:
         if dc_phase_shifter_node:
-            compensation_length = routing_diff + 40.0 - length_imbalance
+            compensation_length = routing_diff + 40.0
         else:
-            compensation_length = routing_diff - length_imbalance
+            compensation_length = routing_diff
 
     # Common parameters
     _cpw_xs = xs_uni_cpw(
@@ -612,7 +619,7 @@ def build_terminated_mzm_folded(
         down_port = mmi_in.ports["o2"]
 
     y_out_ps = (rf_central_conductor_width + rf_gap) / 2
-    y_mmi_port = abs(up_port.dcenter[1] - mmi_in.ports["o1"].dcenter[1])
+    y_mmi_port = abs(up_port.dcenter[1] - vertical_offset)
     v_offset_1 = y_out_ps - y_mmi_port
     h_extent_1 = max(90.0, 3.5 * abs(v_offset_1) + 10.0)
     
@@ -662,13 +669,14 @@ def build_terminated_mzm_folded(
     ext_ps_up.connect("o2", ps_in_upper_port)
     ext_ps_down.connect("o2", ps_in_lower_port)
 
+    # Calculate S-bend parameters for CPW pad transitions
+    v_offset_2 = y_out_ps - (gsg_pitch / 2)
+    h_extent_2 = max(90.0, 3.5 * abs(v_offset_2) + 10.0)
+
     # West S-bends (connecting straight extensions to West U-turn - only for EO RF pads)
     sb_pad_up = None
     sb_pad_down = None
     if dc_phase_shifter_node:
-        v_offset_2 = y_out_ps - (gsg_pitch / 2)
-        h_extent_2 = max(90.0, 3.5 * abs(v_offset_2) + 10.0)
-        
         sb_pad_up = c << _safe_s_bend_vert(v_offset=v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
         sb_pad_down = c << _safe_s_bend_vert(v_offset=-v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
         sb_pad_up.dmirror_x()
@@ -742,6 +750,14 @@ def build_terminated_mzm_folded(
     ext_pad_up.connect("o2", pad_mod.ports["o1"])
     ext_pad_down.connect("o2", pad_mod.ports["o4"])
 
+    # West S-bends on Row 1 (connecting modulator extensions to West U-turn)
+    sb_pad_mod_up = c << _safe_s_bend_vert(v_offset=v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
+    sb_pad_mod_down = c << _safe_s_bend_vert(v_offset=-v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
+    sb_pad_mod_up.dmirror_x()
+    sb_pad_mod_down.dmirror_x()
+    sb_pad_mod_up.connect("o2", ext_pad_up.ports["o1"])
+    sb_pad_mod_down.connect("o2", ext_pad_down.ports["o1"])
+
     # Waveguide extensions on the East (termination side, extending Eastward)
     ext_out_up = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
     ext_out_down = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
@@ -761,7 +777,7 @@ def build_terminated_mzm_folded(
 
     # East S-bends to combiner
     y_out_mod = rf_central_conductor_width / 2 + rf_gap / 2
-    y_mmi_out_port = abs(comb_up_port.dcenter[1] - mmi_out.ports["o1"].dcenter[1])
+    y_mmi_out_port = abs(comb_up_port.dcenter[1])
     v_offset_3 = y_mmi_out_port - y_out_mod
     h_extent_3 = max(90.0, 3.5 * abs(v_offset_3) + 10.0)
     sb_out_up = c << _safe_s_bend_vert(v_offset=v_offset_3, h_extent=h_extent_3, cross_section=terminal_xs)
@@ -776,6 +792,7 @@ def build_terminated_mzm_folded(
     row1_refs = [
         cpw_mod, pad_mod, term_ref, 
         ext_pad_up, ext_pad_down, 
+        sb_pad_mod_up, sb_pad_mod_down,
         ext_out_up, ext_out_down, 
         sb_out_up, sb_out_down, mmi_out
     ]
@@ -791,8 +808,8 @@ def build_terminated_mzm_folded(
             last_point_upper_x = ext_ps_down.ports["o1"].dcenter[0]
             last_point_upper_y = ext_ps_down.ports["o1"].dcenter[1]
         
-        dx = last_point_upper_x - ext_pad_up.ports["o1"].dcenter[0]
-        dy = last_point_upper_y - vertical_offset - ext_pad_up.ports["o1"].dcenter[1]
+        dx = last_point_upper_x - sb_pad_mod_up.ports["o1"].dcenter[0]
+        dy = last_point_upper_y - vertical_offset - sb_pad_mod_up.ports["o1"].dcenter[1]
         
         for ref in row1_refs:
             ref.dmove((dx, dy))
@@ -811,7 +828,7 @@ def build_terminated_mzm_folded(
         routes = gf.routing.route_bundle(
             c,
             ports1=ports1_uturn,
-            ports2=[ext_pad_down.ports["o1"], ext_pad_up.ports["o1"]],
+            ports2=[sb_pad_mod_down.ports["o1"], sb_pad_mod_up.ports["o1"]],
             cross_section=terminal_xs,
             bend=gf.components.bend_euler,
             straight=straight_name,
@@ -850,10 +867,12 @@ def build_terminated_mzm_folded(
         L_ps_up = L_TO_down
         L_ps_down = L_TO_up
 
+    v_offset_2_val = y_out_ps - (gsg_pitch / 2)
+    h_extent_2_val = max(90.0, 3.5 * abs(v_offset_2_val) + 10.0)
+    sb_pad_mod_len = get_s_bend_length(v_offset_2_val, h_extent_2_val)
+
     if dc_phase_shifter_node:
-        v_offset_2_val = y_out_ps - (gsg_pitch / 2)
-        h_extent_2_val = max(90.0, 3.5 * abs(v_offset_2_val) + 10.0)
-        sb_pad_up_len = get_s_bend_length(v_offset_2_val, h_extent_2_val)
+        sb_pad_up_len = sb_pad_mod_len
         sb_pad_down_len = sb_pad_up_len
     else:
         sb_pad_up_len = 0.0
@@ -869,14 +888,14 @@ def build_terminated_mzm_folded(
 
     if vertical_offset > 0.0:
         if dc_phase_shifter_node:
-            path_up_length = ext_ps_len + sb_pad_up_len + r_bottom_len + 75.0
-            path_down_length = ext_ps_len + sb_pad_down_len + r_top_len + 75.0
+            path_up_length = ext_ps_len + sb_pad_up_len + r_bottom_len + sb_pad_mod_len + 75.0
+            path_down_length = ext_ps_len + sb_pad_down_len + r_top_len + sb_pad_mod_len + 75.0
             
             path_up_total = sb_in_up_len + L_ps_up + path_up_length - ext_ps_len - sb_pad_up_len + bottom_active_len + sb_out_down_len
             path_down_total = sb_in_down_len + L_ps_down + path_down_length - ext_ps_len - sb_pad_down_len + bottom_active_len + sb_out_up_len
         else:
-            path_up_length = ext_ps_len + r_top_len + 75.0
-            path_down_length = ext_ps_len + r_bottom_len + 75.0
+            path_up_length = ext_ps_len + r_top_len + sb_pad_mod_len + 75.0
+            path_down_length = ext_ps_len + r_bottom_len + sb_pad_mod_len + 75.0
             
             path_up_total = sb_in_up_len + L_ps_up + path_up_length - ext_ps_len + bottom_active_len + sb_out_up_len
             path_down_total = sb_in_down_len + L_ps_down + path_down_length - ext_ps_len + bottom_active_len + sb_out_down_len
@@ -894,6 +913,8 @@ def build_terminated_mzm_folded(
     c.info["propagation_difference"] = propagation_difference
     c.info["path_up_compensation"] = path_up_total
     c.info["path_down_compensation"] = path_down_total
+    c.info["vertical_offset"] = vertical_offset
+    c.info["horizontal_offset"] = horizontal_offset
 
     # Expose optical top-level ports
     c.add_port(name="o1", port=mmi_in.ports["o1"])
