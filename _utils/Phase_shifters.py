@@ -244,7 +244,7 @@ def EO_Phase_shifter(
     taper_length: float = 100.0,
     modulation_width: float = 2.5,
     length_imbalance: float = 0.0,
-    compensation_length: float = 100.0,
+    compensation_length: float = 0.0,
     roc: float | None = None,
     band: str = "oband",
 ) -> gf.Component:

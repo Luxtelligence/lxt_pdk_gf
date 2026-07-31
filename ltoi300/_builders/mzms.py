@@ -533,7 +533,8 @@ def build_terminated_mzm_folded(
     # Calculate loopback routing difference dynamically using dummy straight sections
     dummy_c = gf.Component()
     if dc_phase_shifter_node:
-        p_space = gsg_pitch
+        spacing_ps = rf_central_conductor_width + rf_gap
+        p_space = abs(2 * spacing_ps - gsg_pitch)
     else:
         p_space = rf_central_conductor_width + rf_gap
         
@@ -546,8 +547,12 @@ def build_terminated_mzm_folded(
     d_r1_up = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
     d_r1_up.dmove((0, gsg_pitch))
     
-    # Ports are always ordered [Upper, Lower] on Row 2 and [Lower, Upper] on Row 1 (crossed routing topology)
-    ports1 = [d_r2_up.ports["o1"], d_r2_down.ports["o1"]]
+    if dc_phase_shifter_node:
+        # EO layout actual U-turn is parallel (since S-bends cross prior to U-turn)
+        ports1 = [d_r2_down.ports["o1"], d_r2_up.ports["o1"]]
+    else:
+        # TO layout actual U-turn is crossed
+        ports1 = [d_r2_up.ports["o1"], d_r2_down.ports["o1"]]
     ports2 = [d_r1_down.ports["o1"], d_r1_up.ports["o1"]]
     
     actual_uturn_radius = uturn_radius if uturn_radius is not None else terminal_xs.radius
@@ -833,9 +838,9 @@ def build_terminated_mzm_folded(
         L_EO_comp_up = 60.0 + 2 * math.pi * roc_ps
         L_EO_comp_down = L_extra + 20.0 + 2 * math.pi * roc_ps
         
-        # EO crossed layout detour assignments: Upper arm gets detour, Lower arm gets straight
-        L_ps_up = L_EO_active + L_EO_comp_down
-        L_ps_down = L_EO_active + L_EO_comp_up
+        # EO crossed layout detour assignments: Upper arm gets straight, Lower arm gets detour
+        L_ps_up = L_EO_active + L_EO_comp_up
+        L_ps_down = L_EO_active + L_EO_comp_down
     else:
         H_base = 20.0
         L_TO_up = 20.0 + 2 * H_base + bias_tuning_section_length + 2 * math.pi * roc_ps
