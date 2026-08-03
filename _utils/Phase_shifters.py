@@ -141,6 +141,13 @@ def rectangular_cpw_pad(
         M2_bonding_pads_ref.connect("e2", p1.ports["e1"])
         pad.add_port(name="e1", port=M2_bonding_pads_ref.ports["e1"])
         pad.add_port(name="e3", port=p1.ports["e1"])
+        
+        # Add individual M2 landing pad ports (Ground top, Signal, Ground bottom) on the West edge.
+        # These are used for port-to-port Manhattan routing to the offset pads.
+        layer_m2 = m2_bonding_pads_params["layer_m2"]
+        pad.add_port(name="e_g_top", center=(0.0,ground_pad_width), width=ground_pad_width, orientation=180.0, port_type="electrical", layer=layer_m2)
+        pad.add_port(name="e_s", center=(0.0, 0.0), width=dc_pad_width, orientation=180.0, port_type="electrical", layer=layer_m2)
+        pad.add_port(name="e_g_bottom", center=(0.0, -ground_pad_width), width=ground_pad_width, orientation=180.0, port_type="electrical", layer=layer_m2)
     else:
         pad.add_port(name="e1", port=p1.ports["e1"])
 
@@ -247,6 +254,12 @@ def EO_Phase_shifter(
     compensation_length: float = 0.0,
     roc: float | None = None,
     band: str = "oband",
+    has_offset_pads: bool = True,
+    eo_pads_vertical_offset: float = 300.0,
+    eo_pads_horizontal_offset: float = -300.0,
+    eo_pads_size: tuple[float, float] = (150.0, 150.0),
+    eo_pads_spacing: float | None = None,
+    eo_routing_width: float = 60.0,
 ) -> gf.Component:
     """Standalone EO Phase Shifter cell combining a rectangular GSG pad, 
     straight active CPW, path-length compensation section, and 1x2 MMI combiner.
@@ -328,7 +341,75 @@ def EO_Phase_shifter(
     else:
         c.add_port(name="o3", port=top_cpw_ref.ports["o2"])
         c.add_port(name="o4", port=top_cpw_ref.ports["o3"])
-    c.add_port(name="e1", port=top_pad_ref.ports["e1"])
+
+    # Place and route the offset M2 wire-bond pads if enabled (modularized internally)
+    if has_offset_pads:
+        x_west = top_pad_ref.ports["e1"].dcenter[0]
+        y_center = top_pad_ref.ports["e1"].dcenter[1]
+                
+        y_pads = y_center + eo_pads_vertical_offset
+        x_pads = x_west + eo_pads_horizontal_offset
+        
+        # Calculate pitch (actual_eo_spacing) to enforce a 20 um edge-to-edge gap between the pads
+        actual_eo_spacing = eo_pads_spacing if eo_pads_spacing is not None else (eo_pads_size[0] + 20.0)
+        
+        single_pad = gf.components.pad_array(
+            pad=gf.components.pad,
+            size=eo_pads_size,
+            columns=1,
+            port_orientation=-90.0,
+            layer=LAYER.M2,
+        )
+        
+        routing_xs_m2 = gf.cross_section.cross_section(
+            width=eo_routing_width,
+            layer=LAYER.M2,
+        )
+        
+        # Map the three wire-bonding pads sequentially (bottom-to-top) to target ports.
+        # Pad 1 -> Landing Pad 1 (bottom Ground)
+        # Pad 2 -> Landing Pad 2 (middle Signal)
+        # Pad 3 -> Landing Pad 3 (top Ground)
+        target_ports = [
+            top_pad_ref.ports["e_g_bottom"],
+            top_pad_ref.ports["e_s"],
+            top_pad_ref.ports["e_g_top"]
+        ]
+        
+        for i in range(3):
+            pad_ref = c << single_pad
+            x_pad_target = x_pads + (i - 1) * actual_eo_spacing
+            y_pad_target = y_pads
+            pad_ref.dcenter = (x_pad_target, y_pad_target)
+            
+            c.add_port(
+                name=f"port_E_EO_{i+1}",
+                center=(pad_ref.ports["e11"].dcenter[0], pad_ref.ports["e11"].dcenter[1] + eo_pads_size[1] / 2),
+                width=eo_pads_size[0],
+                orientation=90.0,
+                port_type="electrical",
+                layer=LAYER.M2,
+            )
+            
+            p_start = pad_ref.ports["e11"].dcenter
+            p_end = target_ports[i].dcenter
+            
+            # 3-segment (3-point) Manhattan path:
+            # 1. Vertically down from the wire-bond pad directly to the target port's Y-level.
+            # 2. Horizontally to the East to connect directly into the landing pad's M2 port.
+            # This avoids vertical drops in the active/U-turn area and ensures orthogonal waveguide crossings.
+            pts = [
+                p_start,
+                (p_start[0], p_end[1]),
+                p_end
+            ]
+            
+            path = gf.Path(pts)
+            route_comp = path.extrude(routing_xs_m2)
+            c << route_comp
+    else:
+        c.add_port(name="e1", port=top_pad_ref.ports["e1"])
+
     c.add_port(name="e2", port=top_cpw_ref.ports["e2"])
 
     return c
@@ -534,10 +615,10 @@ def heater(
         
         # Define Y and X offsets for custom Manhattan path routing to avoid crossings
         if routing_dy_offsets is None:
-            dy_0 = y_pads - (y_heater_max + 140)   # UL (Index 0) above heater
-            dy_1 = y_pads - (y_heater_max + 60.0)  # UR (Index 1) above heater
-            dy_2 = y_pads - (y_heater_min - 60)    # LR (Index 2) below heater
-            dy_3 = y_pads - (y_heater_min - 140)   # LL (Index 3) below heater
+            dy_0 = y_pads - (y_heater_max + pad_size[0]/2)    # UL (Index 0) above heater, clear of UR pad
+            dy_1 = y_pads - (y_heater_max - pad_size[0]/2)  # UR (Index 1) above heater
+            dy_2 = y_pads - (y_heater_min + pad_size[0]/2)    # LR (Index 2) below heater
+            dy_3 = y_pads - (y_heater_min - pad_size[0]/2)    # LL (Index 3) below heater, clear of LR pad
             dy_offsets = (dy_0, dy_1, dy_2, dy_3)
         else:
             dy_offsets = routing_dy_offsets
@@ -558,27 +639,42 @@ def heater(
             )
             
             p_start = pad_ref.ports["e11"].dcenter
-            p_end = original_port.dcenter
             
-            Y_route = y_pads - dy_offsets[i]
-            X_turn = p_end[0] + dx_offsets[i]
-            
-            # Determine the final vertical approach direction depending on port orientation.
-            # Mirroring ht_down flips its port orientation to -90.0 (pointing South).
-            if original_port.orientation is not None and abs(original_port.orientation - 90.0) < 1.0:
-                dy_final = 15.0  # Enter from the North, going South
-            else:
-                dy_final = -15.0 # Enter from the South, going North
+            if i == 1:  # UR (Index 1) - Connect horizontally from the right to avoid vertical stubs
+                p_end = (original_port.dcenter[0] + pad_size[0] / 2, original_port.dcenter[1] - pad_size[1] / 2)
+                pts = [
+                    p_start,
+                    (p_start[0], p_end[1]),
+                    p_end
+                ]
+            elif i == 2:  # LR (Index 2) - Connect horizontally from the right to avoid vertical stubs
+                p_end = (original_port.dcenter[0] + pad_size[0] / 2, original_port.dcenter[1] + pad_size[1] / 2)
+                pts = [
+                    p_start,
+                    (p_start[0], p_end[1]),
+                    p_end
+                ]
+            else:  # UL (Index 0) and LL (Index 3) - Standard Manhattan routing
+                p_end = original_port.dcenter
+                Y_route = y_pads - dy_offsets[i]
+                X_turn = p_end[0] + dx_offsets[i]
                 
-            # Construct a clean 5-segment Manhattan path to prevent overlaps/DRC issues
-            pts = [
-                p_start,
-                (p_start[0], Y_route),
-                (X_turn, Y_route),
-                (X_turn, p_end[1] + dy_final),
-                (p_end[0], p_end[1] + dy_final),
-                p_end
-            ]
+                # Determine the final vertical approach direction depending on port orientation.
+                # Mirroring ht_down flips its port orientation to -90.0 (pointing South).
+                if original_port.orientation is not None and abs(original_port.orientation - 90.0) < 1.0:
+                    dy_final = 15.0  # Enter from the North, going South
+                else:
+                    dy_final = -15.0 # Enter from the South, going North
+                    
+                # Construct a clean 5-segment Manhattan path to prevent overlaps/DRC issues
+                pts = [
+                    p_start,
+                    (p_start[0], Y_route),
+                    (X_turn, Y_route),
+                    (X_turn, p_end[1] + dy_final),
+                    (p_end[0], p_end[1] + dy_final),
+                    p_end
+                ]
             
             path = gf.Path(pts)
             route_comp = path.extrude(routing_xs_m2)

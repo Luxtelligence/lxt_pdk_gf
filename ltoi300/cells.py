@@ -33,6 +33,8 @@ from ltoi300._builders.mzms import (
 )
 from ltoi300._builders.mzms import (
     build_unterminated_mzm_oband as _build_unterminated_mzm_oband,
+)
+from ltoi300._builders.mzms import (
     build_terminated_mzm_folded as _build_terminated_mzm_folded,
 )
 from ltoi300._builders.phase_modulators import (
@@ -234,53 +236,71 @@ def terminated_mzm_1x2mmi_oband(
         heater_params=heater_params,
     )
 
+
 @gf.cell
 def terminated_mzm_1x2mmi_folded(
     band: str = "oband",
     vertical_offset: float | None = None,
     horizontal_offset: float | None = None,
-    **kwargs
+    **kwargs,
 ) -> gf.Component:
-    """Folded MZM with 1x2 MMI splitter. Supports O-band and C-band."""
+    """Folded terminated MZM with a 1x2 MMI splitter/combiner.
+
+    Supports O-band (1310 nm, xs_rwg700) and C-band (1550 nm, xs_rwg900).
+    ``vertical_offset`` and ``horizontal_offset`` are relative additions on top
+    of the pad-mode-dependent baseline offsets computed by the builder.
+    All remaining keyword arguments are forwarded to ``build_terminated_mzm_folded``.
+    """
     mmi_cell = mmi1x2_oband() if band == "oband" else mmi1x2_cband()
     return _build_terminated_mzm_folded(
         mmi_cell=mmi_cell,
         band=band,
         vertical_offset=vertical_offset,
         horizontal_offset=horizontal_offset,
-        **kwargs
+        **kwargs,
     )
+
 
 @gf.cell
 def terminated_mzm_2x2mmi_folded(
     band: str = "oband",
     vertical_offset: float | None = None,
     horizontal_offset: float | None = None,
-    **kwargs
+    **kwargs,
 ) -> gf.Component:
-    """Folded MZM with 2x2 MMI splitter. Supports O-band and C-band."""
+    """Folded terminated MZM with a 2x2 MMI splitter/combiner.
+
+    Supports O-band (1310 nm, xs_rwg700) and C-band (1550 nm, xs_rwg900).
+    ``vertical_offset`` and ``horizontal_offset`` are relative additions on top
+    of the pad-mode-dependent baseline offsets computed by the builder.
+    All remaining keyword arguments are forwarded to ``build_terminated_mzm_folded``.
+    """
     mmi_cell = mmi2x2_oband() if band == "oband" else mmi2x2_cband()
     return _build_terminated_mzm_folded(
         mmi_cell=mmi_cell,
         band=band,
         vertical_offset=vertical_offset,
         horizontal_offset=horizontal_offset,
-        **kwargs
+        **kwargs,
     )
+
 
 @gf.cell
 def terminated_mzm_1x2mmi_folded_oband(
     band: str = "oband",
     vertical_offset: float | None = None,
     horizontal_offset: float | None = None,
-    **kwargs
+    **kwargs,
 ) -> gf.Component:
-    """Returns a folded terminated MZM with 1x2 MMI for O-band operation."""
+    """Convenience alias: folded terminated MZM with a 1x2 MMI for O-band.
+
+    Delegates to ``terminated_mzm_1x2mmi_folded`` with ``band='oband'``.
+    """
     return terminated_mzm_1x2mmi_folded(
         band=band,
         vertical_offset=vertical_offset,
         horizontal_offset=horizontal_offset,
-        **kwargs
+        **kwargs,
     )
 
 

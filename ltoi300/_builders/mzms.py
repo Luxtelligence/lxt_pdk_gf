@@ -1,5 +1,7 @@
 from typing import Any
 
+import math
+
 import gdsfactory as gf
 
 from _utils.gsg_rf import double_layer_termination, straight_cpw, trail_cpw
@@ -8,6 +10,7 @@ from _utils.thermal_phase_shifters import heater_straight_compact
 from ltoi300.tech import LAYER, xs_ht_wire, xs_rwg700, xs_rwg900, xs_uni_cpw
 
 from _utils.bends import S_bend_vert, get_s_bend_length
+from _utils.spline import bend_S_spline, spline_clamped_path
 from _utils.Phase_shifters import (
     EO_Phase_shifter as _EO_Phase_shifter,
     TO_phase_shifter as _TO_phase_shifter,
@@ -443,13 +446,13 @@ def _safe_s_bend_vert(
     dx_straight: float = 5.0,
     cross_section: Any = "xs_rwg700",
 ) -> gf.Component:
-    """A spline bend that bridges a vertical displacement without minimum displacement limits.
-    
-    Why: Bypasses the default S_bend_vert's validation check (which enforces vertical offset >= 10.0). 
-    This enables compact vertical routing adjustments and C-band alignment loops to compile correctly.
+    """Spline S-bend bridging a vertical displacement without a minimum-offset constraint.
+
+    Bypasses the default ``S_bend_vert`` validation check (which enforces
+    ``vertical offset >= 10.0``), enabling compact vertical routing adjustments
+    and C-band alignment loops to compile correctly.
     """
     import numpy as np
-    from _utils.spline import bend_S_spline, spline_clamped_path
 
     if abs(v_offset) < 1e-4:
         return gf.components.straight(length=h_extent, cross_section=cross_section)
@@ -483,7 +486,7 @@ def build_terminated_mzm_folded(
     taper_length: float = 100.0,
     rf_gap: float = 5.5,
     rf_central_conductor_width: float | None = None,
-    RF_ground_width : float = 150.0,
+    RF_ground_width: float = 150.0,
     gsg_pitch: float = 100.0,
     dc_pad_width: float = 80.0,
     dc_ground_width: float = 150.0,
@@ -507,6 +510,11 @@ def build_terminated_mzm_folded(
     pad_group_spacing: float | None = None,
     routing_dx_offsets: tuple[float, ...] = (0.0, 0.0, 0.0, 0.0),
     routing_dy_offsets: tuple[float, ...] | None = None,
+    eo_pads_vertical_offset: float = 300.0,
+    eo_pads_horizontal_offset: float = -300.0,
+    eo_pads_size: tuple[float, float] = (150.0, 150.0),
+    eo_pads_spacing: float | None = None,
+    eo_routing_width: float = 60.0,
     trail_params: dict[str, Any] | None = None,
     cpw_params: dict[str, Any] | None = None,
     termination_params: dict[str, Any] | None = None,
@@ -515,90 +523,84 @@ def build_terminated_mzm_folded(
     m2_bonding_pad_params: dict[str, Any] | None = None,
 ) -> gf.Component:
     """Returns a routed folded terminated MZM supporting both O-band and C-band.
-    
-    Contains 2 horizontal rows connected via a West U-turn:
-      - Row 2 (Top, y=vertical_offset): MMI splitter -> S-bends -> Phase Shifter (TO/EO) -> extensions.
-      - Row 1 (Bottom, y=0): GSG pad -> CPW modulator -> termination -> extensions -> S-bends -> MMI combiner.
+
+    Two horizontal rows are connected via a West U-turn loopback:
+      - Row 2 (top,    y = vertical_offset): MMI splitter -> East S-bends -> Phase Shifter (TO or EO)
+                                             -> straight extensions -> [West S-bends] -> U-turn.
+      - Row 1 (bottom, y = 0):               U-turn -> West S-bends -> GSG pad -> RF CPW modulator
+                                             -> termination -> East S-bends -> MMI combiner.
+
+    The West U-turn uses a crossed port mapping (upper-to-lower / lower-to-upper) so both
+    waveguides follow concentric arcs without crossing inside the loopback.
     """
-    import math
     c = gf.Component()
 
     xs_func = xs_rwg700 if band == "oband" else xs_rwg900
     terminal_xs = xs_func()
     straight_name = "straight_rwg700_oband" if band == "oband" else "straight_rwg900_cband"
+    roc_ps = 60.0 if band == "oband" else 50.0
 
-    # Default central conductor width if not specified
+    # Default central conductor width by band if not explicitly provided
     if rf_central_conductor_width is None:
         rf_central_conductor_width = 20.0 if band == "oband" else 16.0
 
-    # Calculate baseline vertical and horizontal offsets dynamically
+    # Baseline row-separation and arm-extension offsets (pad-mode-dependent)
     default_vertical_offset = 600.0 if pads_on_same_y else 500.0
     default_horizontal_offset = 110.0 if pads_on_same_y else 150.0
 
-    # User-specified offsets are treated as relative additions to the baseline defaults
+    # User-supplied values are *relative* additions on top of the baseline
     vertical_offset = default_vertical_offset + (vertical_offset or 0.0)
     horizontal_offset = default_horizontal_offset + (horizontal_offset or 0.0)
 
-    # Increase default pad group vertical offset (ref vertical offset) by 100 um when pads_on_same_y is True
+    # Aligned pads need 100 um extra vertical clearance for the pad row
     if pads_on_same_y and pad_group_vertical_offset == 320.0:
         pad_group_vertical_offset = 420.0
 
-    # Calculate loopback routing difference dynamically using dummy straight sections
+    # ---- Dummy U-turn solver: pre-compute routing asymmetry for auto compensation ----
+    # Both TO and EO U-turns use crossed port mapping (upper->lower, lower->upper)
+    # so both waveguides follow concentric arcs with no crossing inside the loopback.
+    p_space = rf_central_conductor_width + rf_gap  # CPW slot spacing
+    actual_uturn_radius = uturn_radius if uturn_radius is not None else terminal_xs.radius
+
     dummy_c = gf.Component()
-    p_space = rf_central_conductor_width + rf_gap
-        
     d_r2_down = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
     d_r2_down.dmove((0, vertical_offset))
     d_r2_up = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
     d_r2_up.dmove((0, vertical_offset + p_space))
-    
     d_r1_down = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
     d_r1_up = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
     d_r1_up.dmove((0, p_space))
-    
-    # Both EO (physically parallel overall) and TO (physically crossed overall) U-turns
-    # require concentric (non-crossing) physical paths inside the West loop-back.
-    # Therefore, we match the ports in a crossed configuration (upper-to-lower, lower-to-upper)
-    # to avoid routing collisions in route_bundle.
-    ports1 = [d_r2_up.ports["o1"], d_r2_down.ports["o1"]]
-    ports2 = [d_r1_down.ports["o1"], d_r1_up.ports["o1"]]
-    
-    actual_uturn_radius = uturn_radius if uturn_radius is not None else terminal_xs.radius
+
     dummy_routes = gf.routing.route_bundle(
         dummy_c,
-        ports1=ports1,
-        ports2=ports2,
+        ports1=[d_r2_up.ports["o1"], d_r2_down.ports["o1"]],
+        ports2=[d_r1_down.ports["o1"], d_r1_up.ports["o1"]],
         cross_section=terminal_xs,
         bend=gf.components.bend_euler,
         straight=straight_name,
         radius=actual_uturn_radius,
         separation=uturn_separation,
     )
-    
-    r_top_len_dummy = float(dummy_routes[1].length) * 0.001
-    r_bottom_len_dummy = float(dummy_routes[0].length) * 0.001
-    routing_diff = abs(r_top_len_dummy - r_bottom_len_dummy)
+    routing_diff = abs(float(dummy_routes[1].length) * 0.001 - float(dummy_routes[0].length) * 0.001)
 
     if compensation_length is None:
-        if dc_phase_shifter_node:
-            compensation_length = routing_diff + 40.0
-        else:
-            compensation_length = routing_diff
+        # EO requires an extra 40 um to account for the asymmetric compensation loops
+        compensation_length = routing_diff + (40.0 if dc_phase_shifter_node else 0.0)
 
-    # Common parameters
+
+    # Cross-section and optical waveguide parameters used in both rows
     _cpw_xs = xs_uni_cpw(
         central_conductor_width=rf_central_conductor_width,
         gap=rf_gap,
         ground_planes_width=50.0,
     )
-    
     optical_waveguides = {
         "terminal_xs": terminal_xs,
         "modulation_xs": xs_func(width=modulation_width),
         "taper_length": taper_length,
     }
 
-    # Merge bonding pads, transition, and termination parameters
+    # Merge advanced dict parameters with PDK defaults
     _m2_bonding_pad_params = _build_m2_bonding_params(m2_bonding_pad_params, transition_m1_m2_params)
     _termination_params = _merge(DEFAULT_TERMINATION_PARAMS, termination_params)
     _transition_m1_m2_params = _merge(DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params)
@@ -640,6 +642,12 @@ def build_terminated_mzm_folded(
             compensation_length=compensation_length,
             length_imbalance=length_imbalance,
             band=band,
+            has_offset_pads=True,
+            eo_pads_vertical_offset=eo_pads_vertical_offset,
+            eo_pads_horizontal_offset=eo_pads_horizontal_offset,
+            eo_pads_size=eo_pads_size,
+            eo_pads_spacing=eo_pads_spacing,
+            eo_routing_width=eo_routing_width,
         )
         ps.connect("o3", sb_in_down.ports["o1"])
         ps_in_upper_port = ps.ports["o1"]
@@ -689,7 +697,9 @@ def build_terminated_mzm_folded(
 
     # Expose electrical ports after any horizontal translations are completed
     if dc_phase_shifter_node:
-        c.add_port(name="e3", port=ps.ports["e1"])
+        c.add_port(name="port_E_EO_1", port=ps.ports["port_E_EO_1"])
+        c.add_port(name="port_E_EO_2", port=ps.ports["port_E_EO_2"])
+        c.add_port(name="port_E_EO_3", port=ps.ports["port_E_EO_3"])
         c.add_port(name="e4", port=ps.ports["e2"])
     elif thermal_phase_shifter_node:
         if pads_on_same_y:
@@ -754,12 +764,9 @@ def build_terminated_mzm_folded(
     ext_pad_down.connect("o2", pad_mod.ports["o4"])
 
     # West S-bends on Row 1 (connecting modulator extensions to West U-turn)
-    sb_pad_mod_up = c << _safe_s_bend_vert(v_offset=v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
-    sb_pad_mod_down = c << _safe_s_bend_vert(v_offset=-v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
-    sb_pad_mod_up.dmirror_x()
-    sb_pad_mod_down.dmirror_x()
-    sb_pad_mod_up.connect("o2", ext_pad_up.ports["o1"])
-    sb_pad_mod_down.connect("o2", ext_pad_down.ports["o1"])
+    # S-bends before CPW pads removed at user request
+    sb_pad_mod_up = None
+    sb_pad_mod_down = None
 
     # Waveguide extensions on the East (termination side, extending Eastward)
     ext_out_up = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
@@ -795,7 +802,6 @@ def build_terminated_mzm_folded(
     row1_refs = [
         cpw_mod, pad_mod, term_ref, 
         ext_pad_up, ext_pad_down, 
-        sb_pad_mod_up, sb_pad_mod_down,
         ext_out_up, ext_out_down, 
         sb_out_up, sb_out_down, mmi_out
     ]
@@ -811,8 +817,8 @@ def build_terminated_mzm_folded(
             last_point_upper_x = ext_ps_down.ports["o1"].dcenter[0]
             last_point_upper_y = ext_ps_down.ports["o1"].dcenter[1]
         
-        dx = last_point_upper_x - sb_pad_mod_up.ports["o1"].dcenter[0]
-        dy = last_point_upper_y - vertical_offset - sb_pad_mod_up.ports["o1"].dcenter[1]
+        dx = last_point_upper_x - ext_pad_up.ports["o1"].dcenter[0]
+        dy = last_point_upper_y - vertical_offset - ext_pad_up.ports["o1"].dcenter[1]
         
         for ref in row1_refs:
             ref.dmove((dx, dy))
@@ -822,7 +828,6 @@ def build_terminated_mzm_folded(
     # ==========================================================================
     routes = None
     if vertical_offset > 0.0:
-        actual_uturn_radius = uturn_radius if uturn_radius is not None else terminal_xs.radius
         ports1_uturn = (
             [sb_pad_up.ports["o1"], sb_pad_down.ports["o1"]]
             if dc_phase_shifter_node
@@ -831,7 +836,7 @@ def build_terminated_mzm_folded(
         routes = gf.routing.route_bundle(
             c,
             ports1=ports1_uturn,
-            ports2=[sb_pad_mod_down.ports["o1"], sb_pad_mod_up.ports["o1"]],
+            ports2=[ext_pad_down.ports["o1"], ext_pad_up.ports["o1"]],
             cross_section=terminal_xs,
             bend=gf.components.bend_euler,
             straight=straight_name,
@@ -842,80 +847,65 @@ def build_terminated_mzm_folded(
     # ==========================================================================
     # 5. Path Length & Propagation Difference Calculation
     # ==========================================================================
-    sb_in_up_len = get_s_bend_length(v_offset_1, h_extent_1)
-    sb_in_down_len = sb_in_up_len
-    
+    sb_in_up_len = get_s_bend_length(v_offset_1, h_extent_1)  # symmetric: same for both arms
     ext_ps_len = 125.0 + horizontal_offset
-    
-    roc_ps = 60.0 if band == "oband" else 50.0
-    comp_len = compensation_length
-    imb_len = length_imbalance
-    L_extra = comp_len + imb_len
-    
+    L_extra = compensation_length + length_imbalance
+
     if dc_phase_shifter_node:
         top_pad_len = length_straight + length_tapered
         L_EO_active = top_pad_len + dc_phase_shifter_length + 2 * taper_length
         L_EO_comp_up = 60.0 + 2 * math.pi * roc_ps
         L_EO_comp_down = L_extra + 20.0 + 2 * math.pi * roc_ps
-        
-        # EO crossed layout detour assignments: Upper arm gets straight, Lower arm gets detour
+        # EO: upper arm gets the shorter (straight) detour, lower arm gets the longer one
         L_ps_up = L_EO_active + L_EO_comp_up
         L_ps_down = L_EO_active + L_EO_comp_down
     else:
         H_base = 20.0
         L_TO_up = 20.0 + 2 * H_base + bias_tuning_section_length + 2 * math.pi * roc_ps
         L_TO_down = L_TO_up + L_extra
-        
-        # TO layout detour assignments
+        # TO: lower arm carries the extra detour length
         L_ps_up = L_TO_down
         L_ps_down = L_TO_up
 
-    v_offset_2_val = y_out_ps - (gsg_pitch / 2)
-    h_extent_2_val = max(90.0, 3.5 * abs(v_offset_2_val) + 10.0)
-    sb_pad_mod_len = get_s_bend_length(v_offset_2_val, h_extent_2_val)
-
-    if dc_phase_shifter_node:
-        sb_pad_up_len = sb_pad_mod_len
-        sb_pad_down_len = sb_pad_up_len
-    else:
-        sb_pad_up_len = 0.0
-        sb_pad_down_len = 0.0
+    # S-bend lengths (identical for upper and lower arms of each pair)
+    sb_pad_mod_len = 0.0
+    sb_pad_side_len = get_s_bend_length(v_offset_2, h_extent_2) if dc_phase_shifter_node else 0.0
 
     r_top_len = float(routes[1].length) * 0.001 if (vertical_offset > 0.0 and routes is not None) else 0.0
     r_bottom_len = float(routes[0].length) * 0.001 if (vertical_offset > 0.0 and routes is not None) else 0.0
 
-    sb_out_up_len = get_s_bend_length(v_offset_3, h_extent_3)
-    sb_out_down_len = sb_out_up_len
-
-    bottom_active_len = 75.0 + (length_straight + length_tapered) + (modulation_length + 2 * taper_length) + 75.0
+    sb_out_len = get_s_bend_length(v_offset_3, h_extent_3)  # symmetric: same for both arms
+    bottom_active_len = (
+        75.0
+        + (length_straight + length_tapered)
+        + (modulation_length + 2 * taper_length)
+        + 75.0
+    )
 
     if vertical_offset > 0.0:
         if dc_phase_shifter_node:
-            path_up_length = ext_ps_len + sb_pad_up_len + r_bottom_len + sb_pad_mod_len + 75.0
-            path_down_length = ext_ps_len + sb_pad_down_len + r_top_len + sb_pad_mod_len + 75.0
-            
-            path_up_total = sb_in_up_len + L_ps_up + path_up_length - ext_ps_len - sb_pad_up_len + bottom_active_len + sb_out_down_len
-            path_down_total = sb_in_down_len + L_ps_down + path_down_length - ext_ps_len - sb_pad_down_len + bottom_active_len + sb_out_up_len
+            path_up_length = ext_ps_len + sb_pad_side_len + r_bottom_len + sb_pad_mod_len + 75.0
+            path_down_length = ext_ps_len + sb_pad_side_len + r_top_len + sb_pad_mod_len + 75.0
+            path_up_total = sb_in_up_len + L_ps_up + r_bottom_len + sb_pad_mod_len + bottom_active_len + sb_out_len
+            path_down_total = sb_in_up_len + L_ps_down + r_top_len + sb_pad_mod_len + bottom_active_len + sb_out_len
         else:
             path_up_length = ext_ps_len + r_top_len + sb_pad_mod_len + 75.0
             path_down_length = ext_ps_len + r_bottom_len + sb_pad_mod_len + 75.0
-            
-            path_up_total = sb_in_up_len + L_ps_up + path_up_length - ext_ps_len + bottom_active_len + sb_out_up_len
-            path_down_total = sb_in_down_len + L_ps_down + path_down_length - ext_ps_len + bottom_active_len + sb_out_down_len
+            path_up_total = sb_in_up_len + L_ps_up + r_top_len + sb_pad_mod_len + bottom_active_len + sb_out_len
+            path_down_total = sb_in_up_len + L_ps_down + r_bottom_len + sb_pad_mod_len + bottom_active_len + sb_out_len
     else:
-        path_up_length = ext_ps_len + sb_pad_up_len + 75.0
-        path_down_length = ext_ps_len + sb_pad_down_len + 75.0
-        
-        path_up_total = sb_in_up_len + L_ps_up + path_up_length - ext_ps_len - sb_pad_up_len + bottom_active_len + sb_out_up_len
-        path_down_total = sb_in_down_len + L_ps_down + path_down_length - ext_ps_len - sb_pad_down_len + bottom_active_len + sb_out_down_len
+        path_up_length = ext_ps_len + sb_pad_side_len + 75.0
+        path_down_length = ext_ps_len + sb_pad_side_len + 75.0
+        path_up_total = sb_in_up_len + L_ps_up + bottom_active_len + sb_out_len
+        path_down_total = sb_in_up_len + L_ps_down + bottom_active_len + sb_out_len
 
     propagation_difference = float(abs(path_up_total - path_down_total))
 
+    c.info["propagation_difference"] = propagation_difference
     c.info["path_up_length"] = path_up_length
     c.info["path_down_length"] = path_down_length
-    c.info["propagation_difference"] = propagation_difference
-    c.info["path_up_compensation"] = path_up_total
-    c.info["path_down_compensation"] = path_down_total
+    c.info["path_up_total"] = path_up_total
+    c.info["path_down_total"] = path_down_total
     c.info["vertical_offset"] = vertical_offset
     c.info["horizontal_offset"] = horizontal_offset
 
@@ -937,7 +927,7 @@ def build_terminated_mzm_folded(
 
 
 ############################################
-########### Helper functions ###############
+###########   Helper Functions   ###########
 ############################################
 
 
