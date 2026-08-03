@@ -511,8 +511,8 @@ def build_terminated_mzm_folded(
     routing_dx_offsets: tuple[float, ...] = (0.0, 0.0, 0.0, 0.0),
     routing_dy_offsets: tuple[float, ...] | None = None,
     eo_pads_vertical_offset: float = 300.0,
-    eo_pads_horizontal_offset: float = -300.0,
-    eo_pads_size: tuple[float, float] = (150.0, 150.0),
+    eo_pads_horizontal_offset: float = -70.0,
+    eo_pads_size: tuple[float, float] = (80.0, 80.0),
     eo_pads_spacing: float | None = None,
     eo_routing_width: float = 60.0,
     trail_params: dict[str, Any] | None = None,
@@ -556,38 +556,6 @@ def build_terminated_mzm_folded(
     if pads_on_same_y and pad_group_vertical_offset == 320.0:
         pad_group_vertical_offset = 420.0
 
-    # ---- Dummy U-turn solver: pre-compute routing asymmetry for auto compensation ----
-    # Both TO and EO U-turns use crossed port mapping (upper->lower, lower->upper)
-    # so both waveguides follow concentric arcs with no crossing inside the loopback.
-    p_space = rf_central_conductor_width + rf_gap  # CPW slot spacing
-    actual_uturn_radius = uturn_radius if uturn_radius is not None else terminal_xs.radius
-
-    dummy_c = gf.Component()
-    d_r2_down = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
-    d_r2_down.dmove((0, vertical_offset))
-    d_r2_up = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
-    d_r2_up.dmove((0, vertical_offset + p_space))
-    d_r1_down = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
-    d_r1_up = dummy_c << gf.components.straight(length=1.0, cross_section=terminal_xs)
-    d_r1_up.dmove((0, p_space))
-
-    dummy_routes = gf.routing.route_bundle(
-        dummy_c,
-        ports1=[d_r2_up.ports["o1"], d_r2_down.ports["o1"]],
-        ports2=[d_r1_down.ports["o1"], d_r1_up.ports["o1"]],
-        cross_section=terminal_xs,
-        bend=gf.components.bend_euler,
-        straight=straight_name,
-        radius=actual_uturn_radius,
-        separation=uturn_separation,
-    )
-    routing_diff = abs(float(dummy_routes[1].length) * 0.001 - float(dummy_routes[0].length) * 0.001)
-
-    if compensation_length is None:
-        # EO requires an extra 40 um to account for the asymmetric compensation loops
-        compensation_length = routing_diff + (40.0 if dc_phase_shifter_node else 0.0)
-
-
     # Cross-section and optical waveguide parameters used in both rows
     _cpw_xs = xs_uni_cpw(
         central_conductor_width=rf_central_conductor_width,
@@ -606,243 +574,272 @@ def build_terminated_mzm_folded(
     _transition_m1_m2_params = _merge(DEFAULT_TRANSITION_M1_M2_PARAMS, transition_m1_m2_params)
     _transition_m2_hr_params = _merge(DEFAULT_TRANSITION_M2_HR_PARAMS, transition_m2_hr_params)
 
-    # ==========================================================================
-    # 1. Row 2 (Top Row, y = vertical_offset) - Phase shifter section propagating East to West
-    # ==========================================================================
-    mmi_in = c << mmi_cell
-    mmi_in.drotate(180)
-    mmi_in.dmove((0, vertical_offset))
+    p_space = rf_central_conductor_width + rf_gap  # CPW slot spacing
+    actual_uturn_radius = uturn_radius if uturn_radius is not None else terminal_xs.radius
 
-    # Identify output ports of splitter (after 180 rotation, the vertical order is flipped)
-    if "2x2" in mmi_cell.name:
-        up_port = mmi_in.ports["o4"]
-        down_port = mmi_in.ports["o3"]
-    else:  # 1x2 MMI
-        up_port = mmi_in.ports["o3"]
-        down_port = mmi_in.ports["o2"]
+    def _build_layout(comp_len: float):
+        c = gf.Component()
 
-    y_out_ps = (rf_central_conductor_width + rf_gap) / 2
-    y_mmi_port = abs(up_port.dcenter[1] - vertical_offset)
-    v_offset_1 = y_out_ps - y_mmi_port
-    h_extent_1 = max(90.0, 3.5 * abs(v_offset_1) + 10.0)
-    
-    sb_in_up = c << _safe_s_bend_vert(v_offset=v_offset_1, h_extent=h_extent_1, cross_section=terminal_xs)
-    sb_in_down = c << _safe_s_bend_vert(v_offset=-v_offset_1, h_extent=h_extent_1, cross_section=terminal_xs)
-    sb_in_up.connect("o2", down_port)
-    sb_in_down.connect("o2", up_port)
+        # ==========================================================================
+        # 1. Row 2 (Top Row, y = vertical_offset) - Phase shifter section propagating East to West
+        # ==========================================================================
+        mmi_in = c << mmi_cell
+        mmi_in.drotate(180)
+        mmi_in.dmove((0, vertical_offset))
 
-    # Instantiate Phase Shifter in native orientation (no rotation/mirroring)
-    if dc_phase_shifter_node:
-        ps = c << _EO_Phase_shifter(
-            length=dc_phase_shifter_length,
-            rf_gap=rf_gap,
-            rf_central_conductor_width=rf_central_conductor_width,
-            dc_pad_width=dc_pad_width,
-            dc_ground_width=dc_ground_width,
-            compensation_length=compensation_length,
-            length_imbalance=length_imbalance,
-            band=band,
-            has_offset_pads=True,
-            eo_pads_vertical_offset=eo_pads_vertical_offset,
-            eo_pads_horizontal_offset=eo_pads_horizontal_offset,
-            eo_pads_size=eo_pads_size,
-            eo_pads_spacing=eo_pads_spacing,
-            eo_routing_width=eo_routing_width,
-        )
-        ps.connect("o3", sb_in_down.ports["o1"])
-        ps_in_upper_port = ps.ports["o1"]
-        ps_in_lower_port = ps.ports["o2"]
-    elif thermal_phase_shifter_node:
-        ps = c << _TO_phase_shifter(
-            length=bias_tuning_section_length,
-            spacing=rf_central_conductor_width + rf_gap,
-            compensation_length=compensation_length,
-            length_imbalance=length_imbalance,
-            pads_on_same_y=pads_on_same_y,
-            pad_group_vertical_offset=pad_group_vertical_offset,
-            pad_group_horizontal_offset=pad_group_horizontal_offset,
-            pad_group_spacing=pad_group_spacing,
-            pad_size=pad_size,
-            pad_size_aligned=pad_size_aligned,
-            routing_dx_offsets=routing_dx_offsets,
-            routing_dy_offsets=routing_dy_offsets,
-            band=band,
-        )
-        ps.connect("o3", sb_in_up.ports["o1"])
-        ps_in_upper_port = ps.ports["o4"]
-        ps_in_lower_port = ps.ports["o1"]
-    else:
-        raise ValueError("Either dc_phase_shifter_node or thermal_phase_shifter_node must be True.")
+        # Identify output ports of splitter (after 180 rotation, the vertical order is flipped)
+        if "2x2" in mmi_cell.name:
+            up_port = mmi_in.ports["o4"]
+            down_port = mmi_in.ports["o3"]
+        else:  # 1x2 MMI
+            up_port = mmi_in.ports["o3"]
+            down_port = mmi_in.ports["o2"]
 
-    # 125 um straight waveguide extensions between EO/TO and S-bends (extended by horizontal_offset)
-    ext_ps_up = c << gf.components.straight(length=125.0 + horizontal_offset, cross_section=terminal_xs)
-    ext_ps_down = c << gf.components.straight(length=125.0 + horizontal_offset, cross_section=terminal_xs)
-    ext_ps_up.connect("o2", ps_in_upper_port)
-    ext_ps_down.connect("o2", ps_in_lower_port)
+        y_out_ps = (rf_central_conductor_width + rf_gap) / 2
+        y_mmi_port = abs(up_port.dcenter[1] - vertical_offset)
+        v_offset_1 = y_out_ps - y_mmi_port
+        h_extent_1 = max(90.0, 3.5 * abs(v_offset_1) + 10.0)
+        
+        sb_in_up = c << _safe_s_bend_vert(v_offset=v_offset_1, h_extent=h_extent_1, cross_section=terminal_xs)
+        sb_in_down = c << _safe_s_bend_vert(v_offset=-v_offset_1, h_extent=h_extent_1, cross_section=terminal_xs)
+        sb_in_up.connect("o2", down_port)
+        sb_in_down.connect("o2", up_port)
 
-    # Calculate S-bend parameters for CPW pad transitions
-    v_offset_2 = y_out_ps - (gsg_pitch / 2)
-    h_extent_2 = max(90.0, 3.5 * abs(v_offset_2) + 10.0)
-
-    # West S-bends (connecting straight extensions to West U-turn - only for EO RF pads)
-    sb_pad_up = None
-    sb_pad_down = None
-    if dc_phase_shifter_node:
-        sb_pad_up = c << _safe_s_bend_vert(v_offset=v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
-        sb_pad_down = c << _safe_s_bend_vert(v_offset=-v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
-        sb_pad_up.dmirror_x()
-        sb_pad_down.dmirror_x()
-        sb_pad_up.connect("o2", ext_ps_up.ports["o1"])
-        sb_pad_down.connect("o2", ext_ps_down.ports["o1"])
-
-    # Expose electrical ports after any horizontal translations are completed
-    if dc_phase_shifter_node:
-        c.add_port(name="port_E_EO_1", port=ps.ports["port_E_EO_1"])
-        c.add_port(name="port_E_EO_2", port=ps.ports["port_E_EO_2"])
-        c.add_port(name="port_E_EO_3", port=ps.ports["port_E_EO_3"])
-        c.add_port(name="e4", port=ps.ports["e2"])
-    elif thermal_phase_shifter_node:
-        if pads_on_same_y:
-            c.add_port(name="port_E_TO_1", port=ps.ports["port_E_TO_1"])
-            c.add_port(name="port_E_TO_2", port=ps.ports["port_E_TO_2"])
-            c.add_port(name="port_E_TO_3", port=ps.ports["port_E_TO_3"])
-            c.add_port(name="port_E_TO_4", port=ps.ports["port_E_TO_4"])
-        else:
-            c.add_port(name="e3", port=ps.ports["e1"])
-            c.add_port(name="e4", port=ps.ports["e2"])
-            c.add_port(name="e5", port=ps.ports["e3"])
-            c.add_port(name="e6", port=ps.ports["e4"])
-
-    # ==========================================================================
-    # 2. Row 1 (Bottom Row, y = 0) - Modulator section propagating West to East
-    # ==========================================================================
-    if band == "oband":
-        cpw_mod = c << straight_cpw(
-            cpw_xs=_cpw_xs,
-            modulation_length=modulation_length,
-            optical_waveguides=optical_waveguides,
-        )
-    else:  # cband
-        _trail_params = _merge(DEFAULT_TRAIL_PARAMS_CBAND, trail_params)
-        cpw_mod = c << trail_cpw(
-            cpw_xs=_cpw_xs,
-            modulation_length=modulation_length,
-            trail_params=_trail_params,
-            optical_waveguides=optical_waveguides,
-        )
-
-    # GSG pad for modulator
-    pad_mod = c << rectangular_cpw_pad(
-        cpw_xs=_cpw_xs,
-        optical_waveguide_xs=terminal_xs,
-        pitch=gsg_pitch,
-        length_straight=length_straight,
-        length_tapered=length_tapered,
-        ground_pad_width=RF_ground_width,
-        m2_bonding_pads_params=_m2_bonding_pad_params,
-        dc_pad_width=dc_pad_width,
-    )
-    pad_mod.connect("e2", cpw_mod.ports["e1"])
-
-    # Resistive termination
-    termination = double_layer_termination(
-        cpw_xs=_cpw_xs,
-        termination_layer=LAYER.HRL,
-        m2_layer=LAYER.M2,
-        m2_pad_length=_termination_params["m2_pad_length"],
-        termination_params=_termination_params,
-        via_m1_m2_params=_transition_m1_m2_params,
-        via_m2_hr_params=_transition_m2_hr_params,
-    )
-    term_ref = c << termination
-    term_ref.connect("e1", cpw_mod.ports["e2"])
-
-    # Waveguide extensions on the West (GSG pad side, extending Westward)
-    ext_pad_up = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
-    ext_pad_down = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
-    ext_pad_up.connect("o2", pad_mod.ports["o1"])
-    ext_pad_down.connect("o2", pad_mod.ports["o4"])
-
-    # West S-bends on Row 1 (connecting modulator extensions to West U-turn)
-    # S-bends before CPW pads removed at user request
-    sb_pad_mod_up = None
-    sb_pad_mod_down = None
-
-    # Waveguide extensions on the East (termination side, extending Eastward)
-    ext_out_up = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
-    ext_out_down = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
-    ext_out_up.connect("o1", cpw_mod.ports["o2"])
-    ext_out_down.connect("o1", cpw_mod.ports["o3"])
-
-    # Output Combiner (MMI, on the East end, rotated 180 so o1/outputs match combiner roles)
-    mmi_out = c << mmi_cell
-
-    # Identify input ports of combiner
-    if "2x2" in mmi_cell.name:
-        comb_up_port = mmi_out.ports["o4"]
-        comb_down_port = mmi_out.ports["o3"]
-    else:  # 1x2 MMI
-        comb_up_port = mmi_out.ports["o3"]
-        comb_down_port = mmi_out.ports["o2"]
-
-    # East S-bends to combiner
-    y_out_mod = rf_central_conductor_width / 2 + rf_gap / 2
-    y_mmi_out_port = abs(comb_up_port.dcenter[1])
-    v_offset_3 = y_mmi_out_port - y_out_mod
-    h_extent_3 = max(90.0, 3.5 * abs(v_offset_3) + 10.0)
-    sb_out_up = c << _safe_s_bend_vert(v_offset=v_offset_3, h_extent=h_extent_3, cross_section=terminal_xs)
-    sb_out_down = c << _safe_s_bend_vert(v_offset=-v_offset_3, h_extent=h_extent_3, cross_section=terminal_xs)
-    sb_out_up.connect("o1", ext_out_up.ports["o2"])
-    sb_out_down.connect("o1", ext_out_down.ports["o2"])
-
-    # Connect combiner input ports to S-bend outputs
-    mmi_out.connect(comb_up_port.name, sb_out_up.ports["o2"])
-
-    # List of all references on Row 1 (used for alignment shift)
-    row1_refs = [
-        cpw_mod, pad_mod, term_ref, 
-        ext_pad_up, ext_pad_down, 
-        ext_out_up, ext_out_down, 
-        sb_out_up, sb_out_down, mmi_out
-    ]
-
-    # ==========================================================================
-    # 3. Horizontal & Vertical Alignment of Row 1 relative to Row 2
-    # ==========================================================================
-    if vertical_offset > 0.0:
+        # Instantiate Phase Shifter in native orientation (no rotation/mirroring)
         if dc_phase_shifter_node:
-            last_point_upper_x = sb_pad_up.ports["o1"].dcenter[0]
-            last_point_upper_y = sb_pad_up.ports["o1"].dcenter[1]
+            ps = c << _EO_Phase_shifter(
+                length=dc_phase_shifter_length,
+                dc_gap=rf_gap,
+                dc_central_conductor_width=rf_central_conductor_width,
+                dc_pad_width=dc_pad_width,
+                dc_ground_width=dc_ground_width,
+                compensation_length=comp_len,
+                length_imbalance=length_imbalance,
+                band=band,
+                has_offset_pads=True,
+                eo_pads_vertical_offset=eo_pads_vertical_offset,
+                eo_pads_horizontal_offset=eo_pads_horizontal_offset,
+                eo_pads_size=eo_pads_size,
+                eo_pads_spacing=eo_pads_spacing,
+                eo_routing_width=eo_routing_width,
+            )
+            ps.connect("o3", sb_in_down.ports["o1"])
+            ps_in_upper_port = ps.ports["o1"]
+            ps_in_lower_port = ps.ports["o2"]
+        elif thermal_phase_shifter_node:
+            ps = c << _TO_phase_shifter(
+                length=bias_tuning_section_length,
+                spacing=rf_central_conductor_width + rf_gap,
+                compensation_length=comp_len,
+                length_imbalance=length_imbalance,
+                pads_on_same_y=pads_on_same_y,
+                pad_group_vertical_offset=pad_group_vertical_offset,
+                pad_group_horizontal_offset=pad_group_horizontal_offset,
+                pad_group_spacing=pad_group_spacing,
+                pad_size=pad_size,
+                pad_size_aligned=pad_size_aligned,
+                routing_dx_offsets=routing_dx_offsets,
+                routing_dy_offsets=routing_dy_offsets,
+                band=band,
+            )
+            ps.connect("o3", sb_in_up.ports["o1"])
+            ps_in_upper_port = ps.ports["o4"]
+            ps_in_lower_port = ps.ports["o1"]
         else:
-            last_point_upper_x = ext_ps_down.ports["o1"].dcenter[0]
-            last_point_upper_y = ext_ps_down.ports["o1"].dcenter[1]
-        
-        dx = last_point_upper_x - ext_pad_up.ports["o1"].dcenter[0]
-        dy = last_point_upper_y - vertical_offset - ext_pad_up.ports["o1"].dcenter[1]
-        
-        for ref in row1_refs:
-            ref.dmove((dx, dy))
+            raise ValueError("Either dc_phase_shifter_node or thermal_phase_shifter_node must be True.")
+
+        # 125 um straight waveguide extensions between EO/TO and S-bends (extended by horizontal_offset)
+        ext_ps_up = c << gf.components.straight(length=125.0 + horizontal_offset, cross_section=terminal_xs)
+        ext_ps_down = c << gf.components.straight(length=125.0 + horizontal_offset, cross_section=terminal_xs)
+        ext_ps_up.connect("o2", ps_in_upper_port)
+        ext_ps_down.connect("o2", ps_in_lower_port)
+
+        # Calculate S-bend parameters for CPW pad transitions
+        v_offset_2 = y_out_ps - (gsg_pitch / 2)
+        h_extent_2 = max(90.0, 3.5 * abs(v_offset_2) + 10.0)
+
+        # West S-bends (connecting straight extensions to West U-turn - only for EO RF pads)
+        sb_pad_up = None
+        sb_pad_down = None
+        if dc_phase_shifter_node:
+            sb_pad_up = c << _safe_s_bend_vert(v_offset=v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
+            sb_pad_down = c << _safe_s_bend_vert(v_offset=-v_offset_2, h_extent=h_extent_2, cross_section=terminal_xs)
+            sb_pad_up.dmirror_x()
+            sb_pad_down.dmirror_x()
+            sb_pad_up.connect("o2", ext_ps_up.ports["o1"])
+            sb_pad_down.connect("o2", ext_ps_down.ports["o1"])
+
+        # Expose electrical ports after any horizontal translations are completed
+        if dc_phase_shifter_node:
+            c.add_port(name="port_E_EO_1", port=ps.ports["port_E_EO_1"])
+            c.add_port(name="port_E_EO_2", port=ps.ports["port_E_EO_2"])
+            c.add_port(name="port_E_EO_3", port=ps.ports["port_E_EO_3"])
+            c.add_port(name="e4", port=ps.ports["e2"])
+        elif thermal_phase_shifter_node:
+            if pads_on_same_y:
+                c.add_port(name="port_E_TO_1", port=ps.ports["port_E_TO_1"])
+                c.add_port(name="port_E_TO_2", port=ps.ports["port_E_TO_2"])
+                c.add_port(name="port_E_TO_3", port=ps.ports["port_E_TO_3"])
+                c.add_port(name="port_E_TO_4", port=ps.ports["port_E_TO_4"])
+            else:
+                c.add_port(name="e3", port=ps.ports["e1"])
+                c.add_port(name="e4", port=ps.ports["e2"])
+                c.add_port(name="e5", port=ps.ports["e3"])
+                c.add_port(name="e6", port=ps.ports["e4"])
+
+        # ==========================================================================
+        # 2. Row 1 (Bottom Row, y = 0) - Modulator section propagating West to East
+        # ==========================================================================
+        if band == "oband":
+            cpw_mod = c << straight_cpw(
+                cpw_xs=_cpw_xs,
+                modulation_length=modulation_length,
+                optical_waveguides=optical_waveguides,
+            )
+        else:  # cband
+            _trail_params = _merge(DEFAULT_TRAIL_PARAMS_CBAND, trail_params)
+            cpw_mod = c << trail_cpw(
+                cpw_xs=_cpw_xs,
+                modulation_length=modulation_length,
+                trail_params=_trail_params,
+                optical_waveguides=optical_waveguides,
+            )
+
+        # GSG pad for modulator
+        pad_mod = c << rectangular_cpw_pad(
+            cpw_xs=_cpw_xs,
+            optical_waveguide_xs=terminal_xs,
+            pitch=gsg_pitch,
+            length_straight=length_straight,
+            length_tapered=length_tapered,
+            ground_pad_width=RF_ground_width,
+            m2_bonding_pads_params=_m2_bonding_pad_params,
+            dc_pad_width=dc_pad_width,
+        )
+        pad_mod.connect("e2", cpw_mod.ports["e1"])
+
+        # Resistive termination
+        termination = double_layer_termination(
+            cpw_xs=_cpw_xs,
+            termination_layer=LAYER.HRL,
+            m2_layer=LAYER.M2,
+            m2_pad_length=_termination_params["m2_pad_length"],
+            termination_params=_termination_params,
+            via_m1_m2_params=_transition_m1_m2_params,
+            via_m2_hr_params=_transition_m2_hr_params,
+        )
+        term_ref = c << termination
+        term_ref.connect("e1", cpw_mod.ports["e2"])
+
+        # Waveguide extensions on the West (GSG pad side, extending Westward)
+        ext_pad_up = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
+        ext_pad_down = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
+        ext_pad_up.connect("o2", pad_mod.ports["o1"])
+        ext_pad_down.connect("o2", pad_mod.ports["o4"])
+
+        # Waveguide extensions on the East (termination side, extending Eastward)
+        ext_out_up = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
+        ext_out_down = c << gf.components.straight(length=75.0, cross_section=terminal_xs)
+        ext_out_up.connect("o1", cpw_mod.ports["o2"])
+        ext_out_down.connect("o1", cpw_mod.ports["o3"])
+
+        # Output Combiner (MMI, on the East end, rotated 180 so o1/outputs match combiner roles)
+        mmi_out = c << mmi_cell
+
+        # Identify input ports of combiner
+        if "2x2" in mmi_cell.name:
+            comb_up_port = mmi_out.ports["o4"]
+            comb_down_port = mmi_out.ports["o3"]
+        else:  # 1x2 MMI
+            comb_up_port = mmi_out.ports["o3"]
+            comb_down_port = mmi_out.ports["o2"]
+
+        # East S-bends to combiner
+        y_out_mod = rf_central_conductor_width / 2 + rf_gap / 2
+        y_mmi_out_port = abs(comb_up_port.dcenter[1])
+        v_offset_3 = y_mmi_out_port - y_out_mod
+        h_extent_3 = max(90.0, 3.5 * abs(v_offset_3) + 10.0)
+        sb_out_up = c << _safe_s_bend_vert(v_offset=v_offset_3, h_extent=h_extent_3, cross_section=terminal_xs)
+        sb_out_down = c << _safe_s_bend_vert(v_offset=-v_offset_3, h_extent=h_extent_3, cross_section=terminal_xs)
+        sb_out_up.connect("o1", ext_out_up.ports["o2"])
+        sb_out_down.connect("o1", ext_out_down.ports["o2"])
+
+        # Connect combiner input ports to S-bend outputs
+        mmi_out.connect(comb_up_port.name, sb_out_up.ports["o2"])
+
+        # List of all references on Row 1 (used for alignment shift)
+        row1_refs = [
+            cpw_mod, pad_mod, term_ref, 
+            ext_pad_up, ext_pad_down, 
+            ext_out_up, ext_out_down, 
+            sb_out_up, sb_out_down, mmi_out
+        ]
+
+        # ==========================================================================
+        # 3. Horizontal & Vertical Alignment of Row 1 relative to Row 2
+        # ==========================================================================
+        if vertical_offset > 0.0:
+            if dc_phase_shifter_node:
+                last_point_upper_x = sb_pad_up.ports["o1"].dcenter[0]
+                last_point_upper_y = sb_pad_up.ports["o1"].dcenter[1]
+            else:
+                last_point_upper_x = ext_ps_down.ports["o1"].dcenter[0]
+                last_point_upper_y = ext_ps_down.ports["o1"].dcenter[1]
+            
+            dx = last_point_upper_x - ext_pad_up.ports["o1"].dcenter[0]
+            dy = last_point_upper_y - vertical_offset - ext_pad_up.ports["o1"].dcenter[1]
+            
+            for ref in row1_refs:
+                ref.dmove((dx, dy))
+
+        # ==========================================================================
+        # 4. West U-Turn Loop-Back Routing
+        # ==========================================================================
+        routes = None
+        if vertical_offset > 0.0:
+            ports1_uturn = (
+                [sb_pad_up.ports["o1"], sb_pad_down.ports["o1"]]
+                if dc_phase_shifter_node
+                else [ext_ps_down.ports["o1"], ext_ps_up.ports["o1"]]
+            )
+            routes = gf.routing.route_bundle(
+                c,
+                ports1=ports1_uturn,
+                ports2=[ext_pad_down.ports["o1"], ext_pad_up.ports["o1"]],
+                cross_section=terminal_xs,
+                bend=gf.components.bend_euler,
+                straight=straight_name,
+                radius=actual_uturn_radius,
+                separation=uturn_separation,
+            )
+        return c, routes, ps, pad_mod, cpw_mod, term_ref, mmi_in, mmi_out, v_offset_1, h_extent_1, v_offset_2, h_extent_2, v_offset_3, h_extent_3
 
     # ==========================================================================
-    # 4. West U-Turn Loop-Back Routing
+    # Two-Pass Path Compensation Solver
     # ==========================================================================
-    routes = None
-    if vertical_offset > 0.0:
-        ports1_uturn = (
-            [sb_pad_up.ports["o1"], sb_pad_down.ports["o1"]]
-            if dc_phase_shifter_node
-            else [ext_ps_down.ports["o1"], ext_ps_up.ports["o1"]]
-        )
-        routes = gf.routing.route_bundle(
-            c,
-            ports1=ports1_uturn,
-            ports2=[ext_pad_down.ports["o1"], ext_pad_up.ports["o1"]],
-            cross_section=terminal_xs,
-            bend=gf.components.bend_euler,
-            straight=straight_name,
-            radius=actual_uturn_radius,
-            separation=uturn_separation,
-        )
+    # To route the folded MZM with a perfect 0.0 um path difference:
+    # 1. The detour loop lengths inside the Phase Shifters depend on `compensation_length`.
+    # 2. But `compensation_length` depends on the asymmetry between U-turn routes (`r_bottom_len - r_top_len`).
+    # 3. And we cannot generate those U-turn routes until the Phase Shifters are instantiated.
+    #
+    # We solve this circular dependency via a clean two-step layout build flow:
+    if compensation_length is None:
+        # Step 1 (Pass 1): Build a temporary cell dry-run with zero compensation (comp_len = 0.0).
+        # This determines the exact physical ports and routes the U-turn to measure asymmetry.
+        _, temp_routes, _, _, _, _, _, _, _, _, _, _, _, _ = _build_layout(comp_len=0.0)
+        temp_r_top_len = float(temp_routes[1].length) * 0.001 if (vertical_offset > 0.0 and temp_routes is not None) else 0.0
+        temp_r_bottom_len = float(temp_routes[0].length) * 0.001 if (vertical_offset > 0.0 and temp_routes is not None) else 0.0
+        
+        # Calculate the exact routing length difference (outer route minus inner route)
+        routing_diff = float(-temp_r_top_len + temp_r_bottom_len)
+        
+        # Add 40.0 um for EO phase shifters to offset the asymmetric baseline of detour loops
+        compensation_length = routing_diff + (40.0 if dc_phase_shifter_node else 0.0)
+
+    # Step 2 (Pass 2): Discard the temporary dry-run cell, and compile the final layout 
+    # using the computed compensation_length. Since the detours preserve output port coordinates,
+    # the second pass ports align perfectly with the first pass measurements.
+    c, routes, ps, pad_mod, cpw_mod, term_ref, mmi_in, mmi_out, v_offset_1, h_extent_1, v_offset_2, h_extent_2, v_offset_3, h_extent_3 = _build_layout(comp_len=compensation_length)
 
     # ==========================================================================
     # 5. Path Length & Propagation Difference Calculation
@@ -902,6 +899,7 @@ def build_terminated_mzm_folded(
     propagation_difference = float(abs(path_up_total - path_down_total))
 
     c.info["propagation_difference"] = propagation_difference
+    c.info["u_turn_difference"] = float(-r_top_len + r_bottom_len)
     c.info["path_up_length"] = path_up_length
     c.info["path_down_length"] = path_down_length
     c.info["path_up_total"] = path_up_total

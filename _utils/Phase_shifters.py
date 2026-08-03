@@ -28,6 +28,7 @@ def rectangular_cpw_pad(
     m2_bonding_pads_params: dict[str, Any] | None = None,
     single_waveguide: bool = False,
     dc_pad_width: float = 80.0,
+    dc_central_conductor_width: float = 20.0,
 ) -> gf.Component:
     """RF access line for high-frequency GSG probes with rectangular pads and
     curved electrodes following the optical waveguides.
@@ -145,9 +146,9 @@ def rectangular_cpw_pad(
         # Add individual M2 landing pad ports (Ground top, Signal, Ground bottom) on the West edge.
         # These are used for port-to-port Manhattan routing to the offset pads.
         layer_m2 = m2_bonding_pads_params["layer_m2"]
-        pad.add_port(name="e_g_top", center=(0.0,ground_pad_width), width=ground_pad_width, orientation=180.0, port_type="electrical", layer=layer_m2)
+        pad.add_port(name="e_g_top", center=(0.0,ground_pad_width+dc_central_conductor_width), width=ground_pad_width, orientation=180.0, port_type="electrical", layer=layer_m2)
         pad.add_port(name="e_s", center=(0.0, 0.0), width=dc_pad_width, orientation=180.0, port_type="electrical", layer=layer_m2)
-        pad.add_port(name="e_g_bottom", center=(0.0, -ground_pad_width), width=ground_pad_width, orientation=180.0, port_type="electrical", layer=layer_m2)
+        pad.add_port(name="e_g_bottom", center=(0.0, -ground_pad_width-dc_central_conductor_width), width=ground_pad_width, orientation=180.0, port_type="electrical", layer=layer_m2)
     else:
         pad.add_port(name="e1", port=p1.ports["e1"])
 
@@ -241,8 +242,8 @@ def compensation_section(
 @gf.cell
 def EO_Phase_shifter(
     length: float = 2000.0,
-    rf_gap: float = 5.5,
-    rf_central_conductor_width: float = 20.0,
+    dc_gap: float = 5.5,
+    dc_central_conductor_width: float = 20.0,
     gsg_pitch: float = 100.0,
     dc_pad_width: float = 80.0,
     dc_ground_width: float = 150.0,
@@ -256,8 +257,8 @@ def EO_Phase_shifter(
     band: str = "oband",
     has_offset_pads: bool = True,
     eo_pads_vertical_offset: float = 300.0,
-    eo_pads_horizontal_offset: float = -300.0,
-    eo_pads_size: tuple[float, float] = (150.0, 150.0),
+    eo_pads_horizontal_offset: float = -70.0,
+    eo_pads_size: tuple[float, float] = (80.0, 80.0),
     eo_pads_spacing: float | None = None,
     eo_routing_width: float = 60.0,
 ) -> gf.Component:
@@ -271,8 +272,8 @@ def EO_Phase_shifter(
 
     # 1. Build local cross-sections
     _cpw_xs = xs_uni_cpw(
-        central_conductor_width=rf_central_conductor_width,
-        gap=rf_gap,
+        central_conductor_width=dc_central_conductor_width,
+        gap=dc_gap,
         ground_planes_width=50.0,
     )
     xs_func = xs_rwg700 if band == "oband" else xs_rwg900
@@ -305,6 +306,7 @@ def EO_Phase_shifter(
         ground_pad_width=dc_ground_width,
         m2_bonding_pads_params=m2_bonding_pad_params,
         dc_pad_width=dc_pad_width,
+        dc_central_conductor_width=dc_central_conductor_width,
     )
     top_cpw = straight_cpw(
         cpw_xs=_cpw_xs,
@@ -327,7 +329,7 @@ def EO_Phase_shifter(
             compensation_length=compensation_length,
             length_imbalance=length_imbalance,
             roc=roc,
-            cpw_spacing=rf_central_conductor_width + rf_gap,
+            cpw_spacing=dc_central_conductor_width + dc_gap,
         )
         comp_ref = c << comp_cell
         comp_ref.connect("o_in_up", top_cpw_ref.ports["o2"])
@@ -347,8 +349,8 @@ def EO_Phase_shifter(
         x_west = top_pad_ref.ports["e1"].dcenter[0]
         y_center = top_pad_ref.ports["e1"].dcenter[1]
                 
-        y_pads = y_center + eo_pads_vertical_offset
-        x_pads = x_west + eo_pads_horizontal_offset
+        y_pads = y_center + eo_pads_vertical_offset+300
+        x_pads = x_west + eo_pads_horizontal_offset-70
         
         # Calculate pitch (actual_eo_spacing) to enforce a 20 um edge-to-edge gap between the pads
         actual_eo_spacing = eo_pads_spacing if eo_pads_spacing is not None else (eo_pads_size[0] + 20.0)
@@ -366,15 +368,21 @@ def EO_Phase_shifter(
             layer=LAYER.M2,
         )
         
-        # Map the three wire-bonding pads sequentially (bottom-to-top) to target ports.
-        # Pad 1 -> Landing Pad 1 (bottom Ground)
-        # Pad 2 -> Landing Pad 2 (middle Signal)
-        # Pad 3 -> Landing Pad 3 (top Ground)
-        target_ports = [
-            top_pad_ref.ports["e_g_bottom"],
-            top_pad_ref.ports["e_s"],
-            top_pad_ref.ports["e_g_top"]
-        ]
+        # Map the three wire-bonding pads to target ports:
+        # If horizontal offset > 100 (pads to the East): Pad 1 -> top Ground, Pad 2 -> Signal, Pad 3 -> bottom Ground
+        # Else (pads to the West): Pad 1 -> bottom Ground, Pad 2 -> Signal, Pad 3 -> top Ground
+        if eo_pads_horizontal_offset > 100:
+            target_ports = [
+                top_pad_ref.ports["e_g_top"],
+                top_pad_ref.ports["e_s"],
+                top_pad_ref.ports["e_g_bottom"]
+            ]
+        else:
+            target_ports = [
+                top_pad_ref.ports["e_g_bottom"],
+                top_pad_ref.ports["e_s"],
+                top_pad_ref.ports["e_g_top"]
+            ]
         
         for i in range(3):
             pad_ref = c << single_pad
@@ -412,6 +420,7 @@ def EO_Phase_shifter(
 
     c.add_port(name="e2", port=top_cpw_ref.ports["e2"])
 
+    c.flatten()
     return c
 
 # ==============================================================================
