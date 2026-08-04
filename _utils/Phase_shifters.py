@@ -624,10 +624,10 @@ def heater(
         
         # Define Y and X offsets for custom Manhattan path routing to avoid crossings
         if routing_dy_offsets is None:
-            dy_0 = y_pads - (y_heater_max + pad_size[0]/2)    # UL (Index 0) above heater, clear of UR pad
+            dy_0 = y_pads - (y_heater_max + 50)    # UL (Index 0) above heater, clear of UR pad
             dy_1 = y_pads - (y_heater_max - pad_size[0]/2)  # UR (Index 1) above heater
             dy_2 = y_pads - (y_heater_min + pad_size[0]/2)    # LR (Index 2) below heater
-            dy_3 = y_pads - (y_heater_min - pad_size[0]/2)    # LL (Index 3) below heater, clear of LR pad
+            dy_3 = y_pads - (y_heater_min - 50)    # LL (Index 3) below heater, clear of LR pad
             dy_offsets = (dy_0, dy_1, dy_2, dy_3)
         else:
             dy_offsets = routing_dy_offsets
