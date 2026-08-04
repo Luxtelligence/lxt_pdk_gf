@@ -1,0 +1,9 @@
+info:
+  path_down_compensation: 7639.801
+  path_down_length: 901.051
+  path_up_compensation: 7639.801
+  path_up_length: 754.151
+  propagation_difference: 0
+name: terminated_mzm_1x2mmi_folded_Boband
+settings:
+  band: oband

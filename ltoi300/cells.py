@@ -2,6 +2,8 @@ import gdsfactory as gf
 
 from _utils.chip_floorplan import chip_frame  # noqa: F401
 from _utils.optical_resonators import ring_resonator as _ring_resonator
+from _utils.Phase_shifters import EO_Phase_shifter as _EO_Phase_shifter
+from _utils.Phase_shifters import TO_phase_shifter as _TO_phase_shifter
 from ltoi300._builders.edge_couplers import (
     build_cband_ltoi300_edge_coupler as _build_cband_ltoi300_edge_coupler,
 )
@@ -31,6 +33,9 @@ from ltoi300._builders.mzms import (
 )
 from ltoi300._builders.mzms import (
     build_unterminated_mzm_oband as _build_unterminated_mzm_oband,
+)
+from ltoi300._builders.mzms import (
+    build_terminated_mzm_folded as _build_terminated_mzm_folded,
 )
 from ltoi300._builders.phase_modulators import (
     build_terminated_eo_phase_shifter_cband as _build_terminated_eo_phase_shifter_cband,
@@ -229,6 +234,73 @@ def terminated_mzm_1x2mmi_oband(
         cpw_pad_params=cpw_pad_params,
         optical_waveguide_params=optical_waveguide_params,
         heater_params=heater_params,
+    )
+
+
+@gf.cell
+def terminated_mzm_1x2mmi_folded(
+    band: str = "oband",
+    vertical_offset: float | None = None,
+    horizontal_offset: float | None = None,
+    **kwargs,
+) -> gf.Component:
+    """Folded terminated MZM with a 1x2 MMI splitter/combiner.
+
+    Supports O-band (1310 nm, xs_rwg700) and C-band (1550 nm, xs_rwg900).
+    ``vertical_offset`` and ``horizontal_offset`` are relative additions on top
+    of the pad-mode-dependent baseline offsets computed by the builder.
+    All remaining keyword arguments are forwarded to ``build_terminated_mzm_folded``.
+    """
+    mmi_cell = mmi1x2_oband() if band == "oband" else mmi1x2_cband()
+    return _build_terminated_mzm_folded(
+        mmi_cell=mmi_cell,
+        band=band,
+        vertical_offset=vertical_offset,
+        horizontal_offset=horizontal_offset,
+        **kwargs,
+    )
+
+
+@gf.cell
+def terminated_mzm_2x2mmi_folded(
+    band: str = "oband",
+    vertical_offset: float | None = None,
+    horizontal_offset: float | None = None,
+    **kwargs,
+) -> gf.Component:
+    """Folded terminated MZM with a 2x2 MMI splitter/combiner.
+
+    Supports O-band (1310 nm, xs_rwg700) and C-band (1550 nm, xs_rwg900).
+    ``vertical_offset`` and ``horizontal_offset`` are relative additions on top
+    of the pad-mode-dependent baseline offsets computed by the builder.
+    All remaining keyword arguments are forwarded to ``build_terminated_mzm_folded``.
+    """
+    mmi_cell = mmi2x2_oband() if band == "oband" else mmi2x2_cband()
+    return _build_terminated_mzm_folded(
+        mmi_cell=mmi_cell,
+        band=band,
+        vertical_offset=vertical_offset,
+        horizontal_offset=horizontal_offset,
+        **kwargs,
+    )
+
+
+@gf.cell
+def terminated_mzm_1x2mmi_folded_oband(
+    band: str = "oband",
+    vertical_offset: float | None = None,
+    horizontal_offset: float | None = None,
+    **kwargs,
+) -> gf.Component:
+    """Convenience alias: folded terminated MZM with a 1x2 MMI for O-band.
+
+    Delegates to ``terminated_mzm_1x2mmi_folded`` with ``band='oband'``.
+    """
+    return terminated_mzm_1x2mmi_folded(
+        band=band,
+        vertical_offset=vertical_offset,
+        horizontal_offset=horizontal_offset,
+        **kwargs,
     )
 
 
@@ -788,6 +860,18 @@ def terminated_eo_phase_shifter_cband(
         cpw_params=cpw_params,
         cpw_pad_params=cpw_pad_params,
     )
+
+
+@gf.cell
+def EO_Phase_shifter(*args, **kwargs) -> gf.Component:
+    """Standalone EO Phase Shifter cell wrapper."""
+    return _EO_Phase_shifter(*args, **kwargs)
+
+
+@gf.cell
+def TO_phase_shifter(*args, **kwargs) -> gf.Component:
+    """Thermo-Optic dual-heater active section cell wrapper."""
+    return _TO_phase_shifter(*args, **kwargs)
 
 
 #####################
