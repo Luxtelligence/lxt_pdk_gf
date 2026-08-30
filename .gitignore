@@ -184,3 +184,6 @@ mmi_test.gds
 
 # Throwaway local-only scripts (not for remote)
 check_pm_vs_mzm.py
+
+# DS_Store
+.DS_Store
