@@ -1,0 +1,30 @@
+info: {}
+name: double_linear_inverse_taper_mirror_CSSxs_swg250_CSExs_r_a101f570
+ports:
+  o1:
+    center:
+    - 30
+    - 0
+    layer: LN_SLAB
+    name: o1
+    orientation: 0
+    port_type: optical
+    width: 0.25
+  o2:
+    center:
+    - -360
+    - 0
+    layer: LN_RIDGE
+    name: o2
+    orientation: 180
+    port_type: optical
+    width: 1
+settings:
+  cross_section_end: xs_rwg1000
+  cross_section_start: xs_swg250
+  input_ext: 30
+  lower_taper_end_width: 2.05
+  lower_taper_length: 120
+  slab_removal_width: 20
+  upper_taper_length: 240
+  upper_taper_start_width: 0.25

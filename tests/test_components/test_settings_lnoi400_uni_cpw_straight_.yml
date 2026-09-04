@@ -1,5 +1,42 @@
 info: {}
 name: uni_cpw_straight_L1000_CSxs_uni_cpw_SW10_GW4_GPW250_BCP_ab5142b1
+ports:
+  bp1:
+    center:
+    - -190
+    - 0
+    layer: TL
+    name: bp1
+    orientation: 180
+    port_type: electrical
+    width: 80
+  bp2:
+    center:
+    - 1190
+    - 0
+    layer: TL
+    name: bp2
+    orientation: 0
+    port_type: electrical
+    width: 80
+  e1:
+    center:
+    - 0
+    - 0
+    layer: TL
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 10
+  e2:
+    center:
+    - 1000
+    - 0
+    layer: TL
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 10
 settings:
   bondpad: CPW_pad_linear
   cross_section: xs_uni_cpw

@@ -1,0 +1,1075 @@
+info: {}
+name: die_phix_rf_X10000_Y5000_N16_NNone_NR6_FP127_PP150_PPG7_45bd75e5
+ports:
+  e1:
+    center:
+    - -3605
+    - -2210
+    layer: TL
+    name: e1
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e10:
+    center:
+    - -2255
+    - -2210
+    layer: TL
+    name: e10
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e100:
+    center:
+    - -3005
+    - 2210
+    layer: TL
+    name: e100
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e101:
+    center:
+    - -3155
+    - 2210
+    layer: TL
+    name: e101
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e102:
+    center:
+    - -3305
+    - 2210
+    layer: TL
+    name: e102
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e103:
+    center:
+    - -3455
+    - 2210
+    layer: TL
+    name: e103
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e104:
+    center:
+    - -3605
+    - 2210
+    layer: TL
+    name: e104
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e11:
+    center:
+    - -2105
+    - -2210
+    layer: TL
+    name: e11
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e12:
+    center:
+    - -1955
+    - -2210
+    layer: TL
+    name: e12
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e13:
+    center:
+    - -1805
+    - -2210
+    layer: TL
+    name: e13
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e14:
+    center:
+    - -1655
+    - -2210
+    layer: TL
+    name: e14
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e15:
+    center:
+    - -1505
+    - -2210
+    layer: TL
+    name: e15
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e16:
+    center:
+    - -1355
+    - -2210
+    layer: TL
+    name: e16
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e17:
+    center:
+    - -1205
+    - -2210
+    layer: TL
+    name: e17
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e18:
+    center:
+    - -1055
+    - -2210
+    layer: TL
+    name: e18
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e19:
+    center:
+    - -905
+    - -2210
+    layer: TL
+    name: e19
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e2:
+    center:
+    - -3455
+    - -2210
+    layer: TL
+    name: e2
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e20:
+    center:
+    - -755
+    - -2210
+    layer: TL
+    name: e20
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e21:
+    center:
+    - -605
+    - -2210
+    layer: TL
+    name: e21
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e22:
+    center:
+    - -455
+    - -2210
+    layer: TL
+    name: e22
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e23:
+    center:
+    - -305
+    - -2210
+    layer: TL
+    name: e23
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e24:
+    center:
+    - -155
+    - -2210
+    layer: TL
+    name: e24
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e25:
+    center:
+    - -5
+    - -2210
+    layer: TL
+    name: e25
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e26:
+    center:
+    - 145
+    - -2210
+    layer: TL
+    name: e26
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e27:
+    center:
+    - 295
+    - -2210
+    layer: TL
+    name: e27
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e28:
+    center:
+    - 445
+    - -2210
+    layer: TL
+    name: e28
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e29:
+    center:
+    - 595
+    - -2210
+    layer: TL
+    name: e29
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e3:
+    center:
+    - -3305
+    - -2210
+    layer: TL
+    name: e3
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e30:
+    center:
+    - 745
+    - -2210
+    layer: TL
+    name: e30
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e31:
+    center:
+    - 895
+    - -2210
+    layer: TL
+    name: e31
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e32:
+    center:
+    - 1045
+    - -2210
+    layer: TL
+    name: e32
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e33:
+    center:
+    - 1195
+    - -2210
+    layer: TL
+    name: e33
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e34:
+    center:
+    - 1345
+    - -2210
+    layer: TL
+    name: e34
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e35:
+    center:
+    - 1495
+    - -2210
+    layer: TL
+    name: e35
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e36:
+    center:
+    - 1645
+    - -2210
+    layer: TL
+    name: e36
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e37:
+    center:
+    - 1795
+    - -2210
+    layer: TL
+    name: e37
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e38:
+    center:
+    - 1945
+    - -2210
+    layer: TL
+    name: e38
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e39:
+    center:
+    - 2095
+    - -2210
+    layer: TL
+    name: e39
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e4:
+    center:
+    - -3155
+    - -2210
+    layer: TL
+    name: e4
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e40:
+    center:
+    - 2245
+    - -2210
+    layer: TL
+    name: e40
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e41:
+    center:
+    - 2395
+    - -2210
+    layer: TL
+    name: e41
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e42:
+    center:
+    - 2545
+    - -2210
+    layer: TL
+    name: e42
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e43:
+    center:
+    - 2695
+    - -2210
+    layer: TL
+    name: e43
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e44:
+    center:
+    - 2845
+    - -2210
+    layer: TL
+    name: e44
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e45:
+    center:
+    - 2995
+    - -2210
+    layer: TL
+    name: e45
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e46:
+    center:
+    - 3145
+    - -2210
+    layer: TL
+    name: e46
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e47:
+    center:
+    - 3295
+    - -2210
+    layer: TL
+    name: e47
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e48:
+    center:
+    - 3445
+    - -2210
+    layer: TL
+    name: e48
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e49:
+    center:
+    - 3595
+    - -2210
+    layer: TL
+    name: e49
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e5:
+    center:
+    - -3005
+    - -2210
+    layer: TL
+    name: e5
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e50:
+    center:
+    - -4850
+    - 1800
+    layer: TL
+    name: e50
+    orientation: 0
+    port_type: electrical
+    width: 100
+  e51:
+    center:
+    - -4850
+    - 1080
+    layer: TL
+    name: e51
+    orientation: 0
+    port_type: electrical
+    width: 100
+  e52:
+    center:
+    - -4850
+    - 360
+    layer: TL
+    name: e52
+    orientation: 0
+    port_type: electrical
+    width: 100
+  e53:
+    center:
+    - -4850
+    - -360
+    layer: TL
+    name: e53
+    orientation: 0
+    port_type: electrical
+    width: 100
+  e54:
+    center:
+    - -4850
+    - -1080
+    layer: TL
+    name: e54
+    orientation: 0
+    port_type: electrical
+    width: 100
+  e55:
+    center:
+    - -4850
+    - -1800
+    layer: TL
+    name: e55
+    orientation: 0
+    port_type: electrical
+    width: 100
+  e56:
+    center:
+    - 3595
+    - 2210
+    layer: TL
+    name: e56
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e57:
+    center:
+    - 3445
+    - 2210
+    layer: TL
+    name: e57
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e58:
+    center:
+    - 3295
+    - 2210
+    layer: TL
+    name: e58
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e59:
+    center:
+    - 3145
+    - 2210
+    layer: TL
+    name: e59
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e6:
+    center:
+    - -2855
+    - -2210
+    layer: TL
+    name: e6
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e60:
+    center:
+    - 2995
+    - 2210
+    layer: TL
+    name: e60
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e61:
+    center:
+    - 2845
+    - 2210
+    layer: TL
+    name: e61
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e62:
+    center:
+    - 2695
+    - 2210
+    layer: TL
+    name: e62
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e63:
+    center:
+    - 2545
+    - 2210
+    layer: TL
+    name: e63
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e64:
+    center:
+    - 2395
+    - 2210
+    layer: TL
+    name: e64
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e65:
+    center:
+    - 2245
+    - 2210
+    layer: TL
+    name: e65
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e66:
+    center:
+    - 2095
+    - 2210
+    layer: TL
+    name: e66
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e67:
+    center:
+    - 1945
+    - 2210
+    layer: TL
+    name: e67
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e68:
+    center:
+    - 1795
+    - 2210
+    layer: TL
+    name: e68
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e69:
+    center:
+    - 1645
+    - 2210
+    layer: TL
+    name: e69
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e7:
+    center:
+    - -2705
+    - -2210
+    layer: TL
+    name: e7
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e70:
+    center:
+    - 1495
+    - 2210
+    layer: TL
+    name: e70
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e71:
+    center:
+    - 1345
+    - 2210
+    layer: TL
+    name: e71
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e72:
+    center:
+    - 1195
+    - 2210
+    layer: TL
+    name: e72
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e73:
+    center:
+    - 1045
+    - 2210
+    layer: TL
+    name: e73
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e74:
+    center:
+    - 895
+    - 2210
+    layer: TL
+    name: e74
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e75:
+    center:
+    - 745
+    - 2210
+    layer: TL
+    name: e75
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e76:
+    center:
+    - 595
+    - 2210
+    layer: TL
+    name: e76
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e77:
+    center:
+    - 445
+    - 2210
+    layer: TL
+    name: e77
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e78:
+    center:
+    - 295
+    - 2210
+    layer: TL
+    name: e78
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e79:
+    center:
+    - 145
+    - 2210
+    layer: TL
+    name: e79
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e8:
+    center:
+    - -2555
+    - -2210
+    layer: TL
+    name: e8
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e80:
+    center:
+    - -5
+    - 2210
+    layer: TL
+    name: e80
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e81:
+    center:
+    - -155
+    - 2210
+    layer: TL
+    name: e81
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e82:
+    center:
+    - -305
+    - 2210
+    layer: TL
+    name: e82
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e83:
+    center:
+    - -455
+    - 2210
+    layer: TL
+    name: e83
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e84:
+    center:
+    - -605
+    - 2210
+    layer: TL
+    name: e84
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e85:
+    center:
+    - -755
+    - 2210
+    layer: TL
+    name: e85
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e86:
+    center:
+    - -905
+    - 2210
+    layer: TL
+    name: e86
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e87:
+    center:
+    - -1055
+    - 2210
+    layer: TL
+    name: e87
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e88:
+    center:
+    - -1205
+    - 2210
+    layer: TL
+    name: e88
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e89:
+    center:
+    - -1355
+    - 2210
+    layer: TL
+    name: e89
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e9:
+    center:
+    - -2405
+    - -2210
+    layer: TL
+    name: e9
+    orientation: 90
+    port_type: electrical
+    width: 90
+  e90:
+    center:
+    - -1505
+    - 2210
+    layer: TL
+    name: e90
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e91:
+    center:
+    - -1655
+    - 2210
+    layer: TL
+    name: e91
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e92:
+    center:
+    - -1805
+    - 2210
+    layer: TL
+    name: e92
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e93:
+    center:
+    - -1955
+    - 2210
+    layer: TL
+    name: e93
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e94:
+    center:
+    - -2105
+    - 2210
+    layer: TL
+    name: e94
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e95:
+    center:
+    - -2255
+    - 2210
+    layer: TL
+    name: e95
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e96:
+    center:
+    - -2405
+    - 2210
+    layer: TL
+    name: e96
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e97:
+    center:
+    - -2555
+    - 2210
+    layer: TL
+    name: e97
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e98:
+    center:
+    - -2705
+    - 2210
+    layer: TL
+    name: e98
+    orientation: 270
+    port_type: electrical
+    width: 90
+  e99:
+    center:
+    - -2855
+    - 2210
+    layer: TL
+    name: e99
+    orientation: 270
+    port_type: electrical
+    width: 90
+  o1:
+    center:
+    - 4610
+    - -711
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o10:
+    center:
+    - 4610
+    - 432
+    layer: LN_RIDGE
+    name: o10
+    orientation: 180
+    port_type: optical
+    width: 1
+  o11:
+    center:
+    - 4610
+    - 559
+    layer: LN_RIDGE
+    name: o11
+    orientation: 180
+    port_type: optical
+    width: 1
+  o12:
+    center:
+    - 4610
+    - 686
+    layer: LN_RIDGE
+    name: o12
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 4610
+    - -584
+    layer: LN_RIDGE
+    name: o2
+    orientation: 180
+    port_type: optical
+    width: 1
+  o3:
+    center:
+    - 4610
+    - -457
+    layer: LN_RIDGE
+    name: o3
+    orientation: 180
+    port_type: optical
+    width: 1
+  o4:
+    center:
+    - 4610
+    - -330
+    layer: LN_RIDGE
+    name: o4
+    orientation: 180
+    port_type: optical
+    width: 1
+  o5:
+    center:
+    - 4610
+    - -203
+    layer: LN_RIDGE
+    name: o5
+    orientation: 180
+    port_type: optical
+    width: 1
+  o6:
+    center:
+    - 4610
+    - -76
+    layer: LN_RIDGE
+    name: o6
+    orientation: 180
+    port_type: optical
+    width: 1
+  o7:
+    center:
+    - 4610
+    - 51
+    layer: LN_RIDGE
+    name: o7
+    orientation: 180
+    port_type: optical
+    width: 1
+  o8:
+    center:
+    - 4610
+    - 178
+    layer: LN_RIDGE
+    name: o8
+    orientation: 180
+    port_type: optical
+    width: 1
+  o9:
+    center:
+    - 4610
+    - 305
+    layer: LN_RIDGE
+    name: o9
+    orientation: 180
+    port_type: optical
+    width: 1
+settings:
+  cross_section: xs_rwg1000
+  edge_coupler: double_linear_inverse_taper_mirror
+  edge_coupler_keepout: 1200
+  edge_to_pad_distance: 200
+  fiber_coupler_xoffset: 0
+  fiber_pitch: 127
+  layer_fiducial: LN_RIDGE
+  layer_ruler: LN_RIDGE
+  nfibers: 16
+  npads_rf: 6
+  pad: pad
+  pad_gsg: pad_gsg
+  pad_pitch: 150
+  pad_pitch_gsg: 720
+  pad_port_name_bot: e2
+  pad_port_name_top: e4
+  ruler_xoffset: 0
+  ruler_yoffset: 0
+  text: text_rectangular
+  text_offset:
+  - -40
+  - 20
+  with_left_fiber_coupler: false
+  with_right_fiber_coupler: true
+  xoffset_dc_pads: -100
+  xsize: 10000
+  ysize: 5000

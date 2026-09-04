@@ -196,7 +196,7 @@ def bonding_pads_exclusion_path(
     return path_upper, path_lower, section_gap_upper, section_gap_lower
 
 
-@gf.cell
+@gf.cell(tags=["gsg_rf"])
 def via_array(
     cpw_xs: CrossSection,
     layer_openings: LayerSpec,
@@ -361,7 +361,7 @@ def via_array(
     return c_rounded
 
 
-@gf.cell
+@gf.cell(tags=["gsg_rf"])
 def via_solid(
     cpw_xs: CrossSection,
     layer_openings: LayerSpec,
@@ -466,7 +466,7 @@ def via_solid(
     return c_rounded
 
 
-@gf.cell
+@gf.cell(tags=["gsg_rf"])
 def m2_bonding_pads(
     pad_xs: CrossSection,
     layer_m2: LayerSpec,
@@ -555,7 +555,7 @@ def m2_bonding_pads(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["gsg_rf"])
 def termination_wire(
     cpw_xs: CrossSection,
     termination_layer: LayerSpec,
@@ -652,7 +652,7 @@ def termination_wire(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["gsg_rf"])
 def double_layer_termination(
     cpw_xs: CrossSection,
     termination_layer: LayerSpec,
@@ -668,7 +668,15 @@ def double_layer_termination(
         cpw_xs: CPW cross-section of the line to be terminated
         termination_layer: High-resistivity layer of the termination wire
         m2_layer: M2 layer of the termination wire
-        effective_length: Effective length of the termination wire corresponding to a single termination resistor equivalent circuit.
+        m2_pad_length: Length (um) of the straight M2 CPW pad placed between
+            the two via stacks
+        termination_params: Settings forwarded to `termination_wire`, with keys
+            effective_length, resistor_width, hr_layer_offset and hr_pad_length
+        via_m1_m2_params: Settings for the CPW-to-M2 via stack. "type" picks
+            `via_array` or `via_solid`; the remaining keys are layer_openings,
+            opening_offset, opening_size, opening_separation and width
+        via_m2_hr_params: Same settings for the M2-to-high-resistivity via
+            stack, built on the termination-layer cross-section
     """
     if termination_params is None:
         termination_params = {
@@ -918,7 +926,7 @@ def gsg_pad_curved(
     return c, pad_xs, path_upper, path_lower
 
 
-@gf.cell
+@gf.cell(tags=["gsg_rf"])
 def cpw_pad(
     cpw_xs: CrossSectionSpec,
     pitch: float = 100.0,
@@ -944,6 +952,9 @@ def cpw_pad(
         m2_bonding_pads_params: optional parameters for `m2_bonding_pads`.
             When provided, `layer_M2` and `layer_Openings` are required keys.
             Other keys are optional and default to `m2_bonding_pads` defaults.
+        single_waveguide: if True only the upper optical waveguide is drawn
+            (ports o1 and o2). Otherwise the lower waveguide is added too,
+            exposing ports o3 and o4.
     """
 
     pad = gf.Component()
@@ -1027,7 +1038,7 @@ def cpw_pad(
     return pad
 
 
-@gf.cell()
+@gf.cell(tags=["gsg_rf"])
 def straight_cpw(
     cpw_xs: CrossSectionSpec,
     modulation_length: float = 1000.0,
@@ -1102,7 +1113,7 @@ def straight_cpw(
     return cpw
 
 
-@gf.cell()
+@gf.cell(tags=["gsg_rf"])
 def trail_cpw(
     cpw_xs: CrossSectionSpec,
     modulation_length: float = 3000.0,
@@ -1314,7 +1325,7 @@ def trail_cpw(
     return cpw
 
 
-@gf.cell()
+@gf.cell(tags=["gsg_rf"])
 def modulation_waveguide(
     modulation_xs: CrossSection,
     terminal_xs: CrossSection,

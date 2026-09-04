@@ -57,20 +57,16 @@ def slab_etch_cross_section(
         width: main Section width (um).
         offset: main Section center offset (um).
         layer: main section layer.
+        width_function: optional f(t) returning the main Section width (um) as \
+                a function of the normalized path coordinate t in [0, 1]. \
+                When given it tapers the section instead of the constant width.
         sections: list of Sections(width, offset, layer, ports).
         port_names: for input and output ('o1', 'o2').
         port_types: for input and output: electrical, optical, vertical_te ...
         bbox_layers: list of layers bounding boxes to extrude.
         bbox_offsets: list of offset from bounding box edge.
-        cladding_layers: list of layers to extrude.
-        cladding_offsets: list of offset from main Section edge.
-        cladding_simplify: Optional Tolerance value for the simplification algorithm. \
-                All points that can be removed without changing the resulting. \
-                polygon by more than the value listed here will be removed.
-        cladding_centers: center offset for each cladding layer. Defaults to 0.
         radius: routing bend radius (um).
         radius_min: min acceptable bend radius.
-        main_section_name: name of the main section. Defaults to _default
 
     .. plot::
         :include-source:
@@ -126,6 +122,9 @@ def partial_etch_cross_section(
 
     Args:
         width: main Section width (um).
+        width_function: optional f(t) returning the ridge width (um) as a \
+                function of the normalized path coordinate t in [0, 1]. The \
+                slab follows it offset by 2 * slab_offset.
         offset: main Section center offset (um).
         layer: main section layer.
         sections: list of Sections(width, offset, layer, ports).
@@ -133,15 +132,14 @@ def partial_etch_cross_section(
         port_types: for input and output: electrical, optical, vertical_te ...
         bbox_layers: list of layers bounding boxes to extrude.
         bbox_offsets: list of offset from bounding box edge.
-        cladding_layers: list of layers to extrude.
-        cladding_offsets: list of offset from main Section edge.
-        cladding_simplify: Optional Tolerance value for the simplification algorithm. \
-                All points that can be removed without changing the resulting. \
-                polygon by more than the value listed here will be removed.
-        cladding_centers: center offset for each cladding layer. Defaults to 0.
+        slab_layer: layer of the slab section surrounding the ridge.
+        slab_offset: how far the slab extends beyond each side of the ridge \
+                (um), so the slab width is width + 2 * slab_offset.
+        slab_simplify: tolerance (um) for the slab polygon simplification. \
+                All points that can be removed without moving the resulting \
+                polygon by more than this value will be removed.
         radius: routing bend radius (um).
         radius_min: min acceptable bend radius.
-        main_section_name: name of the main section. Defaults to _default
 
     .. plot::
         :include-source:
@@ -153,8 +151,7 @@ def partial_etch_cross_section(
         c = p.extrude(xs)
         c.plot()
 
-    .. code::
-
+    ```
 
            ┌────────────────────────────────────────────────────────────┐
            │                                                            │
@@ -180,6 +177,7 @@ def partial_etch_cross_section(
            │                                                            │
            │                                                            │
            └────────────────────────────────────────────────────────────┘
+    ```
     """
     section_list: list[Section] = list(sections or [])
 

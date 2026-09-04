@@ -1,0 +1,25 @@
+site_name: Luxtelligence gdsfactory PDK
+docs_dir: docs
+site_dir: build/pdf
+nav:
+  - Home: index.md
+  - Reference:
+      - Cells Lnoi400: cells_lnoi400.md
+      - Cells Ltoi300: cells_ltoi300.md
+      - Changelog: changelog.md
+plugins:
+  - search
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_root_toc_entry: false
+            show_source: false
+  - with-pdf:
+      author: GDSFactory
+      cover_subtitle: Photonics Process Design Kit
+      output_path: ../../docs.pdf
+theme:
+  name: material

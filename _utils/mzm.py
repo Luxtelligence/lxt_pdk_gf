@@ -9,7 +9,7 @@ from _utils.cross_section import get_cpw_from_xs
 from _utils.gsg_rf import cpw_pad, get_pad_xs, straight_cpw, trail_cpw
 
 
-@gf.cell
+@gf.cell(tags=["mzm"])
 def optical_combiner_direct(
     optical_xs: CrossSection,
     cpw_xs: CrossSection,
@@ -238,7 +238,7 @@ def optical_combiner_direct(
     return combiner
 
 
-@gf.cell
+@gf.cell(tags=["mzm"])
 def base_mzm(
     optical_xs: CrossSectionSpec,
     cpw_xs: CrossSectionSpec,

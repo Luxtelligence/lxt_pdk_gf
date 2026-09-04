@@ -1,5 +1,42 @@
 info: {}
 name: unterminated_eo_phase_shifter_cband_ML5000_RG5p5_RCCW16_GP100
+ports:
+  e1:
+    center:
+    - -300
+    - 0
+    layer: M2
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 74.42
+  e2:
+    center:
+    - 5300
+    - 0
+    layer: M2
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 74.42
+  o1:
+    center:
+    - -175
+    - 50
+    layer: LT_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.9
+  o2:
+    center:
+    - 5175
+    - 50
+    layer: LT_RIDGE
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 0.9
 settings:
   gsg_pitch: 100
   modulation_length: 5000

@@ -1,0 +1,32 @@
+[project]
+docs_dir = "."
+nav = [
+  {"Home" = "index.md"},
+  {"Reference" = [
+    {"Cells Lnoi400" = "cells_lnoi400.md"},
+    {"Cells Ltoi300" = "cells_ltoi300.md"},
+    {"Changelog" = "changelog.md"}
+  ]}
+]
+site_dir = "_build/html"
+site_name = "Luxtelligence gdsfactory PDK"
+site_url = "https://gdsfactory.github.io/lxt_pdk_gf"
+
+[project.markdown_extensions.pymdownx.snippets]
+
+[project.plugins.autorefs]
+
+[project.plugins.mkdocstrings]
+
+[project.plugins.mkdocstrings.handlers.python]
+
+[project.plugins.mkdocstrings.handlers.python.options]
+docstring_style = "google"
+force_inspection = true
+show_root_toc_entry = false
+show_source = false
+
+[project.plugins.search]
+
+[project.theme]
+name = "material"
