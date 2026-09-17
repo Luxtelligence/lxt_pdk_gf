@@ -884,7 +884,7 @@ def ring_resonator_multimode_point_coupler_cband(
 def directional_coupler_50_50_cband() -> gf.Component:
     """Returns a balanced 50:50 C-band directional coupler for the LTOI300 process.
 
-    The central straight length is set to 38.87 / 2 µm for equal power splitting.
+    The central straight length is set for equal power splitting.
     """
     return _build_cband_ltoi300_directional_coupler(
         central_straight_length=42.0,
@@ -894,6 +894,7 @@ def directional_coupler_50_50_cband() -> gf.Component:
 @gf.cell
 def directional_coupler_5_95_cband() -> gf.Component:
     """Returns a 5:95 C-band directional coupler for the LTOI300 process.
+    95 % power on the thru port and 5% power on the cross port.
 
     The central straight length is set to 10 µm for a 5:95 power splitting ratio.
     """
