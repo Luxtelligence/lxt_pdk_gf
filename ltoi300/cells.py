@@ -2,11 +2,20 @@ import gdsfactory as gf
 
 from _utils.chip_floorplan import chip_frame  # noqa: F401
 from _utils.optical_resonators import ring_resonator as _ring_resonator
+from ltoi300._builders.directional_couplers import (
+    build_cband_ltoi300_directional_coupler as _build_cband_ltoi300_directional_coupler,
+)
 from ltoi300._builders.edge_couplers import (
     build_cband_ltoi300_edge_coupler as _build_cband_ltoi300_edge_coupler,
 )
 from ltoi300._builders.edge_couplers import (
     build_oband_ltoi300_edge_coupler as _build_oband_ltoi300_edge_coupler,
+)
+from ltoi300._builders.grating_couplers import (
+    gc_lt300_cband as _gc_lt300_cband,
+)
+from ltoi300._builders.grating_couplers import (
+    gc_lt300_oband as _gc_lt300_oband,
 )
 from ltoi300._builders.mmis import (
     build_mmi1x2_cband as _build_mmi1x2_cband,
@@ -44,6 +53,9 @@ from ltoi300._builders.phase_modulators import (
 from ltoi300._builders.phase_modulators import (
     build_unterminated_eo_phase_shifter_oband as _build_unterminated_eo_phase_shifter_oband,
 )
+from ltoi300._builders.polarisation_rotator_splitter import (
+    polarisation_splitter_rotator as _polarisation_splitter_rotator,
+)
 from ltoi300._builders.straights import (
     build_straight_rwg700 as _build_straight_rwg700,
 )
@@ -53,11 +65,28 @@ from ltoi300._builders.straights import (
 from ltoi300._builders.straights import (
     build_straight_rwg2500 as _build_straight_rwg2500,
 )
+from ltoi300._builders.waveguide_crossing_ltoi300_cband import (
+    waveguide_crossing_cband as _waveguide_crossing_cband,
+)
+from ltoi300._builders.waveguide_crossing_ltoi300_oband import (
+    waveguide_crossing_oband as _waveguide_crossing_oband,
+)
 from ltoi300.tech import xs_rwg700, xs_rwg900
 
 ############################################
 ############# O-band cells #################
 ############################################
+
+##########################
+# Grating couplers
+##########################
+
+
+@gf.cell
+def grating_coupler_oband() -> gf.Component:
+    """Returns a standard O-band grating coupler optimised for the LTOI300 process (1310 nm)."""
+    return _gc_lt300_oband()
+
 
 ################
 # Straights
@@ -479,6 +508,17 @@ def ring_resonator_multimode_point_coupler_oband(
 ############################################
 
 
+##########################
+# Grating couplers
+##########################
+
+
+@gf.cell
+def grating_coupler_cband() -> gf.Component:
+    """Returns a standard C-band grating coupler optimised for the LTOI300 process (1550 nm)."""
+    return _gc_lt300_cband()
+
+
 ################
 # Straights
 ################
@@ -833,6 +873,70 @@ def ring_resonator_multimode_point_coupler_cband(
         bus_xs=xs_rwg900(),
         ring_xs=xs_rwg900(width=ring_width),
     )
+
+
+##########################
+# Directional couplers
+##########################
+
+
+@gf.cell
+def directional_coupler_50_50_cband() -> gf.Component:
+    """Returns a balanced 50:50 C-band directional coupler for the LTOI300 process.
+
+    The central straight length is set to 38.87 / 2 µm for equal power splitting.
+    """
+    return _build_cband_ltoi300_directional_coupler(
+        central_straight_length=38.87 / 2,
+    )
+
+
+@gf.cell
+def directional_coupler_5_95_cband() -> gf.Component:
+    """Returns a 5:95 C-band directional coupler for the LTOI300 process.
+
+    The central straight length is set to 10 µm for a 5:95 power splitting ratio.
+    """
+    return _build_cband_ltoi300_directional_coupler(
+        central_straight_length=10,
+    )
+
+
+##########################
+# Waveguide crossings
+##########################
+
+
+@gf.cell
+def waveguide_crossing_cband() -> gf.Component:
+    """Returns a C-band waveguide crossing with tapered intersection for the LTOI300 process."""
+    return _waveguide_crossing_cband()
+
+
+@gf.cell
+def waveguide_crossing_oband() -> gf.Component:
+    """Returns an O-band waveguide crossing with tapered intersection for the LTOI300 process."""
+    return _waveguide_crossing_oband()
+
+
+##################################
+# Polarisation splitter-rotator
+##################################
+
+
+@gf.cell
+def polarisation_splitter_rotator() -> gf.Component:
+    """Returns a C-band polarisation splitter-rotator (PSR) for the LTOI300 process.
+
+    Converts the TM input mode to TE and routes the two polarisations to
+    separate output ports.
+
+    Ports:
+        o1 — input        (west, 0.9 µm xs_rwg900)
+        o2 — cross output (east, 0.9 µm xs_rwg900) — converted TM→TE
+        o3 — thru  output (east, 0.9 µm xs_rwg900) — residual TE
+    """
+    return _polarisation_splitter_rotator()
 
 
 if __name__ == "__main__":
