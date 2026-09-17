@@ -65,6 +65,8 @@ def bend_S_spline_varying_width(
     cross_section2: CrossSectionSpec = None,
     npoints: int = 201,
     path_method=spline_null_curvature,
+    layer_ridge: str = "LN_RIDGE",
+    layer_slab: str = "LN_SLAB",
 ) -> gf.Component:
     """
     A spline bend merging a vertical offset.
@@ -73,28 +75,32 @@ def bend_S_spline_varying_width(
     """
 
     if not cross_section1:
+        ridge_layer = gf.get_layer(layer_ridge)
+        slab_layer = gf.get_layer(layer_slab)
         s0 = gf.Section(
             width=0.2,
             offset=0,
-            layer="LN_RIDGE",
-            name="_default",
+            layer=ridge_layer,
+            name="RIDGE",
             port_names=("o1", "o2"),
         )
         s1 = gf.Section(
-            width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03
+            width=10.0, offset=0, layer=slab_layer, name="SLAB", simplify=0.03
         )
         cross_section1 = gf.CrossSection(sections=[s0, s1])
 
     if not cross_section2:
+        ridge_layer = gf.get_layer(layer_ridge)
+        slab_layer = gf.get_layer(layer_slab)
         s0 = gf.Section(
             width=0.3,
             offset=0,
-            layer="LN_RIDGE",
-            name="_default",
+            layer=ridge_layer,
+            name="RIDGE",
             port_names=("o1", "o2"),
         )
         s1 = gf.Section(
-            width=10.0, offset=0, layer="LN_SLAB", name="slab", simplify=0.03
+            width=10.0, offset=0, layer=slab_layer, name="SLAB", simplify=0.03
         )
         cross_section2 = gf.CrossSection(sections=[s0, s1])
 

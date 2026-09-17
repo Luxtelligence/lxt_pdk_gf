@@ -887,7 +887,7 @@ def directional_coupler_50_50_cband() -> gf.Component:
     The central straight length is set to 38.87 / 2 µm for equal power splitting.
     """
     return _build_cband_ltoi300_directional_coupler(
-        central_straight_length=38.87 / 2,
+        central_straight_length=42.0,
     )
 
 
@@ -898,7 +898,7 @@ def directional_coupler_5_95_cband() -> gf.Component:
     The central straight length is set to 10 µm for a 5:95 power splitting ratio.
     """
     return _build_cband_ltoi300_directional_coupler(
-        central_straight_length=10,
+        central_straight_length=19.435,
     )
 
 
