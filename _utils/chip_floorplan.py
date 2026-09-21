@@ -1,7 +1,7 @@
 import gdsfactory as gf
 
 
-@gf.cell
+@gf.cell(tags=["chip_floorplan"])
 def chip_frame(
     size: tuple[float, float] = (10_000, 5000),
     exclusion_zone_width: float = 50,
@@ -10,6 +10,11 @@ def chip_frame(
     chip_exclusion_zone_layer: tuple[int, int] = (6, 1),
 ) -> gf.Component:
     """Provide the chip extent and the exclusion zone around the chip frame.
+
+    @tags lnoi400-chip-edge
+
+    The outside edge of chip_exclusion_zone_layer (6/1) is the physical chip
+    edge. chip_contour_layer (6/0) is a separate design contour, not the facet.
     In the exclusion zone, only the edge couplers routing to the chip facet should be placed.
     Allowed chip dimensions (in either direction): 5000 um, 10000 um, 20000 um."""
 

@@ -1,5 +1,24 @@
 info: {}
 name: ring_resonator_multimode_point_coupler_cband_RR200_RW1p_a81346be
+ports:
+  o1:
+    center:
+    - 202.4
+    - -200
+    layer: LT_RIDGE
+    name: o1
+    orientation: 270
+    port_type: optical
+    width: 0.9
+  o2:
+    center:
+    - 202.4
+    - 200
+    layer: LT_RIDGE
+    name: o2
+    orientation: 90
+    port_type: optical
+    width: 0.9
 settings:
   gap: 1.2
   ring_radius: 200

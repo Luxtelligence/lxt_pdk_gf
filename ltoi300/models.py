@@ -596,8 +596,11 @@ def _ring_resonator_single_mode_cband(
 
     Args:
         wl: wavelength in um.
-        radius: radius of the ring in um.
-        length: length of the ring in um.
+        ring_radius: radius of the ring in um.
+        loss_dB_cm: propagation loss of the ring waveguide in dB/cm.
+        wl0: center wavelength in um.
+        neff: effective index at center wavelength.
+        ng: group index at center wavelength.
     """
 
     circumference = 2 * np.pi * ring_radius

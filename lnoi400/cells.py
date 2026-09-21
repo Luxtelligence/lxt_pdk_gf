@@ -3,9 +3,18 @@ from functools import partial
 import gdsfactory as gf
 import numpy as np
 from gdsfactory.routing import route_quad
-from gdsfactory.typings import ComponentSpec, CrossSectionSpec
+from gdsfactory.typings import (
+    AngleInDegrees,
+    ComponentSpec,
+    CrossSectionSpec,
+    Float2,
+    Ints,
+    LayerSpec,
+    LayerSpecs,
+    Size,
+)
 
-from _utils.chip_floorplan import chip_frame  # noqa: F401
+from _utils.chip_floorplan import chip_frame
 from _utils.spline import (
     bend_S_spline,
     bend_S_spline_varying_width,
@@ -14,6 +23,7 @@ from _utils.spline import (
 from lnoi400._builders.grating_couplers import (
     build_gc_focusing_1550 as _build_gc_focusing_1550,
 )
+from lnoi400.mzm_with_pads import mzm_with_pads  # noqa: F401
 from lnoi400.tech import LAYER, xs_uni_cpw
 
 ################
@@ -21,12 +31,18 @@ from lnoi400.tech import LAYER, xs_uni_cpw
 ################
 
 
-@gf.cell
-def _straight(
+@gf.cell(tags=["cells"])
+def straight(
     length: float = 10.0,
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
+    """_straight.
+
+    Args:
+        length: 10.0.
+        cross_section: "xs_rwg1000".
+    """
     return gf.components.straight(
         length=length,
         cross_section=cross_section,
@@ -34,9 +50,32 @@ def _straight(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
+def _straight(
+    length: float = 10.0,
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    **kwargs,
+) -> gf.Component:
+    """_straight.
+
+    Args:
+        length: 10.0.
+        cross_section: "xs_rwg1000".
+    """
+    return gf.components.straight(
+        length=length,
+        cross_section=cross_section,
+        **kwargs,
+    )
+
+
+@gf.cell(tags=["cells"])
 def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
-    """Straight single-mode waveguide."""
+    """Straight single-mode waveguide.
+
+    Args:
+        length: 10.0.
+    """
     if "cross_section" not in kwargs:
         kwargs["cross_section"] = "xs_rwg1000"
     return _straight(
@@ -45,9 +84,13 @@ def straight_rwg1000(length: float = 10.0, **kwargs) -> gf.Component:
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
-    """Straight multimode waveguide."""
+    """Straight multimode waveguide.
+
+    Args:
+        length: 10.0.
+    """
     if "cross_section" not in kwargs:
         kwargs["cross_section"] = "xs_rwg3000"
     return _straight(
@@ -61,7 +104,41 @@ def straight_rwg3000(length: float = 10.0, **kwargs) -> gf.Component:
 ##########
 
 
-@gf.cell
+@gf.cell(tags=["waveguides"])
+def bend_euler(
+    radius: float | None = 80,
+    angle: float = 90,
+    p: float = 0.5,
+    width: float | None = None,
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    allow_min_radius_violation: bool = False,
+    with_arc_floorplan: bool = True,
+) -> gf.Component:
+    """Regular degree euler bend.
+
+    Args:
+        radius: in um. Defaults to cross_section_radius.
+        angle: total angle of the curve.
+        p: Proportion of the curve that is an Euler curve.
+        width: width to use. Defaults to cross_section.width.
+        cross_section: specification (CrossSection, string, CrossSectionFactory dict).
+        allow_min_radius_violation: if True allows radius to be smaller than cross_section radius.
+        with_arc_floorplan: if True the size of the bend will be adjusted to match an arc bend with the specified radius. If False: `radius` is the minimum radius of curvature.
+    """
+    return gf.c.bend_euler(
+        radius=radius,
+        angle=angle,
+        p=p,
+        width=width,
+        cross_section=cross_section,
+        allow_min_radius_violation=allow_min_radius_violation,
+        with_arc_floorplan=with_arc_floorplan,
+        npoints=None,
+        layer=None,
+    )
+
+
+@gf.cell(tags=["cells"])
 def L_turn_bend(
     radius: float = 80.0,
     p: float = 1.0,
@@ -72,6 +149,12 @@ def L_turn_bend(
     """
     A 90-degrees bend following an Euler path, with linearly-varying curvature
     (increasing and decreasing).
+
+    Args:
+        radius: 80.0.
+        p: 1.0.
+        with_arc_floorplan: True.
+        cross_section: "xs_rwg1000".
     """
 
     npoints = int(np.round(200 * radius / 80.0))
@@ -91,7 +174,7 @@ def L_turn_bend(
 # TODO: inquire about meaning of bend_points_distance in relation with Euler bends
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def U_bend_racetrack(
     v_offset: float = 90.0,
     p: float = 1.0,
@@ -99,7 +182,14 @@ def U_bend_racetrack(
     cross_section: CrossSectionSpec = "xs_rwg3000",
     **kwargs,
 ) -> gf.Component:
-    """A U-bend with fixed cross-section and dimensions, suitable for building a low-loss racetrack resonator."""
+    """A U-bend with fixed cross-section and dimensions, suitable for building a low-loss racetrack resonator.
+
+    Args:
+        v_offset: 90.0.
+        p: 1.0.
+        with_arc_floorplan: True.
+        cross_section: "xs_rwg3000".
+    """
 
     radius = 0.5 * v_offset
 
@@ -117,14 +207,21 @@ def U_bend_racetrack(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def S_bend_vert(
     v_offset: float = 25.0,
     h_extent: float = 100.0,
     dx_straight: float = 5.0,
     cross_section: CrossSectionSpec = "xs_rwg1000",
 ) -> gf.Component:
-    """A spline bend that bridges a vertical displacement."""
+    """A spline bend that bridges a vertical displacement.
+
+    Args:
+        v_offset: 25.0.
+        h_extent: 100.0.
+        dx_straight: 5.0.
+        cross_section: "xs_rwg1000".
+    """
 
     if np.abs(v_offset) < 10.0:
         raise ValueError(
@@ -157,12 +254,38 @@ def S_bend_vert(
     return bend_cell
 
 
+@gf.cell(tags=["waveguides"])
+def bend_s(
+    size: Size = (11.0, 1.8),
+    npoints: int = 99,
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    allow_min_radius_violation: bool = False,
+    width: float | None = None,
+) -> gf.Component:
+    """Return S bend with bezier curve.
+
+    Args:
+        size: in x and y direction.
+        npoints: number of points.
+        cross_section: specification (CrossSection, string, CrossSectionFactory dict).
+        allow_min_radius_violation: if True allows radius to be smaller than cross_section radius.
+        width: width to use. Defaults to cross_section.width.
+    """
+    return gf.c.bend_s(
+        size=size,
+        npoints=npoints,
+        cross_section=cross_section,
+        allow_min_radius_violation=allow_min_radius_violation,
+        width=width,
+    )
+
+
 ################
 # MMIs
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi1x2_optimized1550(
     width_mmi: float = 6.0,
     length_mmi: float = 26.75,
@@ -172,7 +295,16 @@ def mmi1x2_optimized1550(
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
-    """MMI1x2 with layout optimized for maximum transmission at 1550 nm."""
+    """MMI1x2 with layout optimized for maximum transmission at 1550 nm.
+
+    Args:
+        width_mmi: 6.0.
+        length_mmi: 26.75.
+        width_taper: 1.5.
+        length_taper: 25.0.
+        port_ratio: 0.55.
+        cross_section: "xs_rwg1000".
+    """
 
     gap_mmi = (
         port_ratio * width_mmi - width_taper
@@ -189,7 +321,7 @@ def mmi1x2_optimized1550(
     )
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mmi2x2optimized1550(
     width_mmi: float = 5.0,
     length_mmi: float = 76.5,
@@ -199,7 +331,16 @@ def mmi2x2optimized1550(
     cross_section: CrossSectionSpec = "xs_rwg1000",
     **kwargs,
 ) -> gf.Component:
-    """MMI2x2 with layout optimized for maximum transmission at 1550 nm."""
+    """MMI2x2 with layout optimized for maximum transmission at 1550 nm.
+
+    Args:
+        width_mmi: 5.0.
+        length_mmi: 76.5.
+        width_taper: 1.5.
+        length_taper: 25.0.
+        port_ratio: 0.7.
+        cross_section: "xs_rwg1000".
+    """
 
     gap_mmi = (
         port_ratio * width_mmi - width_taper
@@ -223,7 +364,7 @@ mmi2x2_optimized1550 = mmi2x2optimized1550
 #####################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def directional_coupler_balanced(
     io_wg_sep: float = 30.6,
     sbend_length: float = 58,
@@ -321,7 +462,7 @@ def directional_coupler_balanced(
 ################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def double_linear_inverse_taper(
     cross_section_start: CrossSectionSpec = "xs_swg250",
     cross_section_end: CrossSectionSpec = "xs_rwg1000",
@@ -332,8 +473,25 @@ def double_linear_inverse_taper(
     slab_removal_width: float = 20.0,
     input_ext: float = 0.0,
 ) -> gf.Component:
-    """Inverse taper with two layers, starting from a wire waveguide at the facet
-    and transitioning to a rib waveguide. The tapering profile is linear in both layers."""
+    """Inverse taper from a wire waveguide at the facet to a rib waveguide.
+
+    @tags lnoi400-chip-edge
+
+    When placed at a chip edge, use input_ext=10 for singulation without
+    polishing or approximately 30 for polishing. Place the tip 5 um outside
+    layer 6/1 independently of input_ext; layer 6/0 does not define the facet.
+
+    Args:
+        cross_section_start: "xs_swg250".
+        cross_section_end: "xs_rwg1000".
+        lower_taper_length: 120.0.
+        lower_taper_end_width: 2.05.
+        upper_taper_start_width: 0.25.
+        upper_taper_length: 240.0.
+        slab_removal_width: 20.0.
+        input_ext: Constant-width straight tip length in um. The primitive
+            default is zero; chip-edge singulation requires at least 10 um.
+    """
 
     lower_taper_start_width = gf.get_cross_section(cross_section_start).width
     upper_taper_end_width = gf.get_cross_section(cross_section_end).width
@@ -411,12 +569,57 @@ def double_linear_inverse_taper(
     return double_taper
 
 
+@gf.cell(tags=["cells"])
+def double_linear_inverse_taper_mirror(
+    cross_section_start: CrossSectionSpec = "xs_swg250",
+    cross_section_end: CrossSectionSpec = "xs_rwg1000",
+    lower_taper_length: float = 120.0,
+    lower_taper_end_width: float = 2.05,
+    upper_taper_start_width: float = 0.25,
+    upper_taper_length: float = 240.0,
+    slab_removal_width: float = 20.0,
+    input_ext: float = 10.0,
+) -> gf.Component:
+    """Same as double_linear_inverse_taper, but mirrored so the narrow end is on the right.
+
+    @tags lnoi400-chip-edge
+
+    The default 10 um straight tip supports singulation without polishing.
+    Use approximately 30 um when polishing is planned, keeping the tip 5 um
+    outside layer 6/1. A longer unpolished tip can increase insertion loss
+    through interaction of its large optical mode with silicon.
+
+    Args:
+        cross_section_start: starting cross section.
+        cross_section_end: ending cross section.
+        lower_taper_length: length of the lower taper in um.
+        lower_taper_end_width: end width of the lower taper in um.
+        upper_taper_start_width: start width of the upper taper in um.
+        upper_taper_length: length of the upper taper in um.
+        slab_removal_width: width of the slab removal in um.
+        input_ext: Total constant-width tip length in um, including the 5 um
+            outside the physical chip edge and at least 5 um inside it.
+    """
+
+    c = double_linear_inverse_taper(
+        cross_section_start=cross_section_start,
+        cross_section_end=cross_section_end,
+        lower_taper_length=lower_taper_length,
+        lower_taper_end_width=lower_taper_end_width,
+        upper_taper_start_width=upper_taper_start_width,
+        upper_taper_length=upper_taper_length,
+        slab_removal_width=slab_removal_width,
+        input_ext=input_ext,
+    )
+    return gf.functions.mirror(c)
+
+
 ###################
 # Grating Couplers
 ###################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def gc_focusing_1550(
     sleeve_width: float = 4.5,
     cross_section: CrossSectionSpec = "xs_rwg1000",
@@ -425,6 +628,11 @@ def gc_focusing_1550(
     """Returns a focusing grating coupler for 1550 nm (C-band). The grating is
     optimized for TE polarization and a launch angle in air of 14.5 degrees
     w/r to the surface normal.
+
+    Args:
+        sleeve_width: 4.5.
+        cross_section: "xs_rwg1000".
+        waveguide_length: 10.0.
     """
     return _build_gc_focusing_1550(
         sleeve_width=sleeve_width,
@@ -438,7 +646,7 @@ def gc_focusing_1550(
 ###################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def CPW_pad_linear(
     start_width: float = 80.0,
     length_straight: float = 10.0,
@@ -447,6 +655,14 @@ def CPW_pad_linear(
 ) -> gf.Component:
     """RF access line for high-frequency GSG probes. The probe pad maintains a
     fixed gap/central conductor ratio across its length, to achieve a good
+
+    @tags lnoi400-gsg
+
+    Args:
+        start_width: 80.0.
+        length_straight: 10.0.
+        length_tapered: 190.0.
+        cross_section: "xs_uni_cpw".
     impedance matching."""
 
     xs_cpw = gf.get_cross_section(cross_section)
@@ -513,6 +729,38 @@ def CPW_pad_linear(
         layer="TL",
     )
 
+    # GSG ports at the wide (e1) end
+    gnd_inner = start_width / 2.0 + start_gap
+    gnd_outer = end_width / 2.0 + end_gap + ground_planes_width
+    dbu = 0.001
+    gnd_width = round((gnd_outer - gnd_inner) / (2 * dbu)) * (2 * dbu)
+    gnd_center_y = (gnd_inner + gnd_outer) / 2.0
+
+    pad.add_port(
+        name="S",
+        center=(length_straight, 0.0),
+        width=start_width,
+        orientation=180.0,
+        port_type="electrical",
+        layer="TL",
+    )
+    pad.add_port(
+        name="G_top",
+        center=(length_straight, gnd_center_y),
+        width=gnd_width,
+        orientation=180.0,
+        port_type="electrical",
+        layer="TL",
+    )
+    pad.add_port(
+        name="G_bot",
+        center=(length_straight, -gnd_center_y),
+        width=gnd_width,
+        orientation=180.0,
+        port_type="electrical",
+        layer="TL",
+    )
+
     return pad
 
 
@@ -521,7 +769,7 @@ def CPW_pad_linear(
 ####################
 
 
-@gf.cell()
+@gf.cell(tags=["cells"])
 def uni_cpw_straight(
     length: float = 1000.0,
     cross_section: CrossSectionSpec = "xs_uni_cpw",
@@ -530,7 +778,18 @@ def uni_cpw_straight(
     ground_planes_width: float = 250.0,
     bondpad: ComponentSpec = "CPW_pad_linear",
 ) -> gf.Component:
-    """A CPW transmission line for microwaves, with a uniform cross section."""
+    """A CPW transmission line for microwaves, with a uniform cross section.
+
+    @tags lnoi400-gsg
+
+    Args:
+        length: 1000.0.
+        cross_section: "xs_uni_cpw".
+        signal_width: 10.0.
+        gap_width: 4.0.
+        ground_planes_width: 250.0.
+        bondpad: "CPW_pad_linear".
+    """
 
     cpw_xs = gf.get_cross_section(
         cross_section,
@@ -558,12 +817,15 @@ def uni_cpw_straight(
         name="bp2",
         port=bp2.ports["e1"],
     )
+    for suffix in ("S", "G_top", "G_bot"):
+        cpw.add_port(name=f"bp1_{suffix}", port=bp1.ports[suffix])
+        cpw.add_port(name=f"bp2_{suffix}", port=bp2.ports[suffix])
     cpw.flatten()
 
     return cpw
 
 
-@gf.cell()
+@gf.cell(tags=["cells"])
 def trail_cpw(
     length: float = 1000.0,
     signal_width: float = 21,
@@ -578,7 +840,24 @@ def trail_cpw(
     bondpad: ComponentSpec = "CPW_pad_linear",
     cross_section: CrossSectionSpec = xs_uni_cpw,
 ) -> gf.Component:
-    """A CPW transmission line with periodic T-rails on all electrodes."""
+    """A CPW transmission line with periodic T-rails on all electrodes.
+
+    @tags lnoi400-gsg
+
+    Args:
+        length: 1000.0.
+        signal_width: 21.
+        gap_width: 4.
+        th: 1.5.
+        tl: 44.7.
+        tw: 7.0.
+        tt: 1.5.
+        tc: 5.0.
+        ground_planes_width: 180.0.
+        rounding_radius: 0.5.
+        bondpad: "CPW_pad_linear".
+        cross_section: xs_uni_cpw.
+    """
 
     num_cells = np.floor(length / (tl + tc))
     gap_width_corrected = gap_width + 2 * th + 2 * tt  # total gap width with T-rails
@@ -609,6 +888,9 @@ def trail_cpw(
         name="bp2",
         port=bp2.ports["e1"],
     )
+    for suffix in ("S", "G_top", "G_bot"):
+        cpw.add_port(name=f"bp1_{suffix}", port=bp1.ports[suffix])
+        cpw.add_port(name=f"bp2_{suffix}", port=bp2.ports[suffix])
 
     # Initiate T-rail polygon element. Create a bit more to ensure round corners close to electrodes
     trailpol = gf.kdb.DPolygon(
@@ -677,13 +959,18 @@ def trail_cpw(
 ###################
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def heater_resistor(
     path: gf.path.Path | None = None,
     width: float = 0.9,
     offset: float = 0.0,
 ) -> gf.Component:
     """A resistive wire used as a low-frequency phase shifter, exploiting
+
+    Args:
+        path: None.
+        width: 0.9.
+        offset: 0.0.
     the thermo-optical effect."""
 
     if not path:
@@ -695,7 +982,7 @@ def heater_resistor(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def heater_straight_single(
     length: float = 150.0,
     width: float = 0.9,
@@ -707,6 +994,15 @@ def heater_straight_single(
 ) -> gf.Component:
     """A straight resistive wire used as a low-frequency phase shifter,
     exploiting the thermo-optical effect. The heater is terminated by wide pads
+
+    Args:
+        length: 150.0.
+        width: 0.9.
+        offset: 0.0.
+        port_contact_width_ratio: 3.0.
+        pad_size: (100.0, 100.0).
+        pad_pitch: None.
+        pad_vert_offset: 10.0.
     for probing or bonding."""
 
     if pad_vert_offset <= 0:
@@ -808,7 +1104,7 @@ def heater_straight_single(
 ###############
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def eo_phase_shifter(
     rib_core_width_modulator: float = 2.5,
     taper_length: float = 100.0,
@@ -820,6 +1116,16 @@ def eo_phase_shifter(
     draw_cpw: bool = True,
 ) -> gf.Component:
     """Phase shifter based on the Pockels effect. The waveguide is located
+
+    Args:
+        rib_core_width_modulator: 2.5.
+        taper_length: 100.0.
+        modulation_length: 7500.0.
+        rf_central_conductor_width: 10.0.
+        rf_ground_planes_width: 180.0.
+        rf_gap: 4.0.
+        cpw_cell: uni_cpw_straight.
+        draw_cpw: True.
     within the gap of a CPW transmission line."""
     ps = gf.Component()
     xs_modulator = gf.get_cross_section("xs_rwg1000", width=rib_core_width_modulator)
@@ -881,7 +1187,7 @@ def eo_phase_shifter(
     return ps
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     """High-speed phase shifter based on the Pockels effect. The waveguide is located
     within the gap of a CPW transmission line.
@@ -896,7 +1202,7 @@ def eo_phase_shifter_high_speed(**kwargs) -> gf.Component:
     return ps
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def _mzm_interferometer(
     splitter: ComponentSpec = "mmi1x2_optimized1550",
     taper_length: float = 100.0,
@@ -910,6 +1216,21 @@ def _mzm_interferometer(
     lbend_tune_arm_reff: float = 75.0,
     lbend_combiner_reff: float = 80.0,
 ) -> gf.Component:
+    """_mzm_interferometer.
+
+    Args:
+        splitter: "mmi1x2_optimized1550".
+        taper_length: 100.0.
+        rib_core_width_modulator: 2.5.
+        modulation_length: 7500.0.
+        length_imbalance: 100.0.
+        bias_tuning_section_length: 750.0.
+        sbend_large_size: (200.0, 50.0).
+        sbend_small_size: (200.0, -45.0).
+        sbend_small_straight_extend: 5.0.
+        lbend_tune_arm_reff: 75.0.
+        lbend_combiner_reff: 80.0.
+    """
     interferometer = gf.Component()
 
     sbend_large = S_bend_vert(
@@ -1065,7 +1386,7 @@ def _mzm_interferometer(
     return interferometer
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mzm_unbalanced(
     modulation_length: float = 7500.0,
     length_imbalance: float = 100.0,
@@ -1085,6 +1406,25 @@ def mzm_unbalanced(
     **kwargs,
 ) -> gf.Component:
     """Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
+
+    @tags lnoi400-gsg
+
+    Args:
+        modulation_length: 7500.0.
+        length_imbalance: 100.0.
+        lbend_tune_arm_reff: 75.0.
+        rf_pad_start_width: 80.0.
+        rf_central_conductor_width: 10.0.
+        rf_ground_planes_width: 180.0.
+        rf_gap: 4.0.
+        rf_pad_length_straight: 10.0.
+        rf_pad_length_tapered: 300.0.
+        bias_tuning_section_length: 700.0.
+        cpw_cell: uni_cpw_straight.
+        with_heater: False.
+        heater_offset: 1.2.
+        heater_width: 1.0.
+        heater_pad_size: (75.0, 75.0).
     The modulator works in a differential push-pull configuration driven by a single GSG line."""
 
     mzm = gf.Component()
@@ -1214,7 +1554,13 @@ def mzm_unbalanced(
 
     exposed_ports = [
         ("e1", rf_line.ports["bp1"]),
+        ("G1_top", rf_line.ports["bp1_G_top"]),
+        ("S1", rf_line.ports["bp1_S"]),
+        ("G1_bot", rf_line.ports["bp1_G_bot"]),
         ("e2", rf_line.ports["bp2"]),
+        ("G2_top", rf_line.ports["bp2_G_top"]),
+        ("S2", rf_line.ports["bp2_S"]),
+        ("G2_bot", rf_line.ports["bp2_G_bot"]),
     ]
 
     if "1x2" in kwargs["splitter"]:
@@ -1247,7 +1593,7 @@ def mzm_unbalanced(
     return mzm
 
 
-@gf.cell
+@gf.cell(tags=["cells"])
 def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     """High-speed Mach-Zehnder modulator based on the Pockels effect with an applied RF electric field.
     The modulator works in a differential push-pull configuration driven by a single GSG line.
@@ -1262,5 +1608,185 @@ def mzm_unbalanced_high_speed(**kwargs) -> gf.Component:
     return mzm
 
 
-if __name__ == "__main__":
-    gc_focusing_1550().show()
+@gf.cell(tags=["text"])
+def text_rectangular(
+    text: str = "abc",
+    size: float = 3,
+    justify: str = "left",
+    layer: LayerSpec | None = "LN_RIDGE",
+    layers: LayerSpecs | None = None,
+) -> gf.Component:
+    """Pixel based font, guaranteed to be manhattan, without acute angles.
+
+    Args:
+        text: string.
+        size: pixel size.
+        justify: left, right or center.
+        layer: for text.
+        layers: optional for duplicating the text.
+    """
+    return gf.c.text_rectangular(
+        text=text,
+        size=size,
+        justify=justify,
+        position=(0.0, 0.0),
+        layer=layer,
+        layers=layers,
+    )
+
+
+@gf.cell(tags=["die"])
+def pad(
+    size: Size = (90, 90),
+    port_orientation: AngleInDegrees | None = 0,
+    port_orientations: Ints | None = (180, 90, 0, -90),
+) -> gf.Component:
+    """Returns rectangular pad with ports.
+
+    Args:
+        size: x, y size.
+        port_orientation: in degrees for the center port.
+        port_orientations: list of port_orientations to add. None does not add ports.
+    """
+    return gf.c.pad(
+        size=size,
+        port_orientation=port_orientation,
+        port_orientations=port_orientations,
+        layer=LAYER.TL,
+        bbox_layers=None,
+        bbox_offsets=None,
+        port_inclusion=0,
+        port_type="pad",
+    )
+
+
+@gf.cell(tags=["die"])
+def pad_gsg(length: float = 100):
+    """Returns rectangular RF pad with ports.
+
+    Args:
+        length: length of the pad.
+    """
+    return gf.c.straight(cross_section="gsg", length=length)
+
+
+@gf.cell(tags=["die"])
+def die_phix_rf(
+    xsize: float = 10e3,
+    ysize: float = 5e3,
+    nfibers: int = 16,
+    npads: int | None = 57,
+    npads_rf: int = 6,
+    fiber_pitch: float = 127.0,
+    pad_pitch: float = 150.0,
+    pad_pitch_gsg: float = 720.0,
+    edge_coupler: ComponentSpec | None = partial(
+        double_linear_inverse_taper_mirror, input_ext=30.0
+    ),
+    grating_coupler: ComponentSpec | None = None,
+    cross_section: CrossSectionSpec = "xs_rwg1000",
+    pad: ComponentSpec = "pad",
+    pad_gsg: ComponentSpec = "pad_gsg",
+    edge_to_pad_distance: float = 200.0,
+    edge_coupler_keepout: float = 1200.0,
+    pad_port_name_top: str = "e4",
+    pad_port_name_bot: str = "e2",
+    layer_fiducial: LayerSpec = "LN_RIDGE",
+    layer_ruler: LayerSpec = "LN_RIDGE",
+    ruler_yoffset: float = 0,
+    ruler_xoffset: float = 0,
+    fiber_coupler_xoffset: float = 5.0,
+    with_right_fiber_coupler: bool = True,
+    with_left_fiber_coupler: bool = False,
+    text_offset: Float2 = (-40, 20),
+    text: ComponentSpec | None = "text_rectangular",
+    xoffset_dc_pads: float = -100,
+    xoffset_rf_pads: float = 50.0,
+    exclusion_zone_width: float = 50.0,
+) -> gf.Component:
+    """Die with east west edge couplers and RF pads on north and south.
+
+    @tags lnoi400-chip-edge
+
+    The physical chip edge is the outside of CHIP_EXCLUSION_ZONE (6/1),
+    not CHIP_CONTOUR (6/0). The default facet overhang is 5 um regardless
+    of the coupler's straight tip length. This PHIX ADK assumes polishing,
+    so its default mirrored coupler uses 30 um of straight tip. There are
+    57 DC pads on each of the north and south sides.
+
+    Args:
+        xsize: Nominal die x size in um, subject to chip_frame size snapping.
+        ysize: Nominal die y size in um, subject to chip_frame size snapping.
+        nfibers: number of fibers.
+        npads: Number of DC pads per north/south side, default 57. Pass None
+            to compute from xsize, edge_coupler_keepout, and pad_pitch.
+        npads_rf: number of RF pads.
+        fiber_pitch: of the edge couplers in um.
+        pad_pitch: pitch between pads.
+        pad_pitch_gsg: pitch between gsg pads.
+        edge_coupler: edge coupler component.
+        grating_coupler: grating coupler component.
+        cross_section: waveguide cross_section.
+        pad: pad component.
+        pad_gsg: gsg pad component.
+        edge_to_pad_distance: distance from edge to first pad.
+        edge_coupler_keepout: keepout zone (in um) on each side of the die for the edge coupler / fiducials / routing margins. Used to compute npads.
+        pad_port_name_top: name of the pad port name at the top facing south.
+        pad_port_name_bot: name of the pad port name at the bottom facing north.
+        layer_fiducial: layer for fiducials.
+        layer_ruler: layer for ruler.
+        ruler_yoffset: y offset for ruler.
+        ruler_xoffset: x offset for ruler.
+        fiber_coupler_xoffset: Outward facet offset from layer 6/1, in um.
+            Keep at 5 for the standard singulation geometry, including polishing.
+        with_right_fiber_coupler: if True adds right fiber coupler.
+        with_left_fiber_coupler: if True adds left fiber coupler.
+        text_offset: offset for the text label.
+        text: text component.
+        xoffset_dc_pads: x offset for dc pads.
+        xoffset_rf_pads: RF pad x offset from the left chip contour, in um.
+        exclusion_zone_width: Border between layer 6/0 and physical edge 6/1,
+            in um. Pads retain their offsets relative to layer 6/0.
+    """
+    if npads is None:
+        npads = max(0, min(int((xsize - 2 * edge_coupler_keepout) / pad_pitch) - 1, 60))
+    pad_side_distance = (
+        xsize / 2
+        - npads * pad_pitch / 2
+        + edge_to_pad_distance
+        - pad_pitch / 2
+        + xoffset_dc_pads
+    )
+    d = chip_frame(size=(xsize, ysize), exclusion_zone_width=exclusion_zone_width)
+    # The frame bbox includes the border; preserve pad offsets from layer 6/0.
+    pad_side_distance += exclusion_zone_width
+    edge_to_pad_distance += exclusion_zone_width
+    xoffset_rf_pads += exclusion_zone_width
+    return gf.c.die_frame_phix_rf(
+        die_frame=d,
+        nfibers=nfibers,
+        npads=npads,
+        npads_rf=npads_rf,
+        fiber_pitch=fiber_pitch,
+        pad_pitch=pad_pitch,
+        pad_pitch_gsg=pad_pitch_gsg,
+        edge_coupler=edge_coupler,
+        grating_coupler=grating_coupler,
+        cross_section=cross_section,
+        pad=pad,
+        pad_gsg=pad_gsg,
+        edge_to_pad_distance=edge_to_pad_distance,
+        pad_port_name_top=pad_port_name_top,
+        pad_port_name_bot=pad_port_name_bot,
+        layer_ruler=layer_ruler,
+        layer_fiducial=layer_fiducial,
+        ruler_yoffset=ruler_yoffset,
+        ruler_xoffset=ruler_xoffset,
+        fiber_coupler_xoffset=fiber_coupler_xoffset,
+        with_right_fiber_coupler=with_right_fiber_coupler,
+        with_left_fiber_coupler=with_left_fiber_coupler,
+        text_offset=text_offset,
+        text=text,
+        pad_side_distance=pad_side_distance,
+        xoffset_rf_pads=xoffset_rf_pads,
+    )

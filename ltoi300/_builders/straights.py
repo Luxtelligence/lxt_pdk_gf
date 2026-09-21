@@ -6,7 +6,7 @@ from gdsfactory.typings import CrossSectionSpec
 ################
 
 
-@gf.cell
+@gf.cell(tags=["straights"])
 def build_straight_rwg900(
     length: float = 10.0, cross_section: CrossSectionSpec = "xs_rwg900", **kwargs
 ) -> gf.Component:
@@ -18,7 +18,7 @@ def build_straight_rwg900(
     )
 
 
-@gf.cell
+@gf.cell(tags=["straights"])
 def build_straight_rwg700(
     length: float = 10.0, cross_section: CrossSectionSpec = "xs_rwg700", **kwargs
 ) -> gf.Component:
@@ -30,7 +30,7 @@ def build_straight_rwg700(
     )
 
 
-@gf.cell
+@gf.cell(tags=["straights"])
 def build_straight_rwg2500(
     length: float = 10.0, cross_section: CrossSectionSpec = "xs_rwg2500", **kwargs
 ) -> gf.Component:

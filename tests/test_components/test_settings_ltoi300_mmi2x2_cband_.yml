@@ -1,4 +1,41 @@
 info:
   port_separation: 3.65
 name: mmi2x2_cband
+ports:
+  o1:
+    center:
+    - -25
+    - -1.825
+    layer: LT_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 0.9
+  o2:
+    center:
+    - -25
+    - 1.825
+    layer: LT_RIDGE
+    name: o2
+    orientation: 180
+    port_type: optical
+    width: 0.9
+  o3:
+    center:
+    - 92.5
+    - 1.825
+    layer: LT_RIDGE
+    name: o3
+    orientation: 0
+    port_type: optical
+    width: 0.9
+  o4:
+    center:
+    - 92.5
+    - -1.825
+    layer: LT_RIDGE
+    name: o4
+    orientation: 0
+    port_type: optical
+    width: 0.9
 settings: {}

@@ -1,0 +1,43 @@
+info: {}
+name: mzm_with_pads_Mmzm_unbalanced_high_speed_Ppad_gsg_TL50
+ports:
+  e1:
+    center:
+    - -450
+    - 0
+    layer: TL
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 100
+  e2:
+    center:
+    - 7950
+    - 0
+    layer: TL
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 100
+  o1:
+    center:
+    - -603.381
+    - 0
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 8944.148
+    - 0
+    layer: LN_RIDGE
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
+settings:
+  mzm: mzm_unbalanced_high_speed
+  pad: pad_gsg
+  taper_length: 50

@@ -1,5 +1,42 @@
 info: {}
 name: directional_coupler_balanced_IWS30p6_SL58_CSL16p92_CWS0_e88e65ac
+ports:
+  o1:
+    center:
+    - -66.46
+    - -15.3
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - -66.46
+    - 15.3
+    layer: LN_RIDGE
+    name: o2
+    orientation: 180
+    port_type: optical
+    width: 1
+  o3:
+    center:
+    - 66.46
+    - 15.3
+    layer: LN_RIDGE
+    name: o3
+    orientation: 0
+    port_type: optical
+    width: 1
+  o4:
+    center:
+    - 66.46
+    - -15.3
+    layer: LN_RIDGE
+    name: o4
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   central_straight_length: 16.92
   coup_wg_width: 0.8

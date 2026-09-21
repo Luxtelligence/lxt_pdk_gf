@@ -2,6 +2,22 @@
 
 The release naming convention follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.1.1
+
+GDSFactory-maintained release based on Luxtelligence v2.1.0, with the additions and fixes below.
+
+### New
+
+- Add `lnoi400.mzm_with_pads` with GSG pads and three-conductor transmission-line tapers.
+- Expose individual signal and ground ports on CPW pads and MZMs while preserving legacy MZM ports.
+
+### Bug fixes
+
+- Fix ring-resonator slab generation so shared cached components are not modified.
+- Align chip-frame and PHIX die edge-coupler placement to the physical chip edge on layer 6/1. The default straight tip extends 5 µm outside and at least 5 µm inside the chip.
+- Document the approximately 30 µm straight section for polishing and the insertion-loss tradeoff for unpolished tips.
+- Correct Manhattan port-orientation checks at angle wraparound boundaries.
+
 ## v2.0
 
 ### New

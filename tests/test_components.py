@@ -1,8 +1,12 @@
+import filecmp
 import pathlib
+import shutil
+import tempfile
 
+import gdsfactory as gf
+import klayout.db as kdb
 import numpy as np
 import pytest
-from gdsfactory.difftest import difftest
 from pytest_regressions.data_regression import DataRegressionFixture
 from pytest_regressions.ndarrays_regression import NDArraysRegressionFixture
 
@@ -17,6 +21,66 @@ pdks = {
 gds_ref_dir = pathlib.Path(__file__).absolute().parent / "gds_ref"
 
 skip_test = {"import_gds"}
+
+_SLIVER_TOLERANCE = 1  # database units
+
+
+def _gds_difftest(
+    component,
+    ref_file: pathlib.Path,
+    sliver_tolerance: int = _SLIVER_TOLERANCE,
+) -> None:
+    """Flat-geometry GDS comparator using raw KLayout XOR.
+
+    Writes the run GDS without kfactory metadata so that intermediate
+    unnamed cell numbering (which shifts when new cells are registered in
+    the global kfactory registry) does not cause spurious failures.
+    Uses a recursive-flatten XOR on every layer so the comparison is
+    insensitive to cell hierarchy and naming while still catching real
+    geometry regressions.
+    """
+    with tempfile.TemporaryDirectory() as tmp:
+        run_file = pathlib.Path(tmp) / f"{ref_file.stem}.gds"
+        component.write_gds(gdspath=str(run_file), with_metadata=False)
+
+        if not ref_file.exists():
+            shutil.copy(run_file, ref_file)
+            raise AssertionError(
+                f"Reference GDS file for {ref_file.stem!r} not found. "
+                f"Wrote new ref to {ref_file}"
+            )
+
+        if filecmp.cmp(ref_file, run_file, shallow=False):
+            return
+
+        ref_layout = kdb.Layout()
+        ref_layout.read(str(ref_file))
+        run_layout = kdb.Layout()
+        run_layout.read(str(run_file))
+
+        ref_top = ref_layout.top_cell()
+        run_top = run_layout.top_cell()
+
+        layer_ids = {(li.layer, li.datatype) for li in ref_layout.layer_infos()} | {
+            (li.layer, li.datatype) for li in run_layout.layer_infos()
+        }
+
+        failures = []
+        for layer, datatype in sorted(layer_ids):
+            ref_region = kdb.Region(
+                ref_top.begin_shapes_rec(ref_layout.layer(layer, datatype))
+            )
+            run_region = kdb.Region(
+                run_top.begin_shapes_rec(run_layout.layer(layer, datatype))
+            )
+            xor = ref_region ^ run_region
+            if not xor.is_empty() and not xor.sized(-sliver_tolerance).is_empty():
+                failures.append(f"({layer}/{datatype})")
+
+        if failures:
+            raise AssertionError(
+                f"GDS geometry differs on layer(s) {failures}: {ref_file.name}"
+            )
 
 
 def pytest_generate_tests(metafunc):
@@ -51,12 +115,7 @@ def test_gds(
     dirpath = gds_ref_dir / pdk_name
     dirpath.mkdir(exist_ok=True, parents=True)
 
-    difftest(
-        component,
-        test_name=component_name,
-        dirpath=dirpath,
-        ignore_sliver_differences=True,
-    )
+    _gds_difftest(component, ref_file=dirpath / f"{component_name}.gds")
 
 
 def test_settings(
@@ -68,7 +127,88 @@ def test_settings(
     pdk = pdks[pdk_name]
     pdk.activate()
     component = pdk.cells[component_name]()
-    data_regression.check(component.to_dict())
+    data_regression.check(component.to_dict(with_ports=True))
+
+
+def _is_manhattan_orientation(orientation: float) -> bool:
+    """Return whether an angle is within the Manhattan tolerance.
+
+    @tags pdk-manhattan-ports
+    """
+    angular_distance = abs((orientation + 45.0) % 90.0 - 45.0)
+    # Absorb modulo roundoff at the inclusive boundary, without relative tolerance.
+    return angular_distance <= 1e-3 + 1e-12
+
+
+@pytest.mark.parametrize(
+    "orientation, expected",
+    [
+        (0.0, True),
+        (90.0, True),
+        (180.0, True),
+        (270.0, True),
+        (360.0, True),
+        (-90.0, True),
+        (-0.0005, True),
+        (359.9995, True),
+        (90.0005, True),
+        (180.0005, True),
+        (270.0005, True),
+        (0.001, True),
+        (-0.001, True),
+        (89.999, True),
+        (90.001, True),
+        (179.999, True),
+        (180.001, True),
+        (269.999, True),
+        (270.001, True),
+        (359.999, True),
+        (360.001, True),
+        (0.001001, False),
+        (90.001001, False),
+        (180.001001, False),
+        (270.001001, False),
+        (359.998999, False),
+        (0.003, False),
+        (90.003, False),
+        (180.003, False),
+        (270.003, False),
+        (359.997, False),
+        (45.0, False),
+    ],
+)
+def test_manhattan_orientation_tolerance(orientation: float, expected: bool) -> None:
+    """Catch asymmetric wrapping and angle-dependent tolerance.
+
+    @tags pdk-manhattan-ports
+    """
+    assert _is_manhattan_orientation(orientation) is expected
+
+
+skip_test_manhattan_ports: set[str] = set()
+
+
+def test_port_orientations_manhattan(
+    pdk_name: str,
+    component_name: str,
+) -> None:
+    """Ensure that all ports have a Manhattan orientation (0, 90, 180 or 270 deg).
+
+    @tags pdk-manhattan-ports
+    """
+    if component_name in skip_test_manhattan_ports:
+        pytest.skip(f"Skipping manhattan port orientation test for {component_name}")
+    pdk = pdks[pdk_name]
+    pdk.activate()
+    component = pdk.cells[component_name]()
+    if isinstance(component, gf.ComponentAllAngle):
+        pytest.skip(f"{component_name} is an all-angle component")
+    for port in component.ports:
+        if not _is_manhattan_orientation(port.orientation):
+            raise AssertionError(
+                f"Port {port.name} of {pdk_name}.{component_name} has non-manhattan "
+                f"orientation {port.orientation} degrees."
+            )
 
 
 def test_models_with_wavelength_sweep(

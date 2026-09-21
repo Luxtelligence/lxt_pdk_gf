@@ -1,0 +1,29 @@
+info:
+  length: 100
+  route_info_gsg_length: 100
+  route_info_length: 100
+  route_info_type: gsg
+  route_info_weight: 100
+  width: 100
+name: pad_gsg_L100
+ports:
+  e1:
+    center:
+    - 0
+    - 0
+    layer: TL
+    name: e1
+    orientation: 180
+    port_type: electrical
+    width: 100
+  e2:
+    center:
+    - 100
+    - 0
+    layer: TL
+    name: e2
+    orientation: 0
+    port_type: electrical
+    width: 100
+settings:
+  length: 100

@@ -1,5 +1,24 @@
 info: {}
 name: ring_resonator_multimode_point_coupler_oband_RR200_RW1p_be6a60a4
+ports:
+  o1:
+    center:
+    - 201.85
+    - -200
+    layer: LT_RIDGE
+    name: o1
+    orientation: 270
+    port_type: optical
+    width: 0.7
+  o2:
+    center:
+    - 201.85
+    - 200
+    layer: LT_RIDGE
+    name: o2
+    orientation: 90
+    port_type: optical
+    width: 0.7
 settings:
   gap: 0.75
   ring_radius: 200

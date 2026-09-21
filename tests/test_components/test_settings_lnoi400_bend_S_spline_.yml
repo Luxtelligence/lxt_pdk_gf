@@ -1,6 +1,25 @@
 info:
   length: 105.208
 name: bend_S_spline_S100_30_CSxs_rwg1000_N201_PMspline_clamped_path
+ports:
+  o1:
+    center:
+    - 0
+    - 0
+    layer: LN_RIDGE
+    name: o1
+    orientation: 180
+    port_type: optical
+    width: 1
+  o2:
+    center:
+    - 100
+    - 30
+    layer: LN_RIDGE
+    name: o2
+    orientation: 0
+    port_type: optical
+    width: 1
 settings:
   cross_section: xs_rwg1000
   npoints: 201

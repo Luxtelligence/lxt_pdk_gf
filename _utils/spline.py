@@ -40,7 +40,7 @@ def spline_null_curvature(
     return path
 
 
-@gf.cell
+@gf.cell(tags=["spline"])
 def bend_S_spline(
     size: tuple[float, float] = (100.0, 30.0),
     cross_section: CrossSectionSpec = "xs_rwg1000",
@@ -58,7 +58,7 @@ def bend_S_spline(
     return c
 
 
-@gf.cell
+@gf.cell(tags=["spline"])
 def bend_S_spline_varying_width(
     size: tuple[float, float] = (58, 14.5),
     cross_section1: CrossSectionSpec = None,
