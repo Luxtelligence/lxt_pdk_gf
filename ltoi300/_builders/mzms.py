@@ -115,18 +115,18 @@ def build_unterminated_mzm_oband(
     c = gf.Component()
 
     _heater_params = _merge(DEFAULT_HEATER_PARAMS, heater_params)
-    if _heater_params["length"] > 0.0:
-        _optical_waveguide_params = _merge(
-            DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
-        )
+    _optical_waveguide_params = _merge(
+        DEFAULT_OPTICAL_WG_PARAMS, optical_waveguide_params
+    )
 
-        if (
-            _optical_waveguide_params["heater_section_length"]
+    if (
+            _heater_params["length"] > 0.0
+            and _optical_waveguide_params["heater_section_length"]
             < _heater_params["length"]
-        ):
-            _optical_waveguide_params["heater_section_length"] = _heater_params[
-                "length"
-            ]
+    ):
+        _optical_waveguide_params["heater_section_length"] = _heater_params[
+            "length"
+        ]
 
     mzm_ref = c << base_mzm(
         optical_xs=xs_rwg700,  # fixed by wrapper
